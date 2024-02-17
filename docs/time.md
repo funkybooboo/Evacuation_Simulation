@@ -1,3 +1,14 @@
-nate is not the best
+Nate Stott
+| Date    | Time (hrs) | Description |
+|---------|------------|-------------|
+| 10/10/20| 1.5        | Meeting with team to discuss project |
 
-nate is the best
+
+
+
+
+
+Rylei Mindrum
+| Date    | Time (hrs) | Description |
+|---------|------------|-------------|
+| 10/10/20| 1.5        | Meeting with team to discuss project |
