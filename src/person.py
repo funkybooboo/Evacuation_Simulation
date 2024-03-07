@@ -1,23 +1,23 @@
 class Person:
-    def __init__(self) -> None:
+    def __init__(self):
         pass
 
-    def color():
+    def color(self):
         pass
 
-    def compete():
+    def compete(self):
         pass
 
-    def movement():
+    def movement(self):
         pass
     
-    def cooperative():
+    def cooperative(self):
         pass
 
-    def defective():
+    def defective(self):
         pass
 
-    def neutral():
+    def neutral(self):
         pass
 
 
