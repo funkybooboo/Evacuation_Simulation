@@ -1,6 +1,7 @@
 from sys import argv
 from simulation import Simulation
 
+
 def main(args):
     number_of_people = 100
     verbose = False
