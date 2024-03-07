@@ -1,3 +1,3 @@
-class person:
+class Person:
     pass
 
