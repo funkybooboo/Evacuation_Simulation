@@ -91,12 +91,55 @@ class Simulation:
         return randint(0, 20) == 1
 
     def __compete(self, person1, person2):
+        normal_form_game = self.get_normal_form_game(person1, person2)
+
+
+    def get_normal_form_game(self, person1, person2):
         pass
 
-    def __path_find(self, person):
+    def __get_next_best_location(self, person):
+        pass
+
+    def __is_exit(self, location):
+        return self.building['floor1'][location[0]][location[1]] == 'e'
+
+    def __is_obstacle(self, location):
+        return self.building['floor1'][location[0]][location[1]] == 'o'
+
+    def __is_fire(self, location):
+        return location in self.fire_locations
+
+    def __is_person(self, location):
+        for person in self.live_people:
+            if person.location == location:
+                return True
+        return False
+
+    def __is_wall(self, location):
+        return self.building['floor1'][location[0]][location[1]] == 'w'
+
+    def __is_stair(self, location):
+        return self.building['floor1'][location[0]][location[1]] == 's'
+
+    def __is_glass(self, location):
+        return self.building['floor1'][location[0]][location[1]] == 'g'
+
+    def __is_empty(self, location):
+        return self.building['floor1'][location[0]][location[1]] == ' '
+
+    def __is_door(self, location):
+        return self.building['floor1'][location[0]][location[1]] == 'd'
+
+    def __closest_exit(self, location):
+        pass
+
+    def __closest_stair(self, location):
+        pass
+
+    def __closest_door(self, location):
         pass
 
     def move(self, person):
-        path = self.__path_find(person)
+        path = self.__get_next_best_location(person)
 
 
