@@ -11,7 +11,6 @@ class Simulation:
         self.live_people = self.__generate_people()
         self.dead_people = []
         self.fire_locations = [(randint(0, len(self.building['floor1']) - 1), randint(0, len(self.building['floor1'][0]) - 1))]
-        self.statistics()
 
     def __generate_people(self):
         people = []
@@ -23,7 +22,14 @@ class Simulation:
         for floor in self.building:
             for row in floor:
                 for cell in row:
-                    print(cell, end=" ")
+                    is_person = False
+                    for person in self.live_people:
+                        if person.location == (row, cell):
+                            is_person = True
+                            print(person.name, end=" ")
+                            break
+                    if not is_person:
+                        print(cell, end=" ")
                 print()
             print()
 
@@ -46,42 +52,45 @@ class Simulation:
                         self.live_people.remove(person)
 
                 move_data = self.move(person)
-                if move_data['is_hit']:
-                    person1 = self.live_people[move_data['pk1']]
-                    person2 = self.live_people[move_data['pk2']]
-                    if self.verbose:
-                        print(f"{person1.name} and {person2.name} have collided")
-                    self.compete(person1, person2)
-                if move_data['is_exit']:
-                    self.number_of_people -= 1
-                    self.live_people.remove(person)
-                    if self.verbose:
-                        print(f"{person.name} has exited the building")
+                if move_data:
+                    if move_data['is_hit']:
+                        person1 = self.live_people[move_data['pk1']]
+                        person2 = self.live_people[move_data['pk2']]
+                        if self.verbose:
+                            print(f"{person1.name} and {person2.name} have collided")
+                        self.__compete(person1, person2)
+                    if move_data['is_exit']:
+                        self.number_of_people -= 1
+                        self.live_people.remove(person)
+                        if self.verbose:
+                            print(f"{person.name} has exited the building")
+                else:
+                    raise Exception("No move data")
             if self.verbose:
                 print(f"{self.number_of_people} people remaining")
             for fire_location in self.fire_locations:
-                if self.is_fire_spread():
+                if self.__is_fire_spread():
                     self.fire_locations.append((fire_location[0], fire_location[1] + 1))
-                if self.is_fire_spread():
+                if self.__is_fire_spread():
                     self.fire_locations.append((fire_location[0], fire_location[1] - 1))
-                if self.is_fire_spread():
+                if self.__is_fire_spread():
                     self.fire_locations.append((fire_location[0] + 1, fire_location[1]))
-                if self.is_fire_spread():
+                if self.__is_fire_spread():
                     self.fire_locations.append((fire_location[0] - 1, fire_location[1]))
         if self.verbose:
             print("Evacuation complete")
-        self.statistics()
 
     @staticmethod
-    def is_fire_spread():
+    def __is_fire_spread():
         return randint(0, 10) == 1
 
-    def compete(self, person1, person2):
+    def __compete(self, person1, person2):
         pass
 
-    def path_find(self, person):
+    def __path_find(self, person):
         pass
 
     def move(self, person):
-        pass
+        path = self.__path_find(person)
+
 
