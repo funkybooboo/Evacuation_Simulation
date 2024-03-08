@@ -42,47 +42,53 @@ class Simulation:
         if self.verbose:
             print("Evacuating...")
         while self.number_of_people > 0:
-            for person in self.live_people:
-                for fire_location in self.fire_locations:
-                    if person.location == fire_location:
-                        if self.verbose:
-                            print(f"{person.name} has been caught in the fire")
-                        self.number_of_people -= 1
-                        self.dead_people.append(person)
-                        self.live_people.remove(person)
-
-                move_data = self.move(person)
-                if move_data:
-                    if move_data['is_hit']:
-                        person1 = self.live_people[move_data['pk1']]
-                        person2 = self.live_people[move_data['pk2']]
-                        if self.verbose:
-                            print(f"{person1.name} and {person2.name} have collided")
-                        self.__compete(person1, person2)
-                    if move_data['is_exit']:
-                        self.number_of_people -= 1
-                        self.live_people.remove(person)
-                        if self.verbose:
-                            print(f"{person.name} has exited the building")
-                else:
-                    raise Exception("No move data")
+            self.__move_people()
             if self.verbose:
                 print(f"{self.number_of_people} people remaining")
-            for fire_location in self.fire_locations:
-                if self.__is_fire_spread():
-                    self.fire_locations.append((fire_location[0], fire_location[1] + 1))
-                if self.__is_fire_spread():
-                    self.fire_locations.append((fire_location[0], fire_location[1] - 1))
-                if self.__is_fire_spread():
-                    self.fire_locations.append((fire_location[0] + 1, fire_location[1]))
-                if self.__is_fire_spread():
-                    self.fire_locations.append((fire_location[0] - 1, fire_location[1]))
+            self.__spread_fire()
         if self.verbose:
             print("Evacuation complete")
 
+    def __move_people(self):
+        for person in self.live_people:
+            for fire_location in self.fire_locations:
+                if person.location == fire_location:
+                    if self.verbose:
+                        print(f"{person.name} has been caught in the fire")
+                    self.number_of_people -= 1
+                    self.dead_people.append(person)
+                    self.live_people.remove(person)
+
+            move_data = self.move(person)
+            if move_data:
+                if move_data['is_hit']:
+                    person1 = self.live_people[move_data['pk1']]
+                    person2 = self.live_people[move_data['pk2']]
+                    if self.verbose:
+                        print(f"{person1.name} and {person2.name} have collided")
+                    self.__compete(person1, person2)
+                if move_data['is_exit']:
+                    self.number_of_people -= 1
+                    self.live_people.remove(person)
+                    if self.verbose:
+                        print(f"{person.name} has exited the building")
+            else:
+                raise Exception("No move data")
+
+    def __spread_fire(self):
+        for fire_location in self.fire_locations:
+            if self.__is_fire_spread():
+                self.fire_locations.append((fire_location[0], fire_location[1] + 1))
+            if self.__is_fire_spread():
+                self.fire_locations.append((fire_location[0], fire_location[1] - 1))
+            if self.__is_fire_spread():
+                self.fire_locations.append((fire_location[0] + 1, fire_location[1]))
+            if self.__is_fire_spread():
+                self.fire_locations.append((fire_location[0] - 1, fire_location[1]))
+
     @staticmethod
     def __is_fire_spread():
-        return randint(0, 10) == 1
+        return randint(0, 20) == 1
 
     def __compete(self, person1, person2):
         pass
