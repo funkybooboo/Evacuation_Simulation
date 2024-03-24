@@ -78,7 +78,7 @@ color_to_type = {
 
 
 class Person:
-    def __init__(self, name, pk, location):
+    def __init__(self, name, pk, location, memory):
 
         self.name = name
         self.pk = pk
@@ -101,11 +101,7 @@ class Person:
         # how much health the person has if the person's health reaches 0, the person dies
         self.health = 100
 
-        self.door_memory = []
-        self.exit_memory = []
-        self.stair_memory = []
-        self.glass_memory = []
-        self.obstacle_memory = []
+        self.memory = memory
 
         self.type_pk = randint(1, 8)
         if self.strength > 3:
@@ -127,3 +123,6 @@ class Person:
             self.strategy = "cooperate"
         else:
             self.strategy = "defect"
+
+    def __str__(self):
+        return f"{self.name} is a {self.color_title} {self.type} {self.strategy} with {self.health} health at {self.location}."

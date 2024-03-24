@@ -85,7 +85,6 @@ class Building:
         }
         return building
 
-
     def convert_text_to_colors(self, text_building):
         color_building = text_building.copy()
         floors = color_building.values()

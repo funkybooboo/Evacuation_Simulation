@@ -4,45 +4,47 @@ from random import randint
 
 class Simulation:
     def __init__(self, number_of_people, verbose, building):
+        self.original_number_of_people = number_of_people
         self.number_of_people = number_of_people
         self.verbose = verbose
         self.building = building
-        self.live_people = self.__generate_people()
+        self.live_people = []
+        self.__generate_people()
         self.dead_people = []
         self.fire_locations = [(randint(0, len(self.building['floor1']) - 1), randint(0, len(self.building['floor1'][0]) - 1))]
 
     def __generate_people(self):
-        people = []
-        people_locations = []
+        object_list = list(self.building.object_locations.keys())
         for i in range(self.number_of_people):
             location = (randint(0, len(self.building['floor1']) - 1), randint(0, len(self.building['floor1'][0]) - 1))
-            if location in people_locations || self.__is_obstacle(location) || self.__is_fire(location) || self.__is_person(location) || self.__is_wall(location) || self.__is_stair(location) || self.__is_glass(location) || self.__is_door(location) || self.__is_exit(location):
+            if (self.__is_obstacle(location) or self.__is_fire(location) or self.__is_person(location) or
+                    self.__is_wall(location) or self.__is_stair(location) or self.__is_glass(location) or
+                    self.__is_door(location) or self.__is_exit(location)):
                 i -= 1
                 continue
-            people_locations.append(location)
-
-            people.append(Person(f'Person{i}', i, location, ))
-        return people
+            memory = {
+                "door": [],
+                "exit": [],
+                "stair": [],
+                "glass": [],
+                "obstacle": [],
+            }
+            familiarity = randint(1, 11)
+            for _ in range(1, familiarity):
+                j = randint(0, len(self.building.object_locations))
+                memory[object_list[j]].append(randint(0, len(self.building.object_locations[object_list[j]])))
+            self.live_people.append(Person(f'Person{i}', i, location, memory))
 
     def print_building(self):
-        for floor in self.building:
-            for row in floor:
-                for cell in row:
-                    is_person = False
-                    for person in self.live_people:
-                        if person.location == (row, cell):
-                            is_person = True
-                            print(person.name, end=" ")
-                            break
-                    if not is_person:
-                        print(cell, end=" ")
-                print()
-            print()
+        # TODO write a function to print the building and people in it
+        pass
 
     def statistics(self):
         if self.verbose:
-            self.print_building()
             print(f"Number of people: {self.number_of_people}")
+            print(f"Number of dead people: {len(self.dead_people)}")
+            print(f"Number of live people: {len(self.live_people)}")
+            print(f"Number of fire locations: {len(self.fire_locations)}")
 
     def evacuate(self):
         if self.verbose:
@@ -57,8 +59,8 @@ class Simulation:
 
     def __move_people(self):
         for person in self.live_people:
-            self.check_for_dead(person)
-
+            if self.check_for_dead(person):
+                continue
             move_data = self.move(person)
             if move_data:
                 if move_data['is_hit']:
@@ -76,13 +78,16 @@ class Simulation:
                 raise Exception("No move data")
 
     def check_for_dead(self, person):
+        is_dead = False
         for fire_location in self.fire_locations:
             if person.location == fire_location:
+                is_dead = True
                 if self.verbose:
-                    print(f"{person.name} has been caught in the fire")
+                    print(f"{person.name} has been caught in the fire at {person.location}")
                 self.number_of_people -= 1
                 self.dead_people.append(person)
                 self.live_people.remove(person)
+        return is_dead
 
     def __spread_fire(self):
         for fire_location in self.fire_locations:
@@ -112,7 +117,9 @@ class Simulation:
             person2.health -= 1
             # TODO move no one into the spot
 
-    def get_normal_form_game(self, person1, person2):
+    @staticmethod
+    def get_normal_form_game(person1, person2):
+        # TODO adjust the payoffs based on the persons strength levels
         base_payoffs = {
             ("cooperate", "cooperate"): (3, 3),
             ("cooperate", "defect"): (0, 5),
@@ -152,4 +159,5 @@ class Simulation:
         return self.building.text_building['floor1'][location[0]][location[1]] == 'd'
 
     def move(self, person):
+        # TODO write a function to move a person return a dictionary with the following keys and values (is_hit, is_exit, pk1, pk2)
         pass
