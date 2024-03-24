@@ -1,25 +1,4 @@
-# Black : Wall
-# White : Empty
-# Light Brown : Window
-# Brown : Door
-# Dark Brown : Exit
-# Stair Blue : Stair
 
-# Light Grey : Small Obstacle
-# Grey : Normal Obstacle
-# Dark Grey : Large Obstacle
-
-# Red : Fire
-# Light Red : Shooter
-
-# Blue : Copycat
-# Teal : Cheater
-# Pink : Cooperator
-# Yellow : Grudger
-# Orange : Detective
-# Tan : Copykitten
-# Green : Simpleton
-# Purple : Random
 
 # auto generate a building with glass, doors, stairs, and obstacles
 
@@ -31,7 +10,7 @@
 # d = door
 # ' ' = empty
 
-from colors import colors
+from colors import object_colors
 
 
 def convert_text_to_colors(building):
@@ -39,16 +18,16 @@ def convert_text_to_colors(building):
         for row in floor:
             for i in range(len(row)):
                 if row[i] == 'w':
-                    row[i] = colors["Black"]
+                    row[i] = object_colors["Black"]
                 elif row[i] == 'e':
-                    row[i] = colors["Dark Brown"]
+                    row[i] = object_colors["Dark Brown"]
                 elif row[i] == 'o':
-                    row[i] = colors["Grey"]
+                    row[i] = object_colors["Grey"]
                 elif row[i] == 's':
-                    row[i] = colors["Stair Blue"]
+                    row[i] = object_colors["Stair Blue"]
                 elif row[i] == 'g':
-                    row[i] = colors["Light Brown"]
+                    row[i] = object_colors["Light Brown"]
                 elif row[i] == 'd':
-                    row[i] = colors["Brown"]
+                    row[i] = object_colors["Brown"]
                 elif row[i] == ' ':
-                    row[i] = colors["White"]
+                    row[i] = object_colors["White"]

@@ -9,7 +9,8 @@ class Simulation:
         self.building = building
         self.live_people = self.__generate_people()
         self.dead_people = []
-        self.fire_locations = [(randint(0, len(self.building['floor1']) - 1), randint(0, len(self.building['floor1'][0]) - 1))]
+        self.fire_locations = [
+            (randint(0, len(self.building['floor1']) - 1), randint(0, len(self.building['floor1'][0]) - 1))]
 
     def __generate_people(self):
         people = []
@@ -90,11 +91,20 @@ class Simulation:
         return randint(0, 20) == 1
 
     def __compete(self, person1, person2):
-        normal_form_game = self.get_normal_form_game(person1, person2)
-
+        payoffs = self.get_normal_form_game(person1, person2)
+        if payoffs[0] > payoffs[1]:
+            return True
+        else:
+            return False
 
     def get_normal_form_game(self, person1, person2):
-        pass
+        base_payoffs = {
+            ("cooperate", "cooperate"): (3, 3),
+            ("cooperate", "defect"): (0, 5),
+            ("defect", "cooperate"): (5, 0),
+            ("defect", "defect"): (1, 1),
+        }
+        return base_payoffs[(person1.strategy, person2.strategy)]
 
     def __get_next_best_location(self, person):
         pass
@@ -140,5 +150,3 @@ class Simulation:
 
     def move(self, person):
         path = self.__get_next_best_location(person)
-
-

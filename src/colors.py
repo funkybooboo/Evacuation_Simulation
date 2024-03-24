@@ -1,3 +1,26 @@
+# Black : Wall
+# White : Empty
+# Light Brown : Window
+# Brown : Door
+# Dark Brown : Exit
+# Stair Blue : Stair
+
+# Light Grey : Small Obstacle
+# Grey : Normal Obstacle
+# Dark Grey : Large Obstacle
+
+# Red : Fire
+# Light Red : Shooter
+
+# Blue : Copycat
+# Teal : Cheater
+# Pink : Cooperator
+# Yellow : Grudger
+# Orange : Detective
+# Tan : Copykitten
+# Green : Simpleton
+# Purple : Random
+
 # \u001b[<code>m
 
 black = '\u001b[232m'
@@ -43,7 +66,7 @@ light_tan = '\u001b[100m'
 tan = '\u001b[101m'
 dark_tan = '\u001b[102m'
 
-colors = {
+object_colors = {
     "Black": black,
     "White": white,
     "Light Brown": light_brown,
@@ -54,6 +77,9 @@ colors = {
     "Dark Grey": dark_grey,
     "Red": red,
     "Light Red": light_red,
+}
+
+person_colors = {
     "Light Blue": light_blue,
     "Blue": blue,
     "Dark Blue": dark_blue,
