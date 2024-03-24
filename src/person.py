@@ -11,12 +11,9 @@ class Person:
         self.fear = fear
         self.location = location
 
-    def cooperative(self):
+    def cooperate(self):
         pass
 
-    def defective(self):
-        pass
-
-    def neutral(self):
+    def defect(self):
         pass
 

@@ -1,6 +1,6 @@
 from sys import argv
 from simulation import Simulation
-from building import building1
+from building import generate_building
 
 
 def main(args):
@@ -11,7 +11,7 @@ def main(args):
     if len(args) > 2 and (args[1] == "-v" or args[1] == "--verbose"):
         verbose = True
 
-    simulation = Simulation(number_of_people, verbose, building1)
+    simulation = Simulation(number_of_people, verbose, generate_building())
     simulation.statistics()
     simulation.evacuate()
     simulation.statistics()
