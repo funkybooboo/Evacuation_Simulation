@@ -1,10 +1,9 @@
-from building import building
 from person import Person
 from random import randint
 
 
 class Simulation:
-    def __init__(self, number_of_people, verbose):
+    def __init__(self, number_of_people, verbose, building):
         self.number_of_people = number_of_people
         self.verbose = verbose
         self.building = building

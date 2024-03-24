@@ -6,7 +6,7 @@
 # ' ' is empty space
 # e is for exit
 
-building = {
+building1 = {
     'floor_count': 2,
     'floor_square_area': 20,
     'floor1': [
