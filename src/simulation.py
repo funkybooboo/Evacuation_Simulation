@@ -9,13 +9,19 @@ class Simulation:
         self.building = building
         self.live_people = self.__generate_people()
         self.dead_people = []
-        self.fire_locations = [
-            (randint(0, len(self.building['floor1']) - 1), randint(0, len(self.building['floor1'][0]) - 1))]
+        self.fire_locations = [(randint(0, len(self.building['floor1']) - 1), randint(0, len(self.building['floor1'][0]) - 1))]
 
     def __generate_people(self):
         people = []
+        people_locations = []
         for i in range(self.number_of_people):
-            people.append(Person(f'Person{i}', i, 20, 5, 5, 'blue', 5, 5, 5))
+            location = (randint(0, len(self.building['floor1']) - 1), randint(0, len(self.building['floor1'][0]) - 1))
+            if location in people_locations || self.__is_obstacle(location) || self.__is_fire(location) || self.__is_person(location) || self.__is_wall(location) || self.__is_stair(location) || self.__is_glass(location) || self.__is_door(location) || self.__is_exit(location):
+                i -= 1
+                continue
+            people_locations.append(location)
+
+            people.append(Person(f'Person{i}', i, location, ))
         return people
 
     def print_building(self):
@@ -51,13 +57,7 @@ class Simulation:
 
     def __move_people(self):
         for person in self.live_people:
-            for fire_location in self.fire_locations:
-                if person.location == fire_location:
-                    if self.verbose:
-                        print(f"{person.name} has been caught in the fire")
-                    self.number_of_people -= 1
-                    self.dead_people.append(person)
-                    self.live_people.remove(person)
+            self.check_for_dead(person)
 
             move_data = self.move(person)
             if move_data:
@@ -74,6 +74,15 @@ class Simulation:
                         print(f"{person.name} has exited the building")
             else:
                 raise Exception("No move data")
+
+    def check_for_dead(self, person):
+        for fire_location in self.fire_locations:
+            if person.location == fire_location:
+                if self.verbose:
+                    print(f"{person.name} has been caught in the fire")
+                self.number_of_people -= 1
+                self.dead_people.append(person)
+                self.live_people.remove(person)
 
     def __spread_fire(self):
         for fire_location in self.fire_locations:
@@ -93,9 +102,15 @@ class Simulation:
     def __compete(self, person1, person2):
         payoffs = self.get_normal_form_game(person1, person2)
         if payoffs[0] > payoffs[1]:
-            return True
+            person2.health -= 1
+            # TODO move person1 into the spot
+        elif payoffs[0] < payoffs[1]:
+            person1.health -= 1
+            # TODO move person2 into the spot
         else:
-            return False
+            person1.health -= 1
+            person2.health -= 1
+            # TODO move no one into the spot
 
     def get_normal_form_game(self, person1, person2):
         base_payoffs = {
@@ -105,9 +120,6 @@ class Simulation:
             ("defect", "defect"): (1, 1),
         }
         return base_payoffs[(person1.strategy, person2.strategy)]
-
-    def __get_next_best_location(self, person):
-        pass
 
     def __is_exit(self, location):
         return self.building['floor1'][location[0]][location[1]] == 'e'
@@ -125,28 +137,19 @@ class Simulation:
         return False
 
     def __is_wall(self, location):
-        return self.building['floor1'][location[0]][location[1]] == 'w'
+        return self.building.text_building['floor1'][location[0]][location[1]] == 'w'
 
     def __is_stair(self, location):
-        return self.building['floor1'][location[0]][location[1]] == 's'
+        return self.building.text_building['floor1'][location[0]][location[1]] == 's'
 
     def __is_glass(self, location):
-        return self.building['floor1'][location[0]][location[1]] == 'g'
+        return self.building.text_building['floor1'][location[0]][location[1]] == 'g'
 
     def __is_empty(self, location):
-        return self.building['floor1'][location[0]][location[1]] == ' '
+        return self.building.text_building['floor1'][location[0]][location[1]] == ' '
 
     def __is_door(self, location):
-        return self.building['floor1'][location[0]][location[1]] == 'd'
-
-    def __closest_exit(self, location):
-        pass
-
-    def __closest_stair(self, location):
-        pass
-
-    def __closest_door(self, location):
-        pass
+        return self.building.text_building['floor1'][location[0]][location[1]] == 'd'
 
     def move(self, person):
-        path = self.__get_next_best_location(person)
+        pass

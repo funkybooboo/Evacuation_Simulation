@@ -89,11 +89,10 @@ class Person:
         self.speed = randint(1, 4)
         # how many blocks can the person see
         self.vision = randint(1, 11)
-        # how many blocks can the person remember
-        self.familiarity = randint(1, 11)
         # how likely the person is to panic
         self.fear = randint(1, 11)
-        # where the person is located
+        # where the person is located (1, 1, 1)
+        # (floor, x, y)
         self.location = location
         # how many turns the person has been lost
         self.lost_counter = 0
@@ -101,6 +100,12 @@ class Person:
         self.won_counter = 0
         # how much health the person has if the person's health reaches 0, the person dies
         self.health = 100
+
+        self.door_memory = []
+        self.exit_memory = []
+        self.stair_memory = []
+        self.glass_memory = []
+        self.obstacle_memory = []
 
         self.type_pk = randint(1, 8)
         if self.strength > 3:
