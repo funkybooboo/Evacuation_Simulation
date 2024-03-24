@@ -1,12 +1,4 @@
-# auto generate a building with glass, doors, stairs, and obstacles
-
-# w = wall
-# e = exit
-# o = obstacle
-# s = stair
-# g = glass
-# d = door
-# ' ' = empty
+# TODO change the building to be a 3D array not a dictionary
 
 from colors import object_colors
 
@@ -91,13 +83,13 @@ class Building:
         for floor in range(len(floors)):
             for row in floors[floor]:
                 for col in range(len(row)):
-                    if row[col] == 'w':
+                    if row[col] == 'w' or row[col] == 'h':
                         self.object_locations["wall"].append((floor, row, col))
                         row[col] = object_colors["Black"]
                     elif row[col] == 'e':
                         self.object_locations["exit"].append((floor, row, col))
                         row[col] = object_colors["Dark Brown"]
-                    elif row[col] == 'o':
+                    elif row[col] == 's' or row[col] == 'n' or row[col] == 'l':
                         self.object_locations["obstacle"].append((floor, row, col))
                         row[col] = object_colors["Grey"]
                     elif row[col] == 's':

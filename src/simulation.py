@@ -11,12 +11,13 @@ class Simulation:
         self.live_people = []
         self.__generate_people()
         self.dead_people = []
-        self.fire_locations = [(randint(0, len(self.building['floor1']) - 1), randint(0, len(self.building['floor1'][0]) - 1))]
+        self.fire_locations = [(randint(0, len(self.building.text_building[0])), randint(0, len(self.building.text_building[0][0])))]
 
     def __generate_people(self):
         object_list = list(self.building.object_locations.keys())
         for i in range(self.number_of_people):
-            location = (randint(0, len(self.building['floor1']) - 1), randint(0, len(self.building['floor1'][0]) - 1))
+            floor = randint(0, len(self.building.text_building))
+            location = (floor, randint(0, len(self.building.text_building[0])), randint(0, len(self.building.text_building[0][0])))
             if (self.__is_obstacle(location) or self.__is_fire(location) or self.__is_person(location) or
                     self.__is_wall(location) or self.__is_stair(location) or self.__is_glass(location) or
                     self.__is_door(location) or self.__is_exit(location)):
@@ -36,8 +37,14 @@ class Simulation:
             self.live_people.append(Person(f'Person{i}', i, location, memory))
 
     def print_building(self):
-        # TODO write a function to print the building and people in it
-        pass
+        for floor in self.building.color_building.keys():
+            for row in range(self.building.color_building[floor]):
+                for col in range(self.building.color_building[floor][row]):
+                    person = self.__is_person((floor, row, col))
+                    if person:
+                        print(person.color)
+                    else:
+                        print(self.building.color_building[floor][row][col])
 
     def statistics(self):
         if self.verbose:
@@ -54,6 +61,7 @@ class Simulation:
             if self.verbose:
                 print(f"{self.number_of_people} people remaining")
             self.__spread_fire()
+            self.print_building()
         if self.verbose:
             print("Evacuation complete")
 
@@ -129,10 +137,11 @@ class Simulation:
         return base_payoffs[(person1.strategy, person2.strategy)]
 
     def __is_exit(self, location):
-        return self.building['floor1'][location[0]][location[1]] == 'e'
+        return self.building.text_building[location[0]][location[1]][location[2]] == 'e'
 
     def __is_obstacle(self, location):
-        return self.building['floor1'][location[0]][location[1]] == 'o'
+        c = self.building.text_building[location[0]][location[1]][location[2]]
+        return c == 'm' or c == 'n' or c == 'l'
 
     def __is_fire(self, location):
         return location in self.fire_locations
@@ -140,23 +149,24 @@ class Simulation:
     def __is_person(self, location):
         for person in self.live_people:
             if person.location == location:
-                return True
-        return False
+                return person
+        return None
 
     def __is_wall(self, location):
-        return self.building.text_building['floor1'][location[0]][location[1]] == 'w'
+        c = self.building.text_building[location[0]][location[1]][location[2]]
+        return c == 'w' or c == 'h'
 
     def __is_stair(self, location):
-        return self.building.text_building['floor1'][location[0]][location[1]] == 's'
+        return self.building.text_building[location[0]][location[1]][location[2]] == 's'
 
     def __is_glass(self, location):
-        return self.building.text_building['floor1'][location[0]][location[1]] == 'g'
+        return self.building.text_building[location[0]][location[1]][location[2]] == 'g'
 
     def __is_empty(self, location):
-        return self.building.text_building['floor1'][location[0]][location[1]] == ' '
+        return self.building.text_building[location[0]][location[1]][location[2]] == ' '
 
     def __is_door(self, location):
-        return self.building.text_building['floor1'][location[0]][location[1]] == 'd'
+        return self.building.text_building[location[0]][location[1]][location[2]] == 'd'
 
     def move(self, person):
         # TODO write a function to move a person return a dictionary with the following keys and values (is_hit, is_exit, pk1, pk2)
