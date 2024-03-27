@@ -170,4 +170,121 @@ class Simulation:
 
     def move(self, person):
         # TODO write a function to move a person return a dictionary with the following keys and values (is_hit, is_exit, pk1, pk2)
-        pass
+        what_is_around = self.look_around(person)
+
+
+
+    def look_around(self, person):
+        what_is_around = {
+            "door": [],
+            "exit": [],
+            "stair": [],
+            "glass": [],
+            "obstacle": [],
+            "wall": [],
+            "empty": [],
+            "fire": [],
+            "people": [],
+        }
+        blocked = []
+        floor = person.location[0]
+        x = person.location[1]
+        y = person.location[2]
+        for i in range(-person.vision, person.vision+1):
+            for j in range(-person.vision, person.vision+1):
+                if self.is_continue(i, j, x, y, floor, blocked):
+                    continue
+                self.search([floor, x + i, y + j], what_is_around, blocked)
+        return what_is_around
+
+    def is_continue(self, i, j, x, y, floor, blocked):
+        if i == j:
+            return True
+        if x + i > len(self.building.text_building[floor][0]) or y + i > len(self.building.text_building[floor]):
+            return True
+        if self.is_blocked(blocked, x, y, i, j):
+            return True
+        return False
+
+    def search(self, start_location, what_is_around, blocked):
+        floor = start_location[0]
+        x = start_location[1]
+        y = start_location[2]
+        for i in range(-1, 2):
+            for j in range(-1, 2):
+                if self.is_continue(i, j, x, y, floor, blocked):
+                    continue
+                self.add_item(blocked, floor, i, j, what_is_around, x, y)
+
+    def add_item(self, blocked, floor, i, j, what_is_around, x, y):
+        if self.__is_wall((floor, x + i, y + j)) and self.is_unique(floor, x + i, y + j, what_is_around['wall']):
+            what_is_around["wall"].append((floor, x + i, y + j))
+            if not self.is_diagonal(i, j):
+                blocked.append((x + i, y + j, self.get_letter(i, j)))
+        elif self.__is_door((floor, x + i, y + j)) and self.is_unique(floor, x + i, y + j, what_is_around['door']):
+            what_is_around["door"].append((floor, x + i, y + j))
+        elif self.__is_exit((floor, x + i, y + j)) and self.is_unique(floor, x + i, y + j, what_is_around['exit']):
+            what_is_around["exit"].append((floor, x + i, y + j))
+        elif self.__is_stair((floor, x + i, y + j)) and self.is_unique(floor, x + i, y + j, what_is_around['stair']):
+            what_is_around["stair"].append((floor, x + i, y + j))
+        elif self.__is_glass((floor, x + i, y + j)) and self.is_unique(floor, x + i, y + j, what_is_around['glass']):
+            what_is_around["glass"].append((floor, x + i, y + j))
+        elif self.__is_obstacle((floor, x + i, y + j)) and self.is_unique(floor, x + i, y + j, what_is_around['obstacle']):
+            what_is_around["obstacle"].append((floor, x + i, y + j))
+        elif self.__is_empty((floor, x + i, y + j)) and self.is_unique(floor, x + i, y + j, what_is_around['empty']):
+            what_is_around["empty"].append((floor, x + i, y + j))
+        elif (floor, x + i, y + j) in self.fire_locations and self.is_unique(floor, x + i, y + j, what_is_around['fire']):
+            what_is_around["fire"].append((floor, x + i, y + j))
+        elif self.__is_person((floor, x + i, y + j)) and self.is_unique(floor, x + i, y + j, what_is_around['people']):
+            what_is_around["people"].append((floor, x + i, y + j))
+        else:
+            raise Exception("I see a char you didnt tell me about")
+
+    @staticmethod
+    def is_unique(floor, x, y, l):
+        return not (floor, x, y) in l
+
+    def is_blocked(self, blocked, x, y, i, j):
+        left = 0
+        top = 0
+        right = len(self.building.text_building[0])
+        bottom = len(self.building.text_building)
+        for block in blocked:
+            b_x = block[0]
+            b_y = block[1]
+            letter = block[2]
+            if y + j == b_y or x + i == b_x:
+                if letter == 'l':
+                    for k in range(left, b_x):
+                        if x + i == k:
+                            return True
+                elif letter == 'r':
+                    for k in range(b_x, right):
+                        if x + i == k:
+                            return True
+                elif letter == 'd':
+                    for k in range(b_y, bottom):
+                        if y + j == k:
+                            return True
+                elif letter == 'u':
+                    for k in range(top, b_y):
+                        if y + j == k:
+                            return True
+            return False
+
+    @staticmethod
+    def is_diagonal(i, j):
+        return i < 0 < j or j < 0 < i or (i < 0 and j < 0) or (i > 0 and j > 0)
+
+    @staticmethod
+    def get_letter(i, j):
+        if i == 0 and j == 1:
+            return 'u'
+        if i == 0 and j == -1:
+            return 'd'
+        if i == 1 and j == 0:
+            return 'r'
+        if i == -1 and j == 0:
+            return 'l'
+        else:
+            raise Exception('invalid coordinates')

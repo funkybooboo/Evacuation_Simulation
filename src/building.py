@@ -1,5 +1,3 @@
-# TODO change the building to be a 3D array not a dictionary
-
 from colors import object_colors
 
 
