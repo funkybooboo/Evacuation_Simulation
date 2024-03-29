@@ -136,7 +136,6 @@ class Person:
         return is_dead
 
     def move(self):
-        # TODO write a function to move a person return a dictionary with the following keys and values (is_hit, is_exit, pk1, pk2)
         for i in range(self.speed):
             what_is_around = self.look_around()
             self.memory.combine(what_is_around)
