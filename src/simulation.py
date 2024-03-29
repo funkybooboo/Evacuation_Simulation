@@ -11,8 +11,7 @@ class Simulation:
         self.live_people = []
         self.__generate_people()
         self.dead_people = []
-        self.fire_locations = [
-            (randint(0, len(self.building.text_building[0])), randint(0, len(self.building.text_building[0][0])))]
+        self.fire_locations = [(randint(0, len(self.building.text_building)), randint(0, len(self.building.text_building[0])), randint(0, len(self.building.text_building[0][0])))]
 
     def __generate_people(self):
         object_list = list(self.building.object_locations.keys())
@@ -62,47 +61,28 @@ class Simulation:
             print("Evacuation complete")
 
     def __move_people(self):
+        temp_live_people = []
         for person in self.live_people:
-            if self.check_for_dead(person):
-                continue
-            move_data = self.move(person)
-            if move_data:
-                if move_data['is_hit']:
-                    person1 = self.live_people[move_data['pk1']]
-                    person2 = self.live_people[move_data['pk2']]
-                    if self.verbose:
-                        print(f"{person1.name} and {person2.name} have collided")
-                    self.__compete(person1, person2)
-                if move_data['is_exit']:
-                    self.number_of_people -= 1
-                    self.live_people.remove(person)
-                    if self.verbose:
-                        print(f"{person.name} has exited the building")
+            person.move()
+            if not person.is_dead():
+                temp_live_people.append(person)
             else:
-                raise Exception("No move data")
-
-    def check_for_dead(self, person):
-        is_dead = False
-        for fire_location in self.fire_locations:
-            if person.location == fire_location:
-                is_dead = True
-                if self.verbose:
-                    print(f"{person.name} has been caught in the fire at {person.location}")
-                self.number_of_people -= 1
                 self.dead_people.append(person)
-                self.live_people.remove(person)
-        return is_dead
+                self.number_of_people -= 1
+                if self.verbose:
+                    print(f"{person.name} has died at location {person.location}")
+        self.live_people = temp_live_people.copy()
 
     def __spread_fire(self):
         for fire_location in self.fire_locations:
-            if self.__is_fire_spread():
-                self.fire_locations.append((fire_location[0], fire_location[1] + 1))
-            if self.__is_fire_spread():
-                self.fire_locations.append((fire_location[0], fire_location[1] - 1))
-            if self.__is_fire_spread():
-                self.fire_locations.append((fire_location[0] + 1, fire_location[1]))
-            if self.__is_fire_spread():
-                self.fire_locations.append((fire_location[0] - 1, fire_location[1]))
+            for i in range(-1, 2):
+                for j in range(-1, 2):
+                    if i == 0 and j == 0:
+                        continue
+                    if self.__is_fire_spread():
+                        new_location = (fire_location[0], fire_location[1] + i, fire_location[2] + j)
+                        if not self.__is_obstacle(new_location):
+                            self.fire_locations.append(new_location)
 
     @staticmethod
     def __is_fire_spread():

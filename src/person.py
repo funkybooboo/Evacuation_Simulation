@@ -129,6 +129,12 @@ class Person:
     def __str__(self):
         return f"{self.name} is a {self.color_title} {self.type} {self.strategy} with {self.health} health at {self.location}."
 
+    def is_dead(self):
+        is_dead = False
+        if self.health <= 0:
+            is_dead = True
+        return is_dead
+
     def move(self):
         # TODO write a function to move a person return a dictionary with the following keys and values (is_hit, is_exit, pk1, pk2)
         for i in range(self.speed):
