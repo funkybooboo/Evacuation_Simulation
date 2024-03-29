@@ -1,13 +1,14 @@
 from person import Person, Memory
 from random import randint
+from building import Building
 
 
 class Simulation:
-    def __init__(self, number_of_people, verbose, building):
+    def __init__(self, number_of_people, verbose):
         self.original_number_of_people = number_of_people
         self.number_of_people = number_of_people
         self.verbose = verbose
-        self.building = building
+        self.building = Building(self)
         self.live_people = []
         self.__generate_people()
         self.dead_people = []
@@ -31,16 +32,6 @@ class Simulation:
                 where = object_list[what][randint(0, len(self.building.object_locations[what]))]
                 memory.add(what, where)
             self.live_people.append(Person(self, f'Person{i}', i, location, memory))
-
-    def print_building(self):
-        for floor in self.building.color_building.keys():
-            for row in range(self.building.color_building[floor]):
-                for col in range(self.building.color_building[floor][row]):
-                    person = self.__is_person((floor, row, col))
-                    if person:
-                        print(person.color)
-                    else:
-                        print(self.building.color_building[floor][row][col])
 
     def statistics(self):
         if self.verbose:

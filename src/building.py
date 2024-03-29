@@ -2,7 +2,8 @@ from colors import object_colors
 
 
 class Building:
-    def __init__(self):
+    def __init__(self, simulation):
+        self.simulation = simulation
         self.text_building = self.generate_building()
         self.object_locations = {
             "door": [],
@@ -12,8 +13,10 @@ class Building:
             "obstacle": [],
             "wall": [],
             "empty": [],
+            "fire": [],
         }
-        self.color_building = self.convert_text_to_colors(self.text_building)
+        self.color_building = []
+        self.convert_text_to_colors()
 
     @staticmethod
     def generate_building():
@@ -79,11 +82,21 @@ class Building:
         ]
         return building
 
-    def convert_text_to_colors(self, text_building):
-        color_building = text_building.copy()
-        floors = color_building.values()
-        for floor in range(len(floors)):
-            for row in floors[floor]:
+    def convert_text_to_colors(self):
+        self.object_locations = {
+            "door": [],
+            "exit": [],
+            "stair": [],
+            "glass": [],
+            "obstacle": [],
+            "wall": [],
+            "empty": [],
+            "fire": [],
+        }
+        self.color_building = self.text_building.copy()
+        floors = len(self.color_building)
+        for floor in range(floors):
+            for row in self.color_building[floor]:
                 for col in range(len(row)):
                     if row[col] == 'w' or row[col] == 'h':
                         self.object_locations["wall"].append((floor, row, col))
@@ -106,4 +119,17 @@ class Building:
                     elif row[col] == ' ':
                         self.object_locations["empty"].append((floor, row, col))
                         row[col] = object_colors["White"]
-        return color_building
+                    elif row[col] == 'f':
+                        self.object_locations["fire"].append((floor, row, col))
+                        row[col] = object_colors["Red"]
+
+    def print_building(self):
+        self.convert_text_to_colors()
+        for floor in range(len(self.color_building)):
+            for row in range(self.color_building[floor]):
+                for col in range(self.color_building[floor][row]):
+                    person = self.simulation.__is_person((floor, row, col))
+                    if person:
+                        print(person.color)
+                    else:
+                        print(self.color_building[floor][row][col])
