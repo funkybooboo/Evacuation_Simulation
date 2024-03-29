@@ -12,6 +12,7 @@ class Simulation:
         self.__generate_people()
         self.dead_people = []
         self.fire_locations = [(randint(0, len(self.building.text_building)), randint(0, len(self.building.text_building[0])), randint(0, len(self.building.text_building[0][0])))]
+        self.__set_fire(self.fire_locations[0])
 
     def __generate_people(self):
         object_list = list(self.building.object_locations.keys())
@@ -81,8 +82,16 @@ class Simulation:
                         continue
                     if self.__is_fire_spread():
                         new_location = (fire_location[0], fire_location[1] + i, fire_location[2] + j)
-                        if not self.__is_obstacle(new_location):
-                            self.fire_locations.append(new_location)
+                        self.__set_fire(new_location)
+
+    def __set_fire(self, location):
+        if self.is_location_in_building(location) and not self.__is_fire(location):
+            # remove what was there
+            self.building.text_building[location[0]][location[1]][location[2]] = 'f'
+            self.fire_locations.append(location)
+
+    def is_location_in_building(self, location):
+        return 0 <= location[0] < len(self.building.text_building) and 0 <= location[1] < len(self.building.text_building[0]) and 0 <= location[2] < len(self.building.text_building[0][0])
 
     @staticmethod
     def __is_fire_spread():

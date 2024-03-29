@@ -236,23 +236,23 @@ class Person:
     def add_item(self, blocked, floor, i, j, what_is_around, x, y):
         location = (floor, x + i, y + j)
         if self.simulation.__is_wall(location):
-            what_is_around.add("wall", location)
+            what_is_around.add("walls", location)
             if not self.is_diagonal(i, j):
                 blocked.append((x + i, y + j, self.get_letter(i, j)))
         elif self.simulation.__is_door(location):
-            what_is_around.add("door", location)
+            what_is_around.add("doors", location)
         elif self.simulation.__is_exit(location):
-            what_is_around.add("exit", location)
+            what_is_around.add("exits", location)
         elif self.simulation.__is_stair(location):
-            what_is_around.add("stair", location)
+            what_is_around.add("stairs", location)
         elif self.simulation.__is_glass(location):
-            what_is_around.add("glass", location)
+            what_is_around.add("glasses", location)
         elif self.simulation.__is_obstacle(location):
-            what_is_around.add("obstacle", location)
+            what_is_around.add("obstacles", location)
         elif self.simulation.__is_empty(location):
-            what_is_around.add("empty", location)
+            what_is_around.add("empties", location)
         elif (floor, x + i, y + j) in self.simulation.fire_locations:
-            what_is_around.add("fire", location)
+            what_is_around.add("fires", location)
         elif self.simulation.__is_person(location):
             what_is_around.add("people", location)
         else:
