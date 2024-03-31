@@ -2,6 +2,10 @@ from enum import Enum
 from random import randint
 from colors import person_colors
 from memory import Memory
+from pathfinding.core.diagonal_movement import DiagonalMovement
+from pathfinding.core.grid import Grid
+from pathfinding.finder.a_star import AStarFinder
+
 
 type_pk_to_type = {
     1: "Copycat",
@@ -76,7 +80,8 @@ class Strategy(Enum):
 
 class Person:
 
-    def __init__(self, simulation, name, pk, location, memory):
+    def __init__(self, simulation, name, pk, location, memory, verbose=False):
+        self.verbose = verbose
         self.simulation = simulation
         self.name = name
         self.pk = pk
@@ -92,10 +97,7 @@ class Person:
         # where the person is located (1, 1, 1)
         # (floor, x, y)
         self.location = location
-        # how many turns the person has been lost
-        self.lost_counter = 0
-        # how many turns the person has won
-        self.won_counter = 0
+
         # how much health the person has if the person's health reaches 0, the person dies
         self.health = 100
 
@@ -118,6 +120,8 @@ class Person:
         else:
             self.strategy = Strategy.cooperate
 
+        self.end_turn_in_fire = True
+
     def switch_strategy(self):
         if self.strategy == Strategy.defect:
             self.strategy = Strategy.cooperate
@@ -134,35 +138,160 @@ class Person:
         return is_dead
 
     def move(self):
+        other = None
         for i in range(self.speed):
+            if self.is_dead():
+                break
             what_is_around = self.look_around()
             self.memory.combine(what_is_around)
-            self.move_one_block()
+            other = self.move_one_block()
+            # hit person
+            if other:
+                break
+            # in a fire
+            if self.location in self.simulation.fire_locations:
+                self.health -= 25
+                self.end_turn_in_fire = True
+            else:
+                self.end_turn_in_fire = False
+            # at a stair
+            if self.simulation.__is_stair(self.location):
+                self.location = (self.location[0] - 1, self.location[1], self.location[2])
+
+        return other
 
     def move_one_block(self):
-        # TODO write a function to move the person one block
+        # go to the closet exit
+        closest_exit = self.get_closest(self.memory.exits)
+        if closest_exit is not None:
+            other = self.move_towards(closest_exit)
+            return other
 
-        # if the persons fear is greater than 5 they should move away from the closest fire
-        # if the persons fear is a 10 they should jump out the closest window
-        # if the persons fear is a 1 they should move towards the closest person
+        # go to the closet stair
+        floor = self.location[0]
+        closest_stair = self.get_closest(self.memory.stairs)
+        if floor != 1 and closest_stair is not None:
+            other = self.move_towards(closest_stair)
+            return other
 
-        # if the person is a follower they should move towards the closest person
-        # if the person is a loner they should do their own thing
+        if self.fear < 5:
+            # they are calm
+            number_of_people_near = self.number_of_people_near()
+            if number_of_people_near < 15 and self.is_follower:
+                closest_person = self.get_closest(self.memory.people)
+                if closest_person:
+                    other = self.move_towards(closest_person)
+                    return other
+            closest_wall = self.get_closest(self.memory.walls)
+            if closest_wall:
+                other = self.move_towards(closest_wall)
+                return other
+        elif 5 < self.fear < 10:
+            # they are scared
+            number_of_people_near = self.number_of_people_near()
+            if number_of_people_near < 7 and self.is_follower:
+                closest_person = self.get_closest(self.memory.people)
+                if closest_person:
+                    other = self.move_towards(closest_person)
+                    return other
+            closest_wall = self.get_closest(self.memory.walls)
+            if closest_wall:
+                other = self.move_towards(closest_wall)
+                return other
+        elif self.fear == 10:
+            # they are panicking
+            closest_glass = self.get_closest(self.memory.glasses)
+            if closest_glass is not None:
+                if self.is_one_away(self.location, closest_glass):
+                    self.break_glass(closest_glass)
+                else:
+                    self.move_towards(closest_glass)
+        # they don't know what to do
+        return self.move_randomly()
 
-        # if the person is on the same floor as an exit they know about they should move towards the exit
-        # if the person is on the same floor as a stair they know about they should move towards the stair
-        # if the person is on the same floor as a door they know about they should move towards the door
-
-        # the person should move to the closest wall if they are not near any of the above.
-        #   Once they reach the wall they should move to along the wall
-
-        # if the person knows nothing about their surroundings they should move randomly
-
+    def move_along_wall(self):
         pass
 
+    def move_randomly(self):
+        x = randint(-1, 1)
+        y = randint(-1, 1)
+        new_location = (self.location[0], self.location[1] + x, self.location[2] + y)
+        return self.move_to(new_location)
+
+    def move_towards(self, location):
+        if location is None:
+            return None
+        floor1 = self.location[0]
+        floor2 = location[0]
+        if floor1 != floor2:
+            return None
+        n_x = None
+        n_y = None
+        for tries in range(2):
+            path = self.get_path(floor1, location, tries)
+            if len(path) != 0:
+                n_x, n_y = path[1]
+                break
+        if n_x is None or n_y is None:
+            return None
+        new_location = (floor1, n_x, n_y)
+        return self.move_to(new_location)
+
+    def get_path(self, floor1, location, tries):
+        grid = self.get_grid(floor1, tries)
+        x1 = self.location[1]
+        y1 = self.location[2]
+        start = grid.node(x1, y1)
+        x2 = location[1]
+        y2 = location[2]
+        end = grid.node(x2, y2)
+        finder = AStarFinder(diagonal_movement=DiagonalMovement.always)
+        path, runs = finder.find_path(start, end, grid)
+        if self.verbose:
+            print('operations:', runs, 'path length:', len(path))
+            print(grid.grid_str(path=path, start=start, end=end))
+        return path
+
+    def get_grid(self, floor1, tries):
+        temp_grid = self.simulation.building.grid[floor1]
+        if tries == 0:
+            # try with moving around people (collisions are not allowed)
+            for row in range(len(temp_grid)):
+                for col in range(len(temp_grid[row])):
+                    if temp_grid[row][col] == -1:
+                        temp_grid[row][col] = 0
+        else:
+            # try without moving around people (collisions are allowed)
+            for row in range(len(temp_grid)):
+                for col in range(len(temp_grid[row])):
+                    if temp_grid[row][col] == -1:
+                        temp_grid[row][col] = 1
+        grid = Grid(matrix=temp_grid)
+        return grid
+
+    def break_glass(self, glass_location):
+        if self.is_one_away(self.location, glass_location):
+            if self.can_break_glass():
+                # the person breaks the glass and hurts themselves doing it
+                self.simulation.building.text_building[glass_location[0]][glass_location[1]][glass_location[2]] = ' '
+                self.memory.add("empties", glass_location)
+                self.health -= 25
+            else:
+                # too weak to break the glass, but they still hurt themselves trying
+                self.health -= 5
+
+    def can_break_glass(self):
+        if self.strength > 2:
+            return True
+        return False
+
     def move_to(self, location):
-        if self.is_one_away(self.location, location):
+        if self.is_one_away(self.location, location) and (self.simulation.__is_empty(location) or self.simulation.__is_exit(location) or self.simulation.__is_stair(location) or self.simulation.__is_person(location)):
+            other = self.simulation.__is_person(location)
+            if other is not None:
+                return other
             self.location = location
+            return None
         else:
             raise Exception("You can only move one block at a time")
 
@@ -177,17 +306,22 @@ class Person:
         return True
 
     def get_closest(self, lst):
+        """
+        get the closet of something from a list. ex: get the closest wall, get the closest person, etc.
+        """
+        if len(lst) == 0:
+            return None
         closest = lst[0]
         for location in lst:
-            d1 = self.distance(location)
-            d2 = self.distance(closest)
+            d1 = self.get_distance(location)
+            d2 = self.get_distance(closest)
             if d1 is None or d2 is None:
                 continue
             if d1 < d2:
                 closest = location
         return closest
 
-    def distance(self, location):
+    def get_distance(self, location):
         if location is None:
             return None
         if self.location[0] != location[0]:
@@ -196,7 +330,7 @@ class Person:
         y1 = self.location[2]
         x2 = location[1]
         y2 = location[2]
-        return ((x1 - x2)**2 + (y1 - y2)**2)**0.5
+        return (((x1 - x2)**2) + ((y1 - y2)**2))**0.5
 
     def look_around(self):
         what_is_around = Memory()
@@ -281,7 +415,7 @@ class Person:
                     for k in range(top, b_y):
                         if y + j == k:
                             return True
-            return False
+        return False
 
     @staticmethod
     def is_diagonal(i, j):
@@ -301,19 +435,35 @@ class Person:
             raise Exception('invalid coordinates')
 
     def combat(self, other):
+        wanted_location = other.location
+        not_wanted_location = self.location
+
+        # TODO write a function that will take in account the whole different types of players and their strategies
+
         payoffs = self.__normal_form_game(other)
         person1_payoff = payoffs[0]
         person2_payoff = payoffs[1]
         if person1_payoff > person2_payoff:
             other.health -= 5
-            # TODO move person1 into the spot
+            if other.fear < 10:
+                other.fear += 1
+            if self.fear > 0:
+                self.fear -= 1
+            self.location = wanted_location
+            other.location = not_wanted_location
         elif payoffs[0] < payoffs[1]:
             self.health -= 5
-            # TODO move person2 into the spot
+            if self.fear < 10:
+                self.fear += 1
+            if other.fear > 0:
+                other.fear -= 1
         else:
             self.health -= 5
             other.health -= 5
-            # TODO move no one
+            if self.fear < 10:
+                self.fear += 1
+            if other.fear < 10:
+                other.fear += 1
 
     def __normal_form_game(self, other):
         # TODO adjust the payoffs based on the persons strength levels
@@ -324,3 +474,15 @@ class Person:
             (Strategy.defect, Strategy.defect): (1, 1),
         }
         return base_payoffs[(self.strategy, other.strategy)]
+
+    def number_of_people_near(self, distance=5):
+        count = 0
+        for person in self.memory.people:
+            if self.is_near(person.location, distance):
+                count += 1
+        return count
+
+    def is_near(self, location, distance):
+        d1 = self.get_distance(location)
+        if d1 < distance:
+            return True

@@ -17,6 +17,8 @@ class Building:
         }
         self.color_building = []
         self.convert_text_to_colors()
+        self.grid = []
+        self.convert_text_to_pathfinding_grid()
 
     @staticmethod
     def generate_building():
@@ -104,7 +106,7 @@ class Building:
                     elif row[col] == 'e':
                         self.object_locations["exit"].append((floor, row, col))
                         row[col] = object_colors["Dark Brown"]
-                    elif row[col] == 's' or row[col] == 'n' or row[col] == 'l':
+                    elif row[col] == 'm' or row[col] == 'n' or row[col] == 'l':
                         self.object_locations["obstacle"].append((floor, row, col))
                         row[col] = object_colors["Grey"]
                     elif row[col] == 's':
@@ -123,8 +125,31 @@ class Building:
                         self.object_locations["fire"].append((floor, row, col))
                         row[col] = object_colors["Red"]
 
+    def convert_text_to_pathfinding_grid(self):
+        # 0 is impassable
+        # 1 is easily passable
+        # 2 is passable
+        # 3 is difficultly passable
+        self.grid = self.text_building.copy()
+        floors = len(self.grid)
+        for floor in range(floors):
+            for row in self.grid[floor]:
+                for col in range(len(row)):
+                    person = self.simulation.__is_person((floor, row, col))
+                    if person:
+                        row[col] = -1
+                    elif row[col] == 'w' or row[col] == 'g' or row[col] == 'l':
+                        row[col] = 0
+                    elif row[col] == ' ' or row[col] == 'd' or row[col] == 'e' or row[col] == 's':
+                        row[col] = 1
+                    elif row[col] == 'h' or row[col] == 'm':
+                        row[col] = 2
+                    elif row[col] == 'n' or row[col] == 'f':
+                        row[col] = 3
+
     def print_building(self):
         self.convert_text_to_colors()
+        self.convert_text_to_pathfinding_grid()
         for floor in range(len(self.color_building)):
             for row in range(self.color_building[floor]):
                 for col in range(self.color_building[floor][row]):

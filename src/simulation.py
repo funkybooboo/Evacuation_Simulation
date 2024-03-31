@@ -41,7 +41,7 @@ class Simulation:
                 what = object_list[randint(0, len(self.building.object_locations))]
                 where = object_list[what][randint(0, len(self.building.object_locations[what]))]
                 memory.add(what, where)
-            self.live_people.append(Person(self, f'Person{i}', i, location, memory))
+            self.live_people.append(Person(self, f'Person{i}', i, location, memory, self.verbose))
 
     def statistics(self):
         if self.verbose:
@@ -70,23 +70,51 @@ class Simulation:
     def __move_people(self):
         temp_live_people = []
         for person in self.live_people:
+
+            # Die by fighting someone else during their turn
+            if self.__is_dead(person):
+                continue
+
+            if person.end_turn_in_fire and person.location in self.fire_locations:
+                person.health -= 50
+            elif not person.end_turn_in_fire and person.location in self.fire_locations:
+                person.health -= 25
+
+            # Die by fire
+            if self.__is_dead(person):
+                continue
+
             other_person = person.move()
+
+            # Die by moving
+            if self.__is_dead(person):
+                continue
 
             if other_person is not None:
                 person.combat(other_person)
 
+            # Die by combat
+            if self.__is_dead(person):
+                continue
+
+            # the person is still alive and made it to an exit
             if self.__is_exit(person.location):
                 self.number_of_people_that_got_out += 1
                 if self.verbose:
-                    print(f"{person.name} has exited the building")
-            elif not person.is_dead():
-                temp_live_people.append(person)
-            else:
-                self.dead_people.append(person)
-                if self.verbose:
-                    print(f"{person.name} has died at location {person.location}")
+                    print(f"{person.name} has escaped")
+                continue
+
+            temp_live_people.append(person)
 
         self.live_people = temp_live_people.copy()
+
+    def __is_dead(self, person):
+        if person.is_dead():
+            self.dead_people.append(person)
+            if self.verbose:
+                print(f"{person.name} has died at location {person.location}")
+            return True
+        return False
 
     def __spread_fire(self):
         for fire_location in self.fire_locations:

@@ -1,12 +1,13 @@
 [tool.poetry]
-name = "research-project"
+name = "evacuation-simulation"
 version = "0.1.0"
 description = ""
 authors = ["Nate Stott <nate.stott@pm.me>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.10.12"
+pathfinding = "^1.0.9"
 
 
 [build-system]

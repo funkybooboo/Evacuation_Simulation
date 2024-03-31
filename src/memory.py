@@ -23,10 +23,10 @@ class Memory:
             return
         for item in self.items:
             if item != what:
-                self.remove(item, where)
+                self.__remove(item, where)
         getattr(self, what).add(where)
 
-    def remove(self, what, where):
+    def __remove(self, what, where):
         if what is None or where is None:
             return
         if what not in self.items:
