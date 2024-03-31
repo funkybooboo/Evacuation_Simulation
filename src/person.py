@@ -1,15 +1,7 @@
+from enum import Enum
 from random import randint
 from colors import person_colors
 from memory import Memory
-
-# Blue : Copycat
-# Teal : Cheater
-# Pink : Cooperator
-# Yellow : Grudger
-# Orange : Detective
-# Tan : Copykitten
-# Green : Simpleton
-# Purple : Random
 
 type_pk_to_type = {
     1: "Copycat",
@@ -77,7 +69,13 @@ color_to_type = {
 }
 
 
+class Strategy(Enum):
+    cooperate = 0
+    defect = 1
+
+
 class Person:
+
     def __init__(self, simulation, name, pk, location, memory):
         self.simulation = simulation
         self.name = name
@@ -116,15 +114,15 @@ class Person:
         self.color_title = type_to_color[self.type]
         self.color = person_colors[self.color_title]
         if self.fear > 5:
-            self.strategy = "defect"
+            self.strategy = Strategy.defect
         else:
-            self.strategy = "cooperate"
+            self.strategy = Strategy.cooperate
 
     def switch_strategy(self):
-        if self.strategy == "defect":
-            self.strategy = "cooperate"
+        if self.strategy == Strategy.defect:
+            self.strategy = Strategy.cooperate
         else:
-            self.strategy = "defect"
+            self.strategy = Strategy.defect
 
     def __str__(self):
         return f"{self.name} is a {self.color_title} {self.type} {self.strategy} with {self.health} health at {self.location}."
@@ -301,3 +299,28 @@ class Person:
             return 'l'
         else:
             raise Exception('invalid coordinates')
+
+    def combat(self, other):
+        payoffs = self.__normal_form_game(other)
+        person1_payoff = payoffs[0]
+        person2_payoff = payoffs[1]
+        if person1_payoff > person2_payoff:
+            other.health -= 5
+            # TODO move person1 into the spot
+        elif payoffs[0] < payoffs[1]:
+            self.health -= 5
+            # TODO move person2 into the spot
+        else:
+            self.health -= 5
+            other.health -= 5
+            # TODO move no one
+
+    def __normal_form_game(self, other):
+        # TODO adjust the payoffs based on the persons strength levels
+        base_payoffs = {
+            (Strategy.cooperate, Strategy.cooperate): (3, 3),
+            (Strategy.cooperate, Strategy.defect): (0, 5),
+            (Strategy.defect, Strategy.cooperate): (5, 0),
+            (Strategy.defect, Strategy.defect): (1, 1),
+        }
+        return base_payoffs[(self.strategy, other.strategy)]

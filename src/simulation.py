@@ -6,15 +6,24 @@ from building import Building
 
 class Simulation:
     def __init__(self, number_of_people, verbose):
-        self.original_number_of_people = number_of_people
+        self.number_of_people_that_got_out = 0
         self.number_of_people = number_of_people
         self.verbose = verbose
         self.building = Building(self)
         self.live_people = []
-        self.__generate_people()
         self.dead_people = []
-        self.fire_locations = [(randint(0, len(self.building.text_building)), randint(0, len(self.building.text_building[0])), randint(0, len(self.building.text_building[0][0])))]
-        self.__set_fire(self.fire_locations[0])
+        self.__generate_people()
+        self.fire_locations = []
+        self.__start_fire()
+
+    def __start_fire(self):
+        while True:
+            floor = randint(0, len(self.building.text_building))
+            x = randint(0, len(self.building.text_building[0]))
+            y = randint(0, len(self.building.text_building[0][0]))
+            location = (floor, x, y)
+            if self.__set_fire(location):
+                break
 
     def __generate_people(self):
         object_list = list(self.building.object_locations.keys())
@@ -44,26 +53,39 @@ class Simulation:
     def evacuate(self):
         if self.verbose:
             print("Evacuating...")
-        while self.number_of_people > 0:
+
+        while len(self.live_people) > 0:
             self.__move_people()
+
+            self.__spread_fire()
+
+            self.building.print_building()
+
             if self.verbose:
                 print(f"{self.number_of_people} people remaining")
-            self.__spread_fire()
-            self.print_building()
+
         if self.verbose:
             print("Evacuation complete")
 
     def __move_people(self):
         temp_live_people = []
         for person in self.live_people:
-            person.move()
-            if not person.is_dead():
+            other_person = person.move()
+
+            if other_person is not None:
+                person.combat(other_person)
+
+            if self.__is_exit(person.location):
+                self.number_of_people_that_got_out += 1
+                if self.verbose:
+                    print(f"{person.name} has exited the building")
+            elif not person.is_dead():
                 temp_live_people.append(person)
             else:
                 self.dead_people.append(person)
-                self.number_of_people -= 1
                 if self.verbose:
                     print(f"{person.name} has died at location {person.location}")
+
         self.live_people = temp_live_people.copy()
 
     def __spread_fire(self):
@@ -77,41 +99,19 @@ class Simulation:
                         self.__set_fire(new_location)
 
     def __set_fire(self, location):
-        if self.is_location_in_building(location) and not self.__is_fire(location):
+        if self.__is_location_in_building(location) and not self.__is_fire(location):
             # remove what was there
             self.building.text_building[location[0]][location[1]][location[2]] = 'f'
             self.fire_locations.append(location)
+            return True
+        return False
 
-    def is_location_in_building(self, location):
+    def __is_location_in_building(self, location):
         return 0 <= location[0] < len(self.building.text_building) and 0 <= location[1] < len(self.building.text_building[0]) and 0 <= location[2] < len(self.building.text_building[0][0])
 
     @staticmethod
     def __is_fire_spread():
         return randint(0, 20) == 1
-
-    def __compete(self, person1, person2):
-        payoffs = self.get_normal_form_game(person1, person2)
-        if payoffs[0] > payoffs[1]:
-            person2.health -= 1
-            # TODO move person1 into the spot
-        elif payoffs[0] < payoffs[1]:
-            person1.health -= 1
-            # TODO move person2 into the spot
-        else:
-            person1.health -= 1
-            person2.health -= 1
-            # TODO move no one into the spot
-
-    @staticmethod
-    def get_normal_form_game(person1, person2):
-        # TODO adjust the payoffs based on the persons strength levels
-        base_payoffs = {
-            ("cooperate", "cooperate"): (3, 3),
-            ("cooperate", "defect"): (0, 5),
-            ("defect", "cooperate"): (5, 0),
-            ("defect", "defect"): (1, 1),
-        }
-        return base_payoffs[(person1.strategy, person2.strategy)]
 
     def __is_exit(self, location):
         return self.building.text_building[location[0]][location[1]][location[2]] == 'e'
