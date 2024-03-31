@@ -1,4 +1,5 @@
-from person import Person, Memory
+from person import Person
+from memory import Memory
 from random import randint
 from building import Building
 
