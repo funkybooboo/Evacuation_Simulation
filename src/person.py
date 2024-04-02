@@ -391,7 +391,7 @@ class Person:
         elif self.simulation.__is_person(location):
             what_is_around.add("people", location)
         else:
-            raise Exception("I see a char you didnt tell me about")
+            raise Exception("I see a char you didn't tell me about")
 
     def is_blocked(self, blocked, x, y, i, j):
         left = 0
