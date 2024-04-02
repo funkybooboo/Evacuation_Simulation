@@ -206,11 +206,15 @@ class Person:
                     self.break_glass(closest_glass)
                 else:
                     self.move_towards(closest_glass)
-        # they don't know what to do
-        return self.move_randomly()
+            # they don't know what to do
+            return self.move_randomly()
 
-    def move_along_wall(self):
-        pass
+        # if nothing else works, explore
+        return self.explore()
+
+    def explore(self):
+        # TODO write a function that will allow the user to explore the floor they are on
+        return None
 
     def move_randomly(self):
         x = randint(-1, 1)
