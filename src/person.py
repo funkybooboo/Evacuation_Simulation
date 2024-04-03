@@ -38,8 +38,10 @@ class Person:
         self.is_follower = randint(0, 1) == 0
 
         if self.is_follower:
+            self.color_title = "Yellow"
             self.color = person_colors["Yellow"]
         else:
+            self.color_title = "Blue"
             self.color = person_colors["Blue"]
 
         self.memory = memory
@@ -60,7 +62,7 @@ class Person:
             self.strategy = Strategy.defect
 
     def __str__(self):
-        return f"{self.name} is a {self.color_title} {self.type} {self.strategy} with {self.health} health at {self.location}."
+        return f"{self.name} is a {self.color_title} {self.strategy} with {self.health} health at {self.location}."
 
     def is_dead(self):
         is_dead = False
