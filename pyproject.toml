@@ -8,6 +8,8 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.10.12"
 pathfinding = "^1.0.9"
+openai = "^1.16.1"
+python-dotenv = "^1.0.1"
 
 
 [build-system]
