@@ -1,4 +1,5 @@
 class Memory:
+
     def __init__(self):
         self.doors = set()
         self.exits = set()

@@ -12,14 +12,8 @@
 # Red : Fire
 # Light Red : Shooter
 
-# Blue : Copycat
-# Teal : Cheater
-# Pink : Cooperator
-# Yellow : Grudger
-# Orange : Detective
-# Tan : Copykitten
-# Green : Simpleton
-# Purple : Random
+# Yellow : Follower Person
+# Blue : Non-Follower Person
 
 # \u001b[<code>m
 

@@ -7,72 +7,6 @@ from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
 
 
-type_pk_to_type = {
-    1: "Copycat",
-    2: "Cheater",
-    3: "Cooperator",
-    4: "Grudger",
-    5: "Detective",
-    6: "Copykitten",
-    7: "Simpleton",
-    8: "Random",
-}
-
-type_to_color = {
-    "Small Copycat": "Light Blue",
-    "Normal Copycat": "Blue",
-    "Large Copycat": "Dark Blue",
-    "Small Cheater": "Light Teal",
-    "Normal Cheater": "Teal",
-    "Large Cheater": "Dark Teal",
-    "Small Cooperator": "Light Pink",
-    "Normal Cooperator": "Pink",
-    "Large Cooperator": "Dark Pink",
-    "Small Grudger": "Light Yellow",
-    "Normal Grudger": "Yellow",
-    "Large Grudger": "Dark Yellow",
-    "Small Detective": "Light Orange",
-    "Normal Detective": "Orange",
-    "Large Detective": "Dark Orange",
-    "Small Copykitten": "Light Tan",
-    "Normal Copykitten": "Tan",
-    "Large Copykitten": "Dark Tan",
-    "Small Simpleton": "Light Green",
-    "Normal Simpleton": "Green",
-    "Large Simpleton": "Dark Green",
-    "Small Random": "Light Purple",
-    "Normal Random": "Purple",
-    "Large Random": "Dark Purple",
-}
-
-color_to_type = {
-    "Light Blue": "Small Copycat",
-    "Blue": "Normal Copycat",
-    "Dark Blue": "Large Copycat",
-    "Light Teal": "Small Cheater",
-    "Teal": "Normal Cheater",
-    "Dark Teal": "Large Cheater",
-    "Light Pink": "Small Cooperator",
-    "Pink": "Normal Cooperator",
-    "Dark Pink": "Large Cooperator",
-    "Light Yellow": "Small Grudger",
-    "Yellow": "Normal Grudger",
-    "Dark Yellow": "Large Grudger",
-    "Light Orange": "Small Detective",
-    "Orange": "Normal Detective",
-    "Dark Orange": "Large Detective",
-    "Light Tan": "Small Copykitten",
-    "Tan": "Normal Copykitten",
-    "Dark Tan": "Large Copykitten",
-    "Light Green": "Small Simpleton",
-    "Green": "Normal Simpleton",
-    "Dark Green": "Large Simpleton",
-    "Light Purple": "Small Random",
-    "Purple": "Normal Random",
-    "Dark Purple": "Large Random",
-}
-
-
 class Strategy(Enum):
     cooperate = 0
     defect = 1
@@ -103,18 +37,15 @@ class Person:
 
         self.is_follower = randint(0, 1) == 0
 
+        if self.is_follower:
+            self.color = person_colors["Yellow"]
+        else:
+            self.color = person_colors["Blue"]
+
         self.memory = memory
 
         self.type_pk = randint(1, 8)
-        if self.strength > 3:
-            extra = "Large"
-        elif self.strength > 2:
-            extra = "Normal"
-        else:
-            extra = "Small"
-        self.type = f"{extra} " + type_pk_to_type[self.type_pk]
-        self.color_title = type_to_color[self.type]
-        self.color = person_colors[self.color_title]
+
         if self.fear > 5:
             self.strategy = Strategy.defect
         else:
@@ -214,6 +145,19 @@ class Person:
 
     def explore(self):
         # TODO write a function that will allow the user to explore the floor they are on
+        # TODO make a way for someone to know what kinda room they are in
+
+        # if they are in a room, they will look for the door
+            # if they are in a room and the door is blocked by fire they will find out what to do based of their health
+                # if they are healthy they will try to run through the fire
+                # if they are not healthy they will try to break the glass
+                    # if they break the glass they will jump and hope they live
+        # if they are in a hallway, they will look for either a stair or an exit depending on the floor they are on
+            # if the stair or exit is blocked by fire they will find out what to do based of their health
+                # if they are healthy they will try to run through the fire
+                # if they are not healthy they will look for another exit or stair
+        # if they are in a room and dont know where the door is they will look for the wall and walk around the room
+        # if they are in a hallway and dont know where the stair or exit is they will look for the wall and walk around the hallway
         return None
 
     def move_randomly(self):
