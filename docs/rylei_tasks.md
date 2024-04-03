@@ -10,3 +10,6 @@
    -
   -  how will conflicts on the stairs be handled?
   -  touches S automaticly go down a floor. 
+4. Use disjoined set to make folowers
+   - Followers are a given as a certain percentage of people
+   - When a follower finds a person they are added to the group
