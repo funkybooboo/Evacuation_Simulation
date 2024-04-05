@@ -94,6 +94,7 @@ class Building:
             "wall": [],
             "empty": [],
             "fire": [],
+            "broken_glass": []
         }
         self.color_building = self.text_building.copy()
         floors = len(self.color_building)
@@ -124,6 +125,9 @@ class Building:
                     elif row[col] == 'f':
                         self.object_locations["fire"].append((floor, row, col))
                         row[col] = object_colors["Red"]
+                    elif row[col] == 'b':
+                        self.object_locations["broken_glass"].append((floor, row, col))
+                        row[col] = object_colors["Teal"]
 
     def convert_text_to_pathfinding_grid(self):
         # 0 is impassable

@@ -94,56 +94,103 @@ class Person:
         return other
 
     def move_one_block(self):
-        # go to the closet exit
-        closest_exit = self.get_closest(self.memory.exits)
-        if closest_exit is not None:
-            other = self.move_towards(closest_exit)
-            return other
-
-        # go to the closet stair
-        floor = self.location[0]
-        closest_stair = self.get_closest(self.memory.stairs)
-        if floor != 1 and closest_stair is not None:
-            other = self.move_towards(closest_stair)
-            return other
-
-        if self.fear < 5:
-            # they are calm
-            number_of_people_near = self.number_of_people_near()
-            if number_of_people_near < 15 and self.is_follower:
-                closest_person = self.get_closest(self.memory.people)
-                if closest_person:
-                    other = self.move_towards(closest_person)
-                    return other
-            closest_wall = self.get_closest(self.memory.walls)
-            if closest_wall:
-                other = self.move_towards(closest_wall)
-                return other
-        elif 5 < self.fear < 10:
-            # they are scared
-            number_of_people_near = self.number_of_people_near()
-            if number_of_people_near < 7 and self.is_follower:
-                closest_person = self.get_closest(self.memory.people)
-                if closest_person:
-                    other = self.move_towards(closest_person)
-                    return other
-            closest_wall = self.get_closest(self.memory.walls)
-            if closest_wall:
-                other = self.move_towards(closest_wall)
-                return other
-        elif self.fear == 10:
-            # they are panicking
-            closest_glass = self.get_closest(self.memory.glasses)
-            if closest_glass is not None:
-                if self.is_one_away(self.location, closest_glass):
-                    self.break_glass(closest_glass)
-                else:
-                    self.move_towards(closest_glass)
-            # they don't know what to do
+        # TODO ask AI for what to do and then do it
+        # return None if you dont hit anyone
+        # return the person you hit if you hit them
+        situation = self.get_situation_for_AI()
+        options = self.get_options_for_AI()
+        tempurature = self.get_temperature_for_AI()
+        choice = get_choice_from_AI(situation, options, tempurature)
+        if choice == 'A':
+            return self.explore()
+        elif choice == 'B':
             return self.move_randomly()
+        elif choice == 'C':
+            closest_person = self.get_closest(self.memory.people)
+            return self.move_towards(closest_person)
+        elif choice == 'D':
+            closest_door = self.get_closest(self.memory.doors)
+            return self.move_towards(closest_door)
+        elif choice == 'E':
+            closest_glass = self.get_closest(self.memory.glasses)
+            return self.move_towards(closest_glass)
+        elif choice == 'F':
+            closest_fire = self.get_closest(self.memory.fires)
+            return self.move_towards(closest_fire)
+        elif choice == 'G':
+            closest_glass = self.get_closest(self.memory.glasses)
+            if not self.break_glass(closest_glass):
+                raise Exception("Cant break glass unless you are near it")
+            return None
+        elif choice == 'H':
+            closest_person = self.get_closest(self.memory.people)
+            return self.move_towards(closest_person)
+        elif choice == 'I':
+            closest_door = self.get_closest(self.memory.doors)
+            return self.move_towards(closest_door)
+        elif choice == 'J':
+            closest_glass = self.get_closest(self.memory.broken_glass)
+            if not self.jump_out_of_window(closest_glass):
+                raise Exception("Cant jump out of window unless you are near it")
+            return None
+        elif choice == 'K':
+            return self.follow_evacuation_plan()
+        elif choice == 'L':
+            closest_exit = self.get_closest(self.memory.exits)
+            return self.move_towards(closest_exit)
+        elif choice == 'M':
+            closest_stair = self.get_closest(self.memory.stairs)
+            return self.move_towards(closest_stair)
+        else:
+            raise Exception("Invalid choice by AI")
 
-        # if nothing else works, explore
-        return self.explore()
+    def get_temperature_for_AI(self):
+        # TODO get the level of rationality for the person based on the fear level
+
+        # return an int that will tell the AI how rational to act
+        pass
+
+    def get_situation_for_AI(self):
+        # TODO get situation that person is in
+        # we should probably tell the AI all of this
+        # how many people are near by
+        # how much fear someone has
+        # how strong they are
+        # their health
+        # where are they
+        # what do they know about | closest doors, people, etc...
+        # how long it will take them to get out of building
+        # how close is the closest fire
+        # are they are a room or hallway
+        # are they blocked in a room
+        # rules of the game | how much health you loose given situations
+
+        # return a string that will tell the AI what the situation is
+        pass
+
+    def get_options_for_AI(self):
+        # TODO write a function that will get the options for this person at the situation they are in
+        # dont have to return all of these but here is the idea
+        # option A: explore | always open
+        # option B: move randomly | always open
+        # option C: move towards a person | if know about person, more likely if you like people
+        # option D: move towards a door | if know about door
+        # option E: move towards a glass | if know about glass
+        # option F: move towards a fire | if know about fire and stuck in room
+        # option G: break glass | if next to glass
+        # option H: fight someone for a spot | if someone is in a spot you want
+        # option I: run through fire to safety | if stuck in room
+        # option J: jump out of building | if next to
+        # option K: follow evacuation plan | if know about evacuation plan
+        # option L: move to exit | if know about exit on your floor
+        # option M: move to stair | if know about stair on your floor
+
+        # return a string that will tell the AI what it can do
+        pass
+
+    def follow_evacuation_plan(self):
+        # TODO write a function that will allow the person to follow the evacuation plan
+        pass
 
     def explore(self):
         # TODO write a function that will allow the user to explore the floor they are on
@@ -223,12 +270,32 @@ class Person:
         if self.is_one_away(self.location, glass_location):
             if self.can_break_glass():
                 # the person breaks the glass and hurts themselves doing it
-                self.simulation.building.text_building[glass_location[0]][glass_location[1]][glass_location[2]] = ' '
-                self.memory.add("empties", glass_location)
+                self.simulation.building.text_building[glass_location[0]][glass_location[1]][glass_location[2]] = 'b'
+                self.memory.add("broken_glass", glass_location)
                 self.health -= 25
             else:
                 # too weak to break the glass, but they still hurt themselves trying
                 self.health -= 5
+            return True
+        return False
+
+    def jump_out_of_window(self, broken_glass_location):
+        if self.is_one_away(self.location, broken_glass_location):
+            floor = self.location[0]
+            # hurt self on broken glass
+            self.health -= randint(0, 10)
+            if floor == 2:
+                # hurt self on the way down
+                self.health -= randint(10, 30)
+            elif floor == 3:
+                # hurt self on the way down
+                self.health -= randint(30, 50)
+            elif floor > 3:
+                # hurt self on the way down
+                self.health -= randint(50, 100)
+            self.move_to(broken_glass_location)
+            return True
+        return False
 
     def can_break_glass(self):
         if self.strength > 2:
@@ -336,6 +403,8 @@ class Person:
             what_is_around.add("fires", location)
         elif self.simulation.__is_person(location):
             what_is_around.add("people", location)
+        elif self.simulation.__is_broken_glass(location):
+            what_is_around.add("broken_glass", location)
         else:
             raise Exception("I see a char you didn't tell me about")
 
@@ -387,9 +456,7 @@ class Person:
     def combat(self, other):
         wanted_location = other.location
         not_wanted_location = self.location
-
         # TODO write a function that will take in account the whole different types of players and their strategies
-
         payoffs = self.__normal_form_game(other)
         person1_payoff = payoffs[0]
         person2_payoff = payoffs[1]

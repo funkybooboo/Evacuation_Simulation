@@ -71,6 +71,7 @@ object_colors = {
     "Dark Grey": dark_grey,
     "Red": red,
     "Light Red": light_red,
+    "Teal": teal,
 }
 
 person_colors = {
@@ -94,7 +95,6 @@ person_colors = {
     "Purple": purple,
     "Dark Purple": dark_purple,
     "Light Teal": light_teal,
-    "Teal": teal,
     "Dark Teal": dark_teal,
     "Light Tan": light_tan,
     "Tan": tan,

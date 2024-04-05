@@ -101,7 +101,13 @@ class Simulation:
             if self.__is_exit(person.location):
                 self.number_of_people_that_got_out += 1
                 if self.verbose:
-                    print(f"{person.name} has escaped")
+                    print(f"{person.name} has escaped by exiting")
+                continue
+
+            if self.__is_broken_glass(person.location):
+                self.number_of_people_that_got_out += 1
+                if self.verbose:
+                    print(f"{person.name} has escaped by jumping out of window")
                 continue
 
             temp_live_people.append(person)
@@ -172,4 +178,7 @@ class Simulation:
 
     def __is_door(self, location):
         return self.building.text_building[location[0]][location[1]][location[2]] == 'd'
+
+    def __is_broken_glass(self, location):
+        return self.building.text_building[location[0]][location[1]][location[2]] == 'b'
 

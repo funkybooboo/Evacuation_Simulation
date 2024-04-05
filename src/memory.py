@@ -10,7 +10,8 @@ class Memory:
         self.empties = set()
         self.fires = set()
         self.people = set()
-        self.items = ['doors', 'exits', 'stairs', 'glasses', 'obstacles', 'walls', 'empties', 'fires', 'people']
+        self.broken_glass = set()
+        self.items = ['doors', 'exits', 'stairs', 'glasses', 'obstacles', 'walls', 'empties', 'fires', 'people', 'broken_glass']
 
     def combine(self, other):
         for item in self.items:
