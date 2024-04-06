@@ -5,7 +5,7 @@ from memory import Memory
 from pathfinding.core.diagonal_movement import DiagonalMovement
 from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
-from prompt import get_choice_from_AI
+from prompt import get_choice_from_AI, get_random_choice
 
 
 class Strategy(Enum):
@@ -28,7 +28,7 @@ class Person:
         # how many blocks can the person see
         self.vision = randint(1, 3)
         # how likely the person is to panic
-        self.fear = randint(1, 10)
+        self.fear = randint(0, 10)
         # where the person is located (1, 1, 1)
         # (floor, x, y)
         self.location = location
@@ -94,14 +94,19 @@ class Person:
 
         return other
 
-    def move_one_block(self):
-        # TODO ask AI for what to do and then do it
-        # return None if you dont hit anyone
-        # return the person you hit if you hit them
+    def move_one_block(self, is_ai_choice=False):
         situation = self.get_situation_for_AI()
         options = self.get_options_for_AI()
         temperature = self.get_temperature_for_AI()
-        choice = get_choice_from_AI(situation, options, temperature)
+        if is_ai_choice:
+            choice = get_choice_from_AI(situation, options, temperature)
+        else:
+            choice = get_random_choice(options)
+        return self.make_choice(choice)
+
+    def make_choice(self, choice):
+        if choice is None:
+            raise Exception("AI did not give a valid choice")
         if choice == 'A':
             return self.explore()
         elif choice == 'B':
@@ -142,35 +147,38 @@ class Person:
         elif choice == 'M':
             closest_stair = self.get_closest(self.memory.stairs)
             return self.move_towards(closest_stair)
+        elif choice == 'N':
+            return None
         else:
-            raise Exception("Invalid choice by AI")
+            raise Exception("Invalid choice")
 
     def get_temperature_for_AI(self):
-        # TODO get the level of rationality for the person based on the fear level
-
-        # return an int that will tell the AI how rational to act
-        pass
+        if self.fear >= 5:
+            return 0.7
+        else:
+            return 0.3
 
     def get_situation_for_AI(self):
-        # TODO get situation that person is in
-        # we should probably tell the AI all of this
-        # how many people are near by
-        # how much fear someone has
-        # how strong they are
-        # their health
-        # where are they
-        # what do they know about | closest doors, people, etc...
-        # how long it will take them to get out of building
-        # how close is the closest fire
-        # are they are a room or hallway
-        # are they blocked in a room
-        # rules of the game | how much health you loose given situations
-
-        # return a string that will tell the AI what the situation is
-        pass
+        situation = \
+            f"""
+            Do you like people: {self.is_follower}
+            Floor: {self.location[0]}
+            Strength: {self.strength}
+            Health: {self.health}
+            Fear: {self.fear}
+            Nearest Exit: {self.get_closest(self.memory.exits)}
+            Nearest Stairs: {self.get_closest(self.memory.stairs)}
+            Nearest Person: {self.get_closest(self.memory.people)}
+            Nearest Window: {self.get_closest(self.memory.glasses)}
+            Nearest Fire: {self.get_closest(self.memory.fires)}
+            People Near: {self.number_of_people_near()}
+            Know Evacuation Plan: {self.memory.evacuation_plan}
+            Time to Get Out: {self.get_time_to_get_out()}
+            Room Type: {self.get_room_type()}
+            """
+        return situation
 
     def get_options_for_AI(self):
-        # TODO write a function that will get the options for this person at the situation they are in
         # dont have to return all of these but here is the idea
         # option A: explore | always open
         # option B: move randomly | always open
@@ -185,9 +193,46 @@ class Person:
         # option K: follow evacuation plan | if know about evacuation plan
         # option L: move to exit | if know about exit on your floor
         # option M: move to stair | if know about stair on your floor
+        # option N: do nothing | always open
+        options = ["A", "B", "N"]
+        if self.memory.exits:
+            options.append("L")
+        if self.memory.stairs:
+            options.append("M")
+        if self.memory.people:
+            options.append("C")
+            if self.is_next_to(self.memory.people):
+                options.append("H")
+        if self.memory.doors:
+            options.append("D")
+        if self.memory.glasses:
+            options.append("E")
+            if self.can_break_glass() and self.is_next_to(self.memory.glasses):
+                options.append("G")
+        if self.memory.fires:
+            options.append("F")
+        if self.memory.broken_glass and self.is_next_to(self.memory.broken_glass):
+            options.append("J")
+        if self.memory.evacuation_plan:
+            options.append("K")
+        if self.is_next_to(self.memory.fires):
+            options.append("I")
+        options.sort()
+        return options
 
-        # return a string that will tell the AI what it can do
+    def get_time_to_get_out(self):
+        # TODO write a function that will return the time it will take to get out of the building
         pass
+
+    def get_room_type(self):
+        # TODO write a function that will return the type of room the person is in
+        pass
+
+    def is_next_to(self, lst):
+        for location in lst:
+            if self.is_one_away(self.location, location):
+                return True
+        return False
 
     def follow_evacuation_plan(self):
         # TODO write a function that will allow the person to follow the evacuation plan
@@ -198,14 +243,14 @@ class Person:
         # TODO make a way for someone to know what kinda room they are in
 
         # if they are in a room, they will look for the door
-            # if they are in a room and the door is blocked by fire they will find out what to do based of their health
-                # if they are healthy they will try to run through the fire
-                # if they are not healthy they will try to break the glass
-                    # if they break the glass they will jump and hope they live
+        # if they are in a room and the door is blocked by fire they will find out what to do based of their health
+        # if they are healthy they will try to run through the fire
+        # if they are not healthy they will try to break the glass
+        # if they break the glass they will jump and hope they live
         # if they are in a hallway, they will look for either a stair or an exit depending on the floor they are on
-            # if the stair or exit is blocked by fire they will find out what to do based of their health
-                # if they are healthy they will try to run through the fire
-                # if they are not healthy they will look for another exit or stair
+        # if the stair or exit is blocked by fire they will find out what to do based of their health
+        # if they are healthy they will try to run through the fire
+        # if they are not healthy they will look for another exit or stair
         # if they are in a room and dont know where the door is they will look for the wall and walk around the room
         # if they are in a hallway and dont know where the stair or exit is they will look for the wall and walk around the hallway
         return None
@@ -304,7 +349,9 @@ class Person:
         return False
 
     def move_to(self, location):
-        if self.is_one_away(self.location, location) and (self.simulation.__is_empty(location) or self.simulation.__is_exit(location) or self.simulation.__is_stair(location) or self.simulation.__is_person(location)):
+        if self.is_one_away(self.location, location) and (
+                self.simulation.__is_empty(location) or self.simulation.__is_exit(
+                location) or self.simulation.__is_stair(location) or self.simulation.__is_person(location)):
             other = self.simulation.__is_person(location)
             if other is not None:
                 return other
@@ -348,7 +395,7 @@ class Person:
         y1 = self.location[2]
         x2 = location[1]
         y2 = location[2]
-        return (((x1 - x2)**2) + ((y1 - y2)**2))**0.5
+        return (((x1 - x2) ** 2) + ((y1 - y2) ** 2)) ** 0.5
 
     def look_around(self):
         what_is_around = Memory()
@@ -356,7 +403,7 @@ class Person:
         floor = self.location[0]
         x = self.location[1]
         y = self.location[2]
-        for i in range(-(self.vision-1), self.vision):
+        for i in range(-(self.vision - 1), self.vision):
             for j in range(-self.vision, self.vision + 1):
                 if self.is_continue(i, j, x, y, floor, blocked):
                     continue
@@ -366,7 +413,8 @@ class Person:
     def is_continue(self, i, j, x, y, floor, blocked):
         if i == j:
             return True
-        if x + i > len(self.simulation.building.text_building[floor][0]) or y + i > len(self.simulation.building.text_building[floor]):
+        if x + i > len(self.simulation.building.text_building[floor][0]) or y + i > len(
+                self.simulation.building.text_building[floor]):
             return True
         if self.is_blocked(blocked, x, y, i, j):
             return True

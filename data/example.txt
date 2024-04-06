@@ -1,0 +1,13 @@
+Options:
+A. Explore
+C. Move towards a person
+D. Move towards a door
+E. Move towards a glass
+H. Fight someone for a spot
+I. Run through fire to safety
+K. Follow evacuation plan
+L. Move towards an exit
+M. Move towards a stair
+----------------------
+Pick a letter:
+L
