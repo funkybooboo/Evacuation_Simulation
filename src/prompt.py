@@ -3,34 +3,69 @@ from dotenv import load_dotenv
 import os
 
 
-def get_response(context):
+def get_response(situation, options, temperature):
     OPENAI_API_KEY = None
     with open("APIKEY.txt", "r") as file:
         OPENAI_API_KEY = file.readline().strip()
     if OPENAI_API_KEY is None:
-        raise Exception("couldnt get key")
+        raise Exception("couldn't get key")
     os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
     load_dotenv()
     client = OpenAI()
 
+    # option A: explore | always open
+    # option B: move randomly | always open
+    # option C: move towards a person | if know about person, more likely if you like people
+    # option D: move towards a door | if know about door
+    # option E: move towards a glass | if know about glass
+    # option F: move towards a fire | if know about fire and stuck in room
+    # option G: break glass | if next to glass
+    # option H: fight someone for a spot | if someone is in a spot you want
+    # option I: run through fire to safety | if stuck in room
+    # option J: jump out of building | if next to
+    # option K: follow evacuation plan | if know about evacuation plan
+    # option L: move to exit | if know about exit on your floor
+    # option M: move to stair | if know about stair on your floor
+
     response = client.chat.completions.create(
-        model = "gpt-3.5-turbo-0125", # may change model
-        temperature = 0.8, # will be passed in fear level
-        max_tokens = 3000,
+        model="gpt-3.5-turbo-0125", # may change model
+        temperature=temperature, # will be passed in fear level
+        max_tokens=3000,
         response_format={"type": "json_object"},
-        messages = [
+        messages=[
             {"role": "system", "content": ""}, # Will be prompt context 
-            {"role": "user", "content": ""}, # prompt of the user
-            {"role": "assistant", "content": ""}, # example of response
-            {"role": "user", "content": ""}, # form of question or command
+            {"role": "user", "content": situation}, # prompt of the user
+            {"role": "assistant", "content": """
+            Options:
+            A. Explore
+            C. Move towards a person
+            D. Move towards a door
+            E. Move towards a glass
+            H. Fight someone for a spot
+            I. Run through fire to safety
+            K. Follow evacuation plan
+            L. Move towards an exit
+            M. Move towards a stair
+            ----------------------
+            Pick a letter:
+            L
+            """}, # example of response
+            {"role": "user", "content": "Options:\n" + options + "\n----------------------\nPick a letter:"}, # form of question or command
         ]
     )
     return response
 
+def get_random_choice(situation, options, tempurature):
+    pass
+
+def get_choice_from_AI(situation, options, tempurature):
+    response = get_response(situation, options, tempurature)
+    return response.choices[0].message["content"]
+
 
 # Prompt Options
 """
-System: You are a pedestrian in a fire evacuation simulation. The emergency is a fire, you may
+System: You are a pedestrian in a fire evacuation simulation. You may
 or may not know what floor the fire is on. Your goal is to vacate the building before being 
 killed or badly injured by the fire. The simulation consists of many rooms and floors. You 
 have the option to jump from the window however you must be strong enough and have enough 
@@ -39,19 +74,19 @@ anything above that 150. A fully healthy pedestrian starts the simulation with 1
 this statistic varies pedestrian to pedestrian. Strength is defined between 1 and 3 with 3 being
 maximum. People with level 3 strength are easily able to break windows, those with level 2 
 strength can break windows but it will take more time, level 1 players cannot break windows.
-It should be noted that when a window is broken that gets saved to the map and any pedestrain
+It should be noted that when a window is broken that gets saved to the map and any pedestrian
 may go out that window. Pedestrians have the option to run through fire however it comes with
 majors costs to their health. Each turn that a pedestrian is in the fire is -[HP]. Landing on 
 the same square as another pedestrian triggers a "fight" between the two. The winner takes the
-square while the loser stays in their previous place. A perons fear level can also affect
+square while the loser stays in their previous place. A persons fear level can also affect
 their willingness to do things such as breaking windows, jumping from windows, running through
 the fire, etc. The fire itself will start and move randomly. Each turn the fire has a chance to 
-move in any direction.  The simulation contains obsticals, such as chairs, tables, and other
-potential hazards. A pedestrians speed determines if that pedestrian can jump over an obstical.
+move in any direction.  The simulation contains obstetrical, such as chairs, tables, and other
+potential hazards. A pedestrians speed determines if that pedestrian can jump over an obstetrical.
 Speed is defined on a 1 to 3 scale with 3 being the fastest. Pedestrians with a 3 speed level
 can jump over "normal" sized objects ("n"). A pedestrians with level 2 speed can jump over 
 "small" sized objects ("s"). And pedestrians with speed level 1 cannot jump over objects. It
-should be noted that when a pedestrians health level is less than or equal to 0 the pedestrain
+should be noted that when a pedestrians health level is less than or equal to 0 the pedestrian
 "dies" and becomes a large, normal, or small object based on their size. 
 
 

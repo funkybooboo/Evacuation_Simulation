@@ -5,6 +5,7 @@ from memory import Memory
 from pathfinding.core.diagonal_movement import DiagonalMovement
 from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
+from prompt import get_choice_from_AI
 
 
 class Strategy(Enum):
@@ -99,8 +100,8 @@ class Person:
         # return the person you hit if you hit them
         situation = self.get_situation_for_AI()
         options = self.get_options_for_AI()
-        tempurature = self.get_temperature_for_AI()
-        choice = get_choice_from_AI(situation, options, tempurature)
+        temperature = self.get_temperature_for_AI()
+        choice = get_choice_from_AI(situation, options, temperature)
         if choice == 'A':
             return self.explore()
         elif choice == 'B':
