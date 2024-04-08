@@ -9,7 +9,8 @@ def main(args):
         number_of_people = int(args[1])
     if len(args) > 2 and (args[1] == "-v" or args[1] == "--verbose"):
         verbose = True
-    simulation = Simulation(number_of_people, verbose)
+    with_ai = False
+    simulation = Simulation(number_of_people, verbose, with_ai)
     simulation.statistics()
     simulation.evacuate()
     simulation.statistics()

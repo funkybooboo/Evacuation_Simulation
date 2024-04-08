@@ -5,7 +5,7 @@ from building import Building
 
 
 class Simulation:
-    def __init__(self, number_of_people, verbose, with_ai):
+    def __init__(self, number_of_people, verbose=False, with_ai=False):
         self.number_of_people_that_got_out = 0
         self.number_of_people = number_of_people
         self.verbose = verbose
