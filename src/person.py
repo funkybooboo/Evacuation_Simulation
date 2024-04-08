@@ -295,7 +295,7 @@ class Person:
         else:
             pass
 
-    def fire_surroundinds():
+    def fire_surroundings():
         pass
 
     def window_surroundings(break_glass, jump_out_window, can_run_through_fire, run_through_fire):
