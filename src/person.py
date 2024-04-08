@@ -237,9 +237,10 @@ class Person:
 
     def follow_evacuation_plan(self):
         # TODO write a function that will allow the person to follow the evacuation plan
+        # With how the floors are set up potenially we could have them find the closest "p" to the right of them. With the exception of floor 1. 
         pass
 
-    def explore(self):
+    def explore(self, get_room_type, door_surroundings, window_surroundings, fire_surroundings, stair_or_exit_surroundings):
         # TODO write a function that will allow the user to explore the floor they are on
         # TODO make a way for someone to know what kinda room they are in
 
@@ -252,48 +253,75 @@ class Person:
         # if the stair or exit is blocked by fire they will find out what to do based of their health
         # if they are healthy they will try to run through the fire
         # if they are not healthy they will look for another exit or stair
+
+        # nyic
         # if they are in a room and dont know where the door is they will look for the wall and walk around the room
         # if they are in a hallway and dont know where the stair or exit is they will look for the wall and walk around the hallway
-        self.look_around()
-        if self.location_type == 'room':
-            exit_or_window = self.find_nearest_exit_or_window()
-            if exit_or_window:
-                self.move_towards(exit_or_window)
-            else:
-                self.decide_based_on_health()
-        
-        elif self.location_type == 'hallway':
-            exit_or_stair = self.find_nearest_exit_or_stair()
-            if exit_or_stair:
-                self.move_towards(exit_or_stair)
-            else:
-                self.moves_randomly()
+        surroundings = self.look_around()  # Assume this returns a list of visible objects and their types
 
-        if self.is_near_fire():
-            self.decide_in_fire_senerio()
-        self.update_memory_and_state()
+            # Update memory with new information
+        self.memory.update(surroundings)
+
+        if "room" in get_room_type == True:
+                # Make decision based on surroundings and personal state
+            if "door" in surroundings:
+                door_surroundings()
+            elif "fire" in surroundings and self.health > 50:
+                fire_surroundings()
+            elif "door" not in surroundings and "window" in surroundings:
+                window_surroundings()
+            else:
+                self.move_randomly()
+        elif "hallway" in get_room_type == True:
+            stair_or_exit_surroundings()
+            pass
 
         return None
+    
 
-    def find_nearest_exit_or_window():
+    def door_surroundings(surroundings, blocked, break_glass, can_break_glass, jump_out_window, run_through_fire, can_run_through_fire):
+        if "door" in surroundings is not blocked:
+            # go through the door
+            pass
+        elif "window" in surroundings is not blocked:
+            if can_break_glass == True:
+                break_glass()
+                if break_glass == True:
+                    jump_out_window()
+                else:
+                    pass
+            elif can_break_glass is False and can_run_through_fire == True:
+                    run_through_fire()
+        else:
+            pass
+
+    def fire_surroundinds():
         pass
 
-    def decide_based_on_health():
-        pass
-        
-    def find_nearest_exit_or_stair():
-        pass
+    def window_surroundings(break_glass, jump_out_window, can_run_through_fire, run_through_fire):
+        break_glass()
+        if break_glass == True:
+            jump_out_window()
+        else:
+            if can_run_through_fire is True:
+                run_through_fire()
+            else:
+                pass
 
-    def moves_randomly():
-        pass
+    def stair_or_exit_surroundings(blocked, surroundings, can_run_through_fire, run_through_fire):
+        if "stair" or "exit" in surroundings is not blocked:
+            pass # move to door
+        elif can_run_through_fire == True:
+            run_through_fire()
+        else:
+            pass # look for different exit
 
-    def is_near_fire():
-        pass
+    def can_run_through_fire(self):
+        if self.health > 50:
+            return True
+        return False
 
-    def decide_in_fire_senerio():
-        pass
-
-    def update_memory_and_state():
+    def run_through_fire():
         pass
 
 
