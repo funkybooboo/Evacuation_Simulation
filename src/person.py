@@ -95,10 +95,10 @@ class Person:
         return other
 
     def move_one_block(self):
-        situation = self.get_situation_for_AI()
         options = self.get_options_for_AI()
-        temperature = self.get_temperature_for_AI()
         if self.simulation.with_ai:
+            situation = self.get_situation_for_AI()
+            temperature = self.get_temperature_for_AI()
             choice = get_choice_from_AI(situation, options, temperature)
         else:
             choice = get_random_choice(options)
