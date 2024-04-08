@@ -5,10 +5,11 @@ from building import Building
 
 
 class Simulation:
-    def __init__(self, number_of_people, verbose):
+    def __init__(self, number_of_people, verbose, with_ai):
         self.number_of_people_that_got_out = 0
         self.number_of_people = number_of_people
         self.verbose = verbose
+        self.with_ai = with_ai
         self.building = Building(self)
         self.live_people = []
         self.dead_people = []

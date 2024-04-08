@@ -94,11 +94,11 @@ class Person:
 
         return other
 
-    def move_one_block(self, is_ai_choice=False):
+    def move_one_block(self):
         situation = self.get_situation_for_AI()
         options = self.get_options_for_AI()
         temperature = self.get_temperature_for_AI()
-        if is_ai_choice:
+        if self.simulation.with_ai:
             choice = get_choice_from_AI(situation, options, temperature)
         else:
             choice = get_random_choice(options)
@@ -533,13 +533,13 @@ class Person:
 
     def __normal_form_game(self, other):
         # TODO adjust the payoffs based on the persons strength levels
-        base_payoffs = {
+        payoffs = {
             (Strategy.cooperate, Strategy.cooperate): (3, 3),
             (Strategy.cooperate, Strategy.defect): (0, 5),
             (Strategy.defect, Strategy.cooperate): (5, 0),
             (Strategy.defect, Strategy.defect): (1, 1),
         }
-        return base_payoffs[(self.strategy, other.strategy)]
+        return payoffs[(self.strategy, other.strategy)]
 
     def number_of_people_near(self, distance=5):
         count = 0
