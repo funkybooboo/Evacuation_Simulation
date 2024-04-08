@@ -33,6 +33,7 @@ class Building:
         # g is glass
         # ' ' is empty space
         # e is for exit
+        # p evacuation plan marker
 
         building = [
             [

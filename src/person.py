@@ -222,6 +222,7 @@ class Person:
 
     def get_time_to_get_out(self):
         # TODO write a function that will return the time it will take to get out of the building
+        # tell ai how long take you to get out building so ai knows if should explore for another exit
         pass
 
     def get_room_type(self):
@@ -253,7 +254,48 @@ class Person:
         # if they are not healthy they will look for another exit or stair
         # if they are in a room and dont know where the door is they will look for the wall and walk around the room
         # if they are in a hallway and dont know where the stair or exit is they will look for the wall and walk around the hallway
+        self.look_around()
+        if self.location_type == 'room':
+            exit_or_window = self.find_nearest_exit_or_window()
+            if exit_or_window:
+                self.move_towards(exit_or_window)
+            else:
+                self.decide_based_on_health()
+        
+        elif self.location_type == 'hallway':
+            exit_or_stair = self.find_nearest_exit_or_stair()
+            if exit_or_stair:
+                self.move_towards(exit_or_stair)
+            else:
+                self.moves_randomly()
+
+        if self.is_near_fire():
+            self.decide_in_fire_senerio()
+        self.update_memory_and_state()
+
         return None
+
+    def find_nearest_exit_or_window():
+        pass
+
+    def decide_based_on_health():
+        pass
+        
+    def find_nearest_exit_or_stair():
+        pass
+
+    def moves_randomly():
+        pass
+
+    def is_near_fire():
+        pass
+
+    def decide_in_fire_senerio():
+        pass
+
+    def update_memory_and_state():
+        pass
+
 
     def move_randomly(self):
         x = randint(-1, 1)
