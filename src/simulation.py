@@ -13,11 +13,11 @@ class Simulation:
         self.n = n
         self.verbose = verbose
         self.with_ai = with_ai
-        self.building = Building(self)
         self.live_people = []
         self.dead_people = []
-        self.__generate_people()
         self.fire_locations = []
+        self.building = Building(self)
+        self.__generate_people()
         self.__start_fire()
 
     def __start_fire(self):
@@ -34,9 +34,9 @@ class Simulation:
         for i in range(self.number_of_people):
             floor = randint(0, len(self.building.text_building))
             location = (floor, randint(0, len(self.building.text_building[0])), randint(0, len(self.building.text_building[0][0])))
-            if (self.__is_obstacle(location) or self.__is_fire(location) or self.__is_person(location) or
-                    self.__is_wall(location) or self.__is_stair(location) or self.__is_glass(location) or
-                    self.__is_door(location) or self.__is_exit(location)):
+            if (self.is_obstacle(location) or self.is_fire(location) or self.is_person(location) or
+                    self.is_wall(location) or self.is_stair(location) or self.is_glass(location) or
+                    self.is_door(location) or self.is_exit(location)):
                 i -= 1
                 continue
             memory = Memory()
@@ -65,12 +65,12 @@ class Simulation:
         logging.info("Evacuating...")
         while len(self.live_people) > 0:
             logging.info(f"Anew turn has started-------")
-            self.__move_people()
-            self.__spread_fire()
             if self.verbose:
                 self.building.print_building()
                 print(f"{self.number_of_people} people remaining")
             logging.info(f"{self.number_of_people} people remaining")
+            self.__move_people()
+            self.__spread_fire()
         if self.verbose:
             print("Evacuation complete")
         logging.info("Evacuation complete")
@@ -112,14 +112,14 @@ class Simulation:
                 continue
 
             # the person is still alive and made it to an exit
-            if self.__is_exit(person.location):
+            if self.is_exit(person.location):
                 self.number_of_people_that_got_out += 1
                 logging.info(f"{person.name} has escaped by exiting")
                 if self.verbose:
                     print(f"{person.name} has escaped by exiting")
                 continue
 
-            if self.__is_broken_glass(person.location):
+            if self.is_broken_glass(person.location):
                 self.number_of_people_that_got_out += 1
                 logging.info(f"{person.name} has escaped by jumping out of window")
                 if self.verbose:
@@ -149,7 +149,7 @@ class Simulation:
                         self.__set_fire(new_location)
 
     def __set_fire(self, location):
-        if self.__is_location_in_building(location) and not self.__is_fire(location):
+        if self.__is_location_in_building(location) and not self.is_fire(location):
             # remove what was there
             self.building.text_building[location[0]][location[1]][location[2]] = 'f'
             self.fire_locations.append(location)
@@ -163,46 +163,46 @@ class Simulation:
     def __is_fire_spread():
         return randint(0, 20) == 1
 
-    def __is_exit(self, location):
+    def is_exit(self, location):
         return self.building.text_building[location[0]][location[1]][location[2]] == 'e'
 
-    def __is_obstacle(self, location):
+    def is_obstacle(self, location):
         c = self.building.text_building[location[0]][location[1]][location[2]]
         return c == 'm' or c == 'n' or c == 'l'
 
-    def __is_fire(self, location):
+    def is_fire(self, location):
         return location in self.fire_locations
 
-    def __is_person(self, location):
+    def is_person(self, location):
         for person in self.live_people:
             if person.location == location:
                 return person
         return None
 
-    def __is_wall(self, location):
+    def is_wall(self, location):
         c = self.building.text_building[location[0]][location[1]][location[2]]
         return c == 'w' or c == 'h'
 
-    def __is_stair(self, location):
+    def is_stair(self, location):
         return self.building.text_building[location[0]][location[1]][location[2]] == 's'
 
-    def __is_glass(self, location):
+    def is_glass(self, location):
         return self.building.text_building[location[0]][location[1]][location[2]] == 'g'
 
-    def __is_empty(self, location):
+    def is_empty(self, location):
         return self.building.text_building[location[0]][location[1]][location[2]] == ' '
 
-    def __is_door(self, location):
+    def is_door(self, location):
         return self.building.text_building[location[0]][location[1]][location[2]] == 'd'
 
-    def __is_broken_glass(self, location):
+    def is_broken_glass(self, location):
         return self.building.text_building[location[0]][location[1]][location[2]] == 'b'
 
-    def __is_room(self, location):
+    def is_room(self, location):
         return self.building.text_building[location[0]][location[1]][location[2]] == '1'
 
-    def __is_hallway(self, location):
+    def is_hallway(self, location):
         return self.building.text_building[location[0]][location[1]][location[2]] == '2'
 
-    def __is_exit_plan(self, location):
+    def is_exit_plan(self, location):
         return self.building.text_building[location[0]][location[1]][location[2]] == 'p'

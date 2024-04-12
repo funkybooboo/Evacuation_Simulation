@@ -73,13 +73,13 @@ object_colors = {
     "Light Red": light_red,
     "Teal": teal,
     "Light Pink": light_pink,
+    "Stair Blue": stair_blue,
 }
 
 person_colors = {
     "Light Blue": light_blue,
     "Blue": blue,
     "Dark Blue": dark_blue,
-    "Stair Blue": stair_blue,
     "Pink": pink,
     "Dark Pink": dark_pink,
     "Light Yellow": light_yellow,

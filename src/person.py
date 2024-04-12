@@ -96,7 +96,7 @@ class Person:
             else:
                 self.end_turn_in_fire = False
             # at a stair
-            if self.simulation.__is_stair(self.location):
+            if self.simulation.is_stair(self.location):
                 self.location = (self.location[0] - 1, self.location[1], self.location[2])
         logging.info(f"{self.name} is at {self.location}")
         return other
@@ -355,9 +355,9 @@ class Person:
 
     def move_to(self, location):
         if self.is_one_away(self.location, location) and (
-                self.simulation.__is_empty(location) or self.simulation.__is_exit(
-                location) or self.simulation.__is_stair(location) or self.simulation.__is_person(location)):
-            other = self.simulation.__is_person(location)
+                self.simulation.is_empty(location) or self.simulation.is_exit(
+                location) or self.simulation.is_stair(location) or self.simulation.is_person(location)):
+            other = self.simulation.is_person(location)
             if other is not None:
                 return other
             self.location = location
@@ -481,33 +481,33 @@ class Person:
 
     def add_item(self, blocked, floor, i, j, what_is_around, x, y):
         location = (floor, x + i, y + j)
-        if self.simulation.__is_wall(location):
+        if self.simulation.is_wall(location):
             what_is_around.add("walls", location)
             if not self.is_diagonal(i, j):
                 blocked.append((x + i, y + j, self.get_letter(i, j)))
-        elif self.simulation.__is_door(location):
+        elif self.simulation.is_door(location):
             what_is_around.add("doors", location)
-        elif self.simulation.__is_exit(location):
+        elif self.simulation.is_exit(location):
             what_is_around.add("exits", location)
-        elif self.simulation.__is_stair(location):
+        elif self.simulation.is_stair(location):
             what_is_around.add("stairs", location)
-        elif self.simulation.__is_glass(location):
+        elif self.simulation.is_glass(location):
             what_is_around.add("glasses", location)
-        elif self.simulation.__is_obstacle(location):
+        elif self.simulation.is_obstacle(location):
             what_is_around.add("obstacles", location)
-        elif self.simulation.__is_empty(location):
+        elif self.simulation.is_empty(location):
             what_is_around.add("empties", location)
         elif location in self.simulation.fire_locations:
             what_is_around.add("fires", location)
-        elif self.simulation.__is_person(location):
+        elif self.simulation.is_person(location):
             what_is_around.add("people", location)
-        elif self.simulation.__is_broken_glass(location):
+        elif self.simulation.is_broken_glass(location):
             what_is_around.add("broken_glass", location)
-        elif self.simulation.__is_room(location):
+        elif self.simulation.is_room(location):
             self.room_type = "room"
         elif self.simulation.__is_hall(location):
             self.room_type = "hall"
-        elif self.simulation.__is_exit_plan(location):
+        elif self.simulation.is_exit_plan(location):
             what_is_around.add("exit_plans", location)
         else:
             raise Exception("I see a char you didn't tell me about")

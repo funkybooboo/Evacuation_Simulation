@@ -5,9 +5,10 @@ from os import mkdir
 
 def main(args):
     n = -1
-    with open('run', 'rw') as f:
+    with open('run', 'r') as f:
         n = int(f.read())
-        f.write(str(n+1))
+    with open('run', 'w') as f:
+        f.write(str(n + 1))
     if n == -1:
         raise Exception("Error reading run file")
     # make a directory for the run
@@ -15,7 +16,7 @@ def main(args):
     number_of_people = 100
     verbose = False
     with_ai = False
-    if len(args > 1) and args[0].isdigit():
+    if len(args) > 1 and args[0].isdigit():
         number_of_people = int(args[1])
     if len(args) > 2 and (args[1] == "-v" or args[1] == "--verbose"):
         verbose = True

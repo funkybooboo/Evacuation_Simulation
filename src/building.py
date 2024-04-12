@@ -1,4 +1,5 @@
 from colors import object_colors
+from copy import deepcopy
 
 
 class Building:
@@ -14,6 +15,8 @@ class Building:
             "wall": [],
             "empty": [],
             "fire": [],
+            "broken_glass": [],
+            "exit_plan": [],
         }
         self.color_building = []
         self.convert_text_to_colors()
@@ -146,7 +149,7 @@ class Building:
             "broken_glass": [],
             "exit_plan": [],
         }
-        self.color_building = self.text_building.copy()
+        self.color_building = deepcopy(self.text_building)
         floors = len(self.color_building)
         for floor in range(floors):
             for row in self.color_building[floor]:
@@ -187,12 +190,12 @@ class Building:
         # 1 is easily passable
         # 2 is passable
         # 3 is difficultly passable
-        self.grid = self.text_building.copy()
+        self.grid = deepcopy(self.text_building)
         floors = len(self.grid)
         for floor in range(floors):
             for row in self.grid[floor]:
                 for col in range(len(row)):
-                    person = self.simulation.__is_person((floor, row, col))
+                    person = self.simulation.is_person((floor, row, col))
                     if person:
                         row[col] = -1
                     elif row[col] == 'w' or row[col] == 'g' or row[col] == 'l':
@@ -210,7 +213,7 @@ class Building:
         for floor in range(len(self.color_building)):
             for row in range(self.color_building[floor]):
                 for col in range(self.color_building[floor][row]):
-                    person = self.simulation.__is_person((floor, row, col))
+                    person = self.simulation.is_person((floor, row, col))
                     if person:
                         print(person.color)
                     else:
