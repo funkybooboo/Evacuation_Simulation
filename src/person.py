@@ -6,6 +6,8 @@ from pathfinding.core.diagonal_movement import DiagonalMovement
 from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
 from prompt import get_choice_from_AI, get_random_choice
+import logging
+from copy import deepcopy
 
 
 class Strategy(Enum):
@@ -15,12 +17,13 @@ class Strategy(Enum):
 
 class Person:
 
-    def __init__(self, simulation, name, pk, location, memory, verbose=False):
+    def __init__(self, simulation, name, pk, location, memory, n, verbose=False):
+        logging.basicConfig(filename=f'../logs/run{n}/person{pk}.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
         self.verbose = verbose
         self.simulation = simulation
         self.name = name
         self.pk = pk
-        self.age = randint(10, 61)
+        self.age = randint(10, 80)
         # this effects how the person will do in a fight
         self.strength = randint(1, 3)
         # how many blocks can the person move in one turn
@@ -49,8 +52,6 @@ class Person:
 
         self.memory = memory
 
-        self.type_pk = randint(1, 8)
-
         if self.fear > 5:
             self.strategy = Strategy.defect
         else:
@@ -59,6 +60,7 @@ class Person:
         self.end_turn_in_fire = True
 
     def switch_strategy(self):
+        logging.info(f"{self.name} switched strategies")
         if self.strategy == Strategy.defect:
             self.strategy = Strategy.cooperate
         else:
@@ -74,6 +76,8 @@ class Person:
         return is_dead
 
     def move(self):
+        logging.info(f"{self.name} is moving")
+        logging.info(f"{self.name} is at {self.location}")
         other = None
         for i in range(self.speed):
             if self.is_dead():
@@ -91,9 +95,9 @@ class Person:
             else:
                 self.end_turn_in_fire = False
             # at a stair
-            if self.simulation.__is_stair(self.location):
+            if self.simulation.is_stair(self.location):
                 self.location = (self.location[0] - 1, self.location[1], self.location[2])
-
+        logging.info(f"{self.name} is at {self.location}")
         return other
 
     def move_one_block(self):
@@ -107,6 +111,7 @@ class Person:
         return self.make_choice(choice)
 
     def make_choice(self, choice):
+        logging.info(f"{self.name} is making choice {choice}")
         if choice is None:
             raise Exception("AI did not give a valid choice")
         if choice == 'A':
@@ -176,7 +181,7 @@ class Person:
             People Near: {self.get_number_of_people_near()}
             Know Evacuation Plan: {self.memory.evacuation_plan}
             Time to Get Out: {self.get_time_to_get_out()}
-            Room Type: {self.get_room_type()}
+            Room Type: {self.room_type}
             """
         return situation
 
@@ -213,9 +218,9 @@ class Person:
                 options.append("G")
         if self.memory.fires:
             options.append("F")
-        if self.memory.broken_glass and self.is_next_to(self.memory.broken_glass):
+        if self.memory.broken_glasses and self.is_next_to(self.memory.broken_glasses):
             options.append("J")
-        if self.memory.evacuation_plan:
+        if self.memory.exit_plans:
             options.append("K")
         if self.is_next_to(self.memory.fires):
             options.append("I")
@@ -240,10 +245,8 @@ class Person:
         return False
 
     def follow_evacuation_plan(self):
-        # TODO write a function that will allow the person to follow the evacuation plan
-        # With how the floors are set up potenially we could have them find the closest "p" to the right of them. With the exception of floor 1. 
         closest_exit_plan = self.get_closest(self.memory.exit_plans)
-        closest_exit = self.get_closest_from_p(closest_exit_plan, self.simulation.building.object_locations["exit"])
+        closest_exit = self.get_closest_from_p(closest_exit_plan, self.simulation.building.object_locations["exits"])
         return self.move_towards(closest_exit)
 
     def explore(self):
@@ -265,24 +268,30 @@ class Person:
     def move_towards(self, location):
         if location is None:
             return None
+        if not self.simulation.is_in_building(location):
+            return None
         floor1 = self.location[0]
         floor2 = location[0]
         if floor1 != floor2:
             return None
         n_x = None
         n_y = None
+        # if tries is 0, then the person will try to move around people
+        # if tries is 1, then the person will try to move through people
         for tries in range(2):
-            path = self.get_path(floor1, location, tries)
-            if len(path) != 0:
-                n_x, n_y = path[1]
+            path = self.get_path(location, tries)
+            if len(path) != 1:
+                node = path[1]
+                n_x = node.x
+                n_y = node.y
                 break
         if n_x is None or n_y is None:
             return None
         new_location = (floor1, n_x, n_y)
         return self.move_to(new_location)
 
-    def get_path(self, floor1, location, tries):
-        grid = self.get_grid(floor1, tries)
+    def get_path(self, location, tries):
+        grid = self.get_grid(tries)
         x1 = self.location[1]
         y1 = self.location[2]
         start = grid.node(x1, y1)
@@ -296,8 +305,9 @@ class Person:
             print(grid.grid_str(path=path, start=start, end=end))
         return path
 
-    def get_grid(self, floor1, tries):
-        temp_grid = self.simulation.building.grid[floor1]
+    def get_grid(self, tries):
+        floor = self.location[0]
+        temp_grid = deepcopy(self.simulation.building.grid[floor])
         if tries == 0:
             # try with moving around people (collisions are not allowed)
             for row in range(len(temp_grid)):
@@ -318,7 +328,7 @@ class Person:
             if self.can_break_glass():
                 # the person breaks the glass and hurts themselves doing it
                 self.simulation.building.text_building[glass_location[0]][glass_location[1]][glass_location[2]] = 'b'
-                self.memory.add("broken_glass", glass_location)
+                self.memory.add("broken_glasses", glass_location)
                 self.health -= 25
             else:
                 # too weak to break the glass, but they still hurt themselves trying
@@ -350,10 +360,14 @@ class Person:
         return False
 
     def move_to(self, location):
-        if self.is_one_away(self.location, location) and (
-                self.simulation.__is_empty(location) or self.simulation.__is_exit(
-                location) or self.simulation.__is_stair(location) or self.simulation.__is_person(location)):
-            other = self.simulation.__is_person(location)
+        if (self.simulation.is_in_building(location) and
+                self.is_one_away(self.location, location) and
+                (self.simulation.is_empty(location) or
+                 self.simulation.is_exit(location) or
+                 self.simulation.is_stair(location) or
+                 self.simulation.is_person(location) or
+                 self.simulation.is_door(location))):
+            other = self.simulation.is_person(location)
             if other is not None:
                 return other
             self.location = location
@@ -377,7 +391,7 @@ class Person:
         """
         if len(lst) == 0:
             return None
-        closest = lst[0]
+        closest = next(iter(lst))
         for location in lst:
             d1 = self.get_distance(location)
             d2 = self.get_distance(closest)
@@ -393,7 +407,7 @@ class Person:
         """
         if len(lst) == 0:
             return None
-        furthest = lst[0]
+        furthest = next(iter(lst))
         for location in lst:
             d1 = self.get_distance(location)
             d2 = self.get_distance(furthest)
@@ -448,8 +462,9 @@ class Person:
         floor = self.location[0]
         x = self.location[1]
         y = self.location[2]
-        for i in range(-(self.vision - 1), self.vision):
-            for j in range(-self.vision, self.vision + 1):
+        # -1 from vision because the search function will look at the current location
+        for i in range(-(self.vision-1), self.vision):
+            for j in range(-self.vision, self.vision+1):
                 if self.is_continue(i, j, x, y, floor, blocked):
                     continue
                 self.search((floor, x + i, y + j), what_is_around, blocked)
@@ -458,8 +473,8 @@ class Person:
     def is_continue(self, i, j, x, y, floor, blocked):
         if i == j:
             return True
-        if x + i > len(self.simulation.building.text_building[floor][0]) or y + i > len(
-                self.simulation.building.text_building[floor]):
+        if x + i > len(self.simulation.building.text_building[floor]) or y + i > len(
+                self.simulation.building.text_building[floor][0]):
             return True
         if self.is_blocked(blocked, x, y, i, j):
             return True
@@ -477,33 +492,35 @@ class Person:
 
     def add_item(self, blocked, floor, i, j, what_is_around, x, y):
         location = (floor, x + i, y + j)
-        if self.simulation.__is_wall(location):
+        if not self.simulation.is_in_building(location):
+            return
+        if self.simulation.is_wall(location):
             what_is_around.add("walls", location)
             if not self.is_diagonal(i, j):
                 blocked.append((x + i, y + j, self.get_letter(i, j)))
-        elif self.simulation.__is_door(location):
+        elif self.simulation.is_door(location):
             what_is_around.add("doors", location)
-        elif self.simulation.__is_exit(location):
+        elif self.simulation.is_exit(location):
             what_is_around.add("exits", location)
-        elif self.simulation.__is_stair(location):
+        elif self.simulation.is_stair(location):
             what_is_around.add("stairs", location)
-        elif self.simulation.__is_glass(location):
+        elif self.simulation.is_glass(location):
             what_is_around.add("glasses", location)
-        elif self.simulation.__is_obstacle(location):
+        elif self.simulation.is_obstacle(location):
             what_is_around.add("obstacles", location)
-        elif self.simulation.__is_empty(location):
+        elif self.simulation.is_empty(location):
             what_is_around.add("empties", location)
         elif location in self.simulation.fire_locations:
             what_is_around.add("fires", location)
-        elif self.simulation.__is_person(location):
+        elif self.simulation.is_person(location):
             what_is_around.add("people", location)
-        elif self.simulation.__is_broken_glass(location):
-            what_is_around.add("broken_glass", location)
-        elif self.simulation.__is_room(location):
+        elif self.simulation.is_broken_glass(location):
+            what_is_around.add("broken_glasses", location)
+        elif self.simulation.is_room(location):
             self.room_type = "room"
-        elif self.simulation.__is_hall(location):
+        elif self.simulation.is_hallway(location):
             self.room_type = "hall"
-        elif self.simulation.__is_exit_plan(location):
+        elif self.simulation.is_exit_plan(location):
             what_is_around.add("exit_plans", location)
         else:
             raise Exception("I see a char you didn't tell me about")
@@ -556,7 +573,6 @@ class Person:
     def combat(self, other):
         wanted_location = other.location
         not_wanted_location = self.location
-        # TODO write a function that will take in account the whole different types of players and their strategies
         payoffs = self.__normal_form_game(other)
         person1_payoff = payoffs[0]
         person2_payoff = payoffs[1]
@@ -582,13 +598,27 @@ class Person:
             if other.fear < 10:
                 other.fear += 1
 
+    @staticmethod
+    def get_age_group(age):
+        if 9 < age < 19:
+            return -1
+        elif 18 < age < 36:
+            return 1
+        elif 35 < age < 51:
+            return 0
+        elif 50 < age < 81:
+            return -1
+
     def __normal_form_game(self, other):
-        # TODO adjust the payoffs based on the persons strength levels
+        s1 = self.get_age_group(self.age)
+        s2 = self.get_age_group(other.age)
+        d1 = self.strength + s1
+        d2 = other.strength + s2
         payoffs = {
             (Strategy.cooperate, Strategy.cooperate): (3, 3),
             (Strategy.cooperate, Strategy.defect): (0, 5),
             (Strategy.defect, Strategy.cooperate): (5, 0),
-            (Strategy.defect, Strategy.defect): (1, 1),
+            (Strategy.defect, Strategy.defect): (1 + d1, 1 + d2),
         }
         return payoffs[(self.strategy, other.strategy)]
 
