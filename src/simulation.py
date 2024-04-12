@@ -183,3 +183,12 @@ class Simulation:
     def __is_broken_glass(self, location):
         return self.building.text_building[location[0]][location[1]][location[2]] == 'b'
 
+    def __is_room(self, location):
+        return self.building.text_building[location[0]][location[1]][location[2]] == '1'
+
+    def __is_hallway(self, location):
+        return self.building.text_building[location[0]][location[1]][location[2]] == '2'
+
+    def __is_exit_plan(self, location):
+        return self.building.text_building[location[0]][location[1]][location[2]] == 'p'
+

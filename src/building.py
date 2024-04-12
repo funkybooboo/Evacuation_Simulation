@@ -143,7 +143,8 @@ class Building:
             "wall": [],
             "empty": [],
             "fire": [],
-            "broken_glass": []
+            "broken_glass": [],
+            "exit_plan": [],
         }
         self.color_building = self.text_building.copy()
         floors = len(self.color_building)
@@ -168,7 +169,7 @@ class Building:
                     elif row[col] == 'd':
                         self.object_locations["door"].append((floor, row, col))
                         row[col] = object_colors["Brown"]
-                    elif row[col] == ' ':
+                    elif row[col] == ' ' or row[col] == '1' or row[col] == '2':
                         self.object_locations["empty"].append((floor, row, col))
                         row[col] = object_colors["White"]
                     elif row[col] == 'f':
@@ -177,6 +178,9 @@ class Building:
                     elif row[col] == 'b':
                         self.object_locations["broken_glass"].append((floor, row, col))
                         row[col] = object_colors["Teal"]
+                    elif row[col] == 'p':
+                        self.object_locations["exit_plan"].append((floor, row, col))
+                        row[col] = object_colors["Light Pink"]
 
     def convert_text_to_pathfinding_grid(self):
         # 0 is impassable
@@ -193,7 +197,7 @@ class Building:
                         row[col] = -1
                     elif row[col] == 'w' or row[col] == 'g' or row[col] == 'l':
                         row[col] = 0
-                    elif row[col] == ' ' or row[col] == 'd' or row[col] == 'e' or row[col] == 's':
+                    elif row[col] == ' ' or row[col] == 'd' or row[col] == 'e' or row[col] == 's' or row[col] == 'p' or row[col] == '1' or row[col] == '2':
                         row[col] = 1
                     elif row[col] == 'h' or row[col] == 'm':
                         row[col] = 2

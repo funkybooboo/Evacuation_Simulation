@@ -33,6 +33,8 @@ class Person:
         # (floor, x, y)
         self.location = location
 
+        self.room_type = None
+
         # how much health the person has if the person's health reaches 0, the person dies
         self.health = 100
 
@@ -225,10 +227,6 @@ class Person:
         # tell ai how long take you to get out building so ai knows if should explore for another exit
         pass
 
-    def get_room_type(self):
-        # TODO write a function that will return the type of room the person is in
-        pass
-
     def is_next_to(self, lst):
         for location in lst:
             if self.is_one_away(self.location, location):
@@ -240,90 +238,33 @@ class Person:
         # With how the floors are set up potenially we could have them find the closest "p" to the right of them. With the exception of floor 1. 
         pass
 
-    def explore(self, get_room_type, door_surroundings, window_surroundings, fire_surroundings, stair_or_exit_surroundings):
-        # TODO write a function that will allow the user to explore the floor they are on
-        # TODO make a way for someone to know what kinda room they are in
-
-        # if they are in a room, they will look for the door
-        # if they are in a room and the door is blocked by fire they will find out what to do based of their health
-        # if they are healthy they will try to run through the fire
-        # if they are not healthy they will try to break the glass
-        # if they break the glass they will jump and hope they live
-        # if they are in a hallway, they will look for either a stair or an exit depending on the floor they are on
-        # if the stair or exit is blocked by fire they will find out what to do based of their health
-        # if they are healthy they will try to run through the fire
-        # if they are not healthy they will look for another exit or stair
-
-        # nyic
-        # if they are in a room and dont know where the door is they will look for the wall and walk around the room
-        # if they are in a hallway and dont know where the stair or exit is they will look for the wall and walk around the hallway
-        surroundings = self.look_around()  # Assume this returns a list of visible objects and their types
-
-            # Update memory with new information
-        self.memory.update(surroundings)
-
-        if "room" in get_room_type == True:
-                # Make decision based on surroundings and personal state
-            if "door" in surroundings:
-                door_surroundings()
-            elif "fire" in surroundings and self.health > 50:
-                fire_surroundings()
-            elif "door" not in surroundings and "window" in surroundings:
-                window_surroundings()
-            else:
-                self.move_randomly()
-        elif "hallway" in get_room_type == True:
-            stair_or_exit_surroundings()
-            pass
-
-        return None
-    
-
-    def door_surroundings(surroundings, blocked, break_glass, can_break_glass, jump_out_window, run_through_fire, can_run_through_fire):
-        if "door" in surroundings is not blocked:
-            # go through the door
-            pass
-        elif "window" in surroundings is not blocked:
-            if can_break_glass == True:
-                break_glass()
-                if break_glass == True:
-                    jump_out_window()
-                else:
-                    pass
-            elif can_break_glass is False and can_run_through_fire == True:
-                    run_through_fire()
-        else:
-            pass
-
-    def fire_surroundings():
-        pass
-
-    def window_surroundings(break_glass, jump_out_window, can_run_through_fire, run_through_fire):
-        break_glass()
-        if break_glass == True:
-            jump_out_window()
-        else:
-            if can_run_through_fire is True:
-                run_through_fire()
-            else:
-                pass
-
-    def stair_or_exit_surroundings(blocked, surroundings, can_run_through_fire, run_through_fire):
-        if "stair" or "exit" in surroundings is not blocked:
-            pass # move to door
-        elif can_run_through_fire == True:
-            run_through_fire()
-        else:
-            pass # look for different exit
+    def explore(self):
+        if self.is_follower:
+            closest_person = self.get_closest(self.memory.people)
+            if closest_person:
+                return self.move_towards(closest_person)
+        if "room" == self.room_type:
+            closest_door = self.get_closest(self.memory.doors)
+            if closest_door:
+                return self.move_towards(closest_door)
+            furthest_wall = self.get_furthest(self.memory.walls)
+            if furthest_wall:
+                return self.move_towards(furthest_wall)
+            return self.move_randomly()
+        if "hall" == self.room_type:
+            furthest_wall = self.get_furthest(self.memory.walls)
+            if furthest_wall:
+                return self.move_towards(furthest_wall)
+            return self.move_randomly()
+        return self.move_randomly()
 
     def can_run_through_fire(self):
         if self.health > 50:
             return True
         return False
 
-    def run_through_fire():
+    def run_through_fire(self):
         pass
-
 
     def move_randomly(self):
         x = randint(-1, 1)
@@ -456,6 +397,22 @@ class Person:
                 closest = location
         return closest
 
+    def get_furthest(self, lst):
+        """
+        get the furthest of something from a list. ex: get the furthest wall, get the furthest person, etc.
+        """
+        if len(lst) == 0:
+            return None
+        furthest = lst[0]
+        for location in lst:
+            d1 = self.get_distance(location)
+            d2 = self.get_distance(furthest)
+            if d1 is None or d2 is None:
+                continue
+            if d1 > d2:
+                furthest = location
+        return furthest
+
     def get_distance(self, location):
         if location is None:
             return None
@@ -518,12 +475,18 @@ class Person:
             what_is_around.add("obstacles", location)
         elif self.simulation.__is_empty(location):
             what_is_around.add("empties", location)
-        elif (floor, x + i, y + j) in self.simulation.fire_locations:
+        elif location in self.simulation.fire_locations:
             what_is_around.add("fires", location)
         elif self.simulation.__is_person(location):
             what_is_around.add("people", location)
         elif self.simulation.__is_broken_glass(location):
             what_is_around.add("broken_glass", location)
+        elif self.simulation.__is_room(location):
+            self.room_type = "room"
+        elif self.simulation.__is_hall(location):
+            self.room_type = "hall"
+        elif self.simulation.__is_exit_plan(location):
+            what_is_around.add("exit_plans", location)
         else:
             raise Exception("I see a char you didn't tell me about")
 
