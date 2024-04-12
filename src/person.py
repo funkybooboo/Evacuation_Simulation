@@ -257,15 +257,7 @@ class Person:
                 return self.move_towards(furthest_wall)
             return self.move_randomly()
         return self.move_randomly()
-
-    def can_run_through_fire(self):
-        if self.health > 50:
-            return True
-        return False
-
-    def run_through_fire(self):
-        pass
-
+    
     def move_randomly(self):
         x = randint(-1, 1)
         y = randint(-1, 1)
