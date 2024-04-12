@@ -2,12 +2,15 @@ from person import Person
 from memory import Memory
 from random import randint
 from building import Building
+import logging
 
 
 class Simulation:
-    def __init__(self, number_of_people, verbose=False, with_ai=False):
+    def __init__(self, number_of_people, n, verbose=False, with_ai=False):
+        logging.basicConfig(filename=f'../logs/run{n}/simulation.log', level=logging.INFO,format='%(asctime)s - %(levelname)s - %(message)s')
         self.number_of_people_that_got_out = 0
         self.number_of_people = number_of_people
+        self.n = n
         self.verbose = verbose
         self.with_ai = with_ai
         self.building = Building(self)
@@ -42,7 +45,8 @@ class Simulation:
                 what = object_list[randint(0, len(self.building.object_locations))]
                 where = object_list[what][randint(0, len(self.building.object_locations[what]))]
                 memory.add(what, where)
-            self.live_people.append(Person(self, f'Person{i}', i, location, memory, self.verbose))
+            self.live_people.append(Person(self, f'Person{i}', i, location, memory, self.n, self.verbose))
+            logging.info(f"Person{i} has been generated at location {location}")
 
     def statistics(self):
         if self.verbose:
@@ -50,30 +54,35 @@ class Simulation:
             print(f"Number of dead people: {len(self.dead_people)}")
             print(f"Number of live people: {len(self.live_people)}")
             print(f"Number of fire locations: {len(self.fire_locations)}")
+        logging.info(f"Number of people: {self.number_of_people}")
+        logging.info(f"Number of dead people: {len(self.dead_people)}")
+        logging.info(f"Number of live people: {len(self.live_people)}")
+        logging.info(f"Number of fire locations: {len(self.fire_locations)}")
 
     def evacuate(self):
         if self.verbose:
             print("Evacuating...")
-
+        logging.info("Evacuating...")
         while len(self.live_people) > 0:
+            logging.info(f"Anew turn has started-------")
             self.__move_people()
-
             self.__spread_fire()
-
-            self.building.print_building()
-
             if self.verbose:
+                self.building.print_building()
                 print(f"{self.number_of_people} people remaining")
-
+            logging.info(f"{self.number_of_people} people remaining")
         if self.verbose:
             print("Evacuation complete")
+        logging.info("Evacuation complete")
 
     def __move_people(self):
+        logging.info("Moving people")
         temp_live_people = []
         for person in self.live_people:
-
+            logging.info(f"{person.name} is moving")
             # Die by fighting someone else during their turn
             if self.__is_dead(person):
+                logging.info(f"{person.name} has died during their turn")
                 continue
 
             if person.end_turn_in_fire and person.location in self.fire_locations:
@@ -83,30 +92,36 @@ class Simulation:
 
             # Die by fire
             if self.__is_dead(person):
+                logging.info(f"{person.name} has died by fire")
                 continue
 
             other_person = person.move()
 
             # Die by moving
             if self.__is_dead(person):
+                logging.info(f"{person.name} has died by moving")
                 continue
 
-            if other_person is not None:
+            if other_person:
+                logging.info(f"{person.name} is fighting {other_person.name}")
                 person.combat(other_person)
 
             # Die by combat
             if self.__is_dead(person):
+                logging.info(f"{person.name} has died by combat")
                 continue
 
             # the person is still alive and made it to an exit
             if self.__is_exit(person.location):
                 self.number_of_people_that_got_out += 1
+                logging.info(f"{person.name} has escaped by exiting")
                 if self.verbose:
                     print(f"{person.name} has escaped by exiting")
                 continue
 
             if self.__is_broken_glass(person.location):
                 self.number_of_people_that_got_out += 1
+                logging.info(f"{person.name} has escaped by jumping out of window")
                 if self.verbose:
                     print(f"{person.name} has escaped by jumping out of window")
                 continue
@@ -191,4 +206,3 @@ class Simulation:
 
     def __is_exit_plan(self, location):
         return self.building.text_building[location[0]][location[1]][location[2]] == 'p'
-

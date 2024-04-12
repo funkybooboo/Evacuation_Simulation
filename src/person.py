@@ -6,6 +6,7 @@ from pathfinding.core.diagonal_movement import DiagonalMovement
 from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
 from prompt import get_choice_from_AI, get_random_choice
+import logging
 
 
 class Strategy(Enum):
@@ -15,12 +16,13 @@ class Strategy(Enum):
 
 class Person:
 
-    def __init__(self, simulation, name, pk, location, memory, verbose=False):
+    def __init__(self, simulation, name, pk, location, memory, n, verbose=False):
+        logging.basicConfig(filename=f'../logs/run{n}/person{pk}.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
         self.verbose = verbose
         self.simulation = simulation
         self.name = name
         self.pk = pk
-        self.age = randint(10, 61)
+        self.age = randint(10, 80)
         # this effects how the person will do in a fight
         self.strength = randint(1, 3)
         # how many blocks can the person move in one turn
@@ -59,6 +61,7 @@ class Person:
         self.end_turn_in_fire = True
 
     def switch_strategy(self):
+        logging.info(f"{self.name} switched strategies")
         if self.strategy == Strategy.defect:
             self.strategy = Strategy.cooperate
         else:
@@ -74,6 +77,8 @@ class Person:
         return is_dead
 
     def move(self):
+        logging.info(f"{self.name} is moving")
+        logging.info(f"{self.name} is at {self.location}")
         other = None
         for i in range(self.speed):
             if self.is_dead():
@@ -93,7 +98,7 @@ class Person:
             # at a stair
             if self.simulation.__is_stair(self.location):
                 self.location = (self.location[0] - 1, self.location[1], self.location[2])
-
+        logging.info(f"{self.name} is at {self.location}")
         return other
 
     def move_one_block(self):
@@ -107,6 +112,7 @@ class Person:
         return self.make_choice(choice)
 
     def make_choice(self, choice):
+        logging.info(f"{self.name} is making choice {choice}")
         if choice is None:
             raise Exception("AI did not give a valid choice")
         if choice == 'A':
@@ -176,7 +182,7 @@ class Person:
             People Near: {self.get_number_of_people_near()}
             Know Evacuation Plan: {self.memory.evacuation_plan}
             Time to Get Out: {self.get_time_to_get_out()}
-            Room Type: {self.get_room_type()}
+            Room Type: {self.room_type}
             """
         return situation
 
@@ -240,8 +246,6 @@ class Person:
         return False
 
     def follow_evacuation_plan(self):
-        # TODO write a function that will allow the person to follow the evacuation plan
-        # With how the floors are set up potenially we could have them find the closest "p" to the right of them. With the exception of floor 1. 
         closest_exit_plan = self.get_closest(self.memory.exit_plans)
         closest_exit = self.get_closest_from_p(closest_exit_plan, self.simulation.building.object_locations["exit"])
         return self.move_towards(closest_exit)
@@ -581,13 +585,27 @@ class Person:
             if other.fear < 10:
                 other.fear += 1
 
+    @staticmethod
+    def get_age_group(age):
+        if 9 < age < 19:
+            return -1
+        elif 18 < age < 36:
+            return 1
+        elif 35 < age < 51:
+            return 0
+        elif 50 < age < 81:
+            return -1
+
     def __normal_form_game(self, other):
-        # TODO adjust the payoffs based on the persons strength levels
+        s1 = self.get_age_group(self.age)
+        s2 = self.get_age_group(other.age)
+        d1 = self.strength + s1
+        d2 = other.strength + s2
         payoffs = {
             (Strategy.cooperate, Strategy.cooperate): (3, 3),
             (Strategy.cooperate, Strategy.defect): (0, 5),
             (Strategy.defect, Strategy.cooperate): (5, 0),
-            (Strategy.defect, Strategy.defect): (1, 1),
+            (Strategy.defect, Strategy.defect): (1 + d1, 1 + d2),
         }
         return payoffs[(self.strategy, other.strategy)]
 
