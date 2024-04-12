@@ -223,8 +223,6 @@ class Person:
         return options
 
     def get_time_to_get_out(self):
-        # TODO write a function that will return the time it will take to get out of the building
-        # tell ai how long take you to get out building so ai knows if should explore for another exit
         long_time = -1
         closest_exit = self.get_closest(self.memory.exits)
         if closest_exit:
@@ -244,7 +242,9 @@ class Person:
     def follow_evacuation_plan(self):
         # TODO write a function that will allow the person to follow the evacuation plan
         # With how the floors are set up potenially we could have them find the closest "p" to the right of them. With the exception of floor 1. 
-        pass
+        closest_exit_plan = self.get_closest(self.memory.exit_plans)
+        closest_exit = self.get_closest_from_p(closest_exit_plan, self.simulation.building.object_locations["exit"])
+        return self.move_towards(closest_exit)
 
     def explore(self):
         if "room" == self.room_type:
@@ -410,6 +410,34 @@ class Person:
             return None
         x1 = self.location[1]
         y1 = self.location[2]
+        x2 = location[1]
+        y2 = location[2]
+        return (((x1 - x2) ** 2) + ((y1 - y2) ** 2)) ** 0.5
+    
+    def get_closest_from_p(self, p, lst):
+        """
+        get the closet of something from a list. ex: get the closest wall, get the closest person, etc.
+        """
+        if len(lst) == 0:
+            return None
+        closest = lst[0]
+        for location in lst:
+            d1 = self.get_distance_from_p(p, location)
+            d2 = self.get_distance_from_p(p, closest)
+            if d1 is None or d2 is None:
+                continue
+            if d1 < d2:
+                closest = location
+        return closest
+    
+    @staticmethod
+    def get_distance_from_p(p, location):
+        if location is None:
+            return None
+        if p[0] != location[0]:
+            return None
+        x1 = p[1]
+        y1 = p[2]
         x2 = location[1]
         y2 = location[2]
         return (((x1 - x2) ** 2) + ((y1 - y2) ** 2)) ** 0.5
