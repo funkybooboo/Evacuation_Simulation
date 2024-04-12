@@ -173,7 +173,7 @@ class Person:
             Nearest Person: {self.get_closest(self.memory.people)}
             Nearest Window: {self.get_closest(self.memory.glasses)}
             Nearest Fire: {self.get_closest(self.memory.fires)}
-            People Near: {self.number_of_people_near()}
+            People Near: {self.get_number_of_people_near()}
             Know Evacuation Plan: {self.memory.evacuation_plan}
             Time to Get Out: {self.get_time_to_get_out()}
             Room Type: {self.get_room_type()}
@@ -225,7 +225,15 @@ class Person:
     def get_time_to_get_out(self):
         # TODO write a function that will return the time it will take to get out of the building
         # tell ai how long take you to get out building so ai knows if should explore for another exit
-        pass
+        long_time = -1
+        closest_exit = self.get_closest(self.memory.exits)
+        if closest_exit:
+            d = self.get_distance(closest_exit) 
+            if not d:
+                return long_time
+            number_of_people = self.get_number_of_people_near()
+            return number_of_people + d
+        return long_time
 
     def is_next_to(self, lst):
         for location in lst:
@@ -239,23 +247,13 @@ class Person:
         pass
 
     def explore(self):
-        if self.is_follower:
-            closest_person = self.get_closest(self.memory.people)
-            if closest_person:
-                return self.move_towards(closest_person)
         if "room" == self.room_type:
             closest_door = self.get_closest(self.memory.doors)
             if closest_door:
                 return self.move_towards(closest_door)
-            furthest_wall = self.get_furthest(self.memory.walls)
-            if furthest_wall:
-                return self.move_towards(furthest_wall)
-            return self.move_randomly()
-        if "hall" == self.room_type:
-            furthest_wall = self.get_furthest(self.memory.walls)
-            if furthest_wall:
-                return self.move_towards(furthest_wall)
-            return self.move_randomly()
+        furthest_wall = self.get_furthest(self.memory.walls)
+        if furthest_wall:
+            return self.move_towards(furthest_wall)
         return self.move_randomly()
     
     def move_randomly(self):
@@ -566,7 +564,7 @@ class Person:
         }
         return payoffs[(self.strategy, other.strategy)]
 
-    def number_of_people_near(self, distance=5):
+    def get_number_of_people_near(self, distance=5):
         count = 0
         for person in self.memory.people:
             if self.is_near(person.location, distance):

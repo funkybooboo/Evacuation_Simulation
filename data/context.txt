@@ -38,4 +38,6 @@ What the scenario will tell you:
 - How many people are near you
 - If you know about the evacuation plan
 - Current estimated time to get out of the building
+    - If this is "-1" then you don't know how long it will take to get out
+    - Anything else means that is the estimated number of moves to get out
 - What type of room you are in (room or hallway)
