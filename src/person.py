@@ -240,16 +240,16 @@ class Person:
         # With how the floors are set up potenially we could have them find the closest "p" to the right of them. With the exception of floor 1. 
         pass
 
-    def explore(self, get_room_type, door_surroundings, window_surroundings, fire_surroundings, stair_or_exit_surroundings):
+    def explore(room_explore, self, get_room_type, stair_or_exit_surroundings, find_wall):
         # TODO write a function that will allow the user to explore the floor they are on
         # TODO make a way for someone to know what kinda room they are in
 
-        # if they are in a room, they will look for the door
-        # if they are in a room and the door is blocked by fire they will find out what to do based of their health
-        # if they are healthy they will try to run through the fire
-        # if they are not healthy they will try to break the glass
-        # if they break the glass they will jump and hope they live
-        # if they are in a hallway, they will look for either a stair or an exit depending on the floor they are on
+         # if they are in a room, they will look for the door
+         # if they are in a room and the door is blocked by fire they will find out what to do based of their health
+         # if they are healthy they will try to run through the fire
+         # if they are not healthy they will try to break the glass
+         # if they break the glass they will jump and hope they live
+         # if they are in a hallway, they will look for either a stair or an exit depending on the floor they are on
         # if the stair or exit is blocked by fire they will find out what to do based of their health
         # if they are healthy they will try to run through the fire
         # if they are not healthy they will look for another exit or stair
@@ -262,45 +262,54 @@ class Person:
             # Update memory with new information
         self.memory.update(surroundings)
 
-        if "room" in get_room_type == True:
-                # Make decision based on surroundings and personal state
-            if "door" in surroundings:
-                door_surroundings()
-            elif "fire" in surroundings and self.health > 50:
-                fire_surroundings()
-            elif "door" not in surroundings and "window" in surroundings:
-                window_surroundings()
-            else:
-                self.move_randomly()
-        elif "hallway" in get_room_type == True:
+        if "room" in get_room_type:
+            room_explore()
+        elif "hallway" in get_room_type:
             stair_or_exit_surroundings()
-            pass
+        elif "unknown" in get_room_type:
+            find_wall()
 
         return None
     
+    def room_explore(self, blocked, door_surroundings, window_surroundings, fire_surroundings, surroundings):
+        if "door" in surroundings is not blocked:
+            door_surroundings()
+        elif "fire" in surroundings and self.health > 50:
+            fire_surroundings()
+        elif "door" not in surroundings and "window" in surroundings:
+            window_surroundings()
+        else:
+            self.move_randomly()
 
+        return None
+    
     def door_surroundings(surroundings, blocked, break_glass, can_break_glass, jump_out_window, run_through_fire, can_run_through_fire):
         if "door" in surroundings is not blocked:
             # go through the door
             pass
         elif "window" in surroundings is not blocked:
-            if can_break_glass == True:
+            if break_glass:
+                jump_out_window
+            elif break_glass == False and can_break_glass:
                 break_glass()
-                if break_glass == True:
+                if break_glass:
                     jump_out_window()
                 else:
                     pass
-            elif can_break_glass is False and can_run_through_fire == True:
+            elif can_break_glass is False and can_run_through_fire:
                     run_through_fire()
+        else:
+            pass # wait
+
+    def fire_surroundings(run_through_fire, self):
+        if self.health > 50:
+            run_through_fire()
         else:
             pass
 
-    def fire_surroundings():
-        pass
-
     def window_surroundings(break_glass, jump_out_window, can_run_through_fire, run_through_fire):
         break_glass()
-        if break_glass == True:
+        if break_glass:
             jump_out_window()
         else:
             if can_run_through_fire is True:
@@ -311,7 +320,7 @@ class Person:
     def stair_or_exit_surroundings(blocked, surroundings, can_run_through_fire, run_through_fire):
         if "stair" or "exit" in surroundings is not blocked:
             pass # move to door
-        elif can_run_through_fire == True:
+        elif can_run_through_fire:
             run_through_fire()
         else:
             pass # look for different exit
@@ -321,9 +330,16 @@ class Person:
             return True
         return False
 
-    def run_through_fire():
-        pass
+    def run_through_fire(can_run_through_fire):
+        if can_run_through_fire:
+            pass
+        else:
+            pass
 
+    def find_wall():
+        # Follow a wall
+        pass
+    
 
     def move_randomly(self):
         x = randint(-1, 1)
