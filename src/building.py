@@ -138,51 +138,52 @@ class Building:
 
     def convert_text_to_colors(self):
         self.object_locations = {
-            "door": [],
-            "exit": [],
-            "stair": [],
-            "glass": [],
-            "obstacle": [],
-            "wall": [],
-            "empty": [],
-            "fire": [],
-            "broken_glass": [],
-            "exit_plan": [],
+            "doors": [],
+            "exits": [],
+            "stairs": [],
+            "glasses": [],
+            "obstacles": [],
+            "walls": [],
+            "empties": [],
+            "fires": [],
+            "broken_glasses": [],
+            "exit_plans": [],
         }
         self.color_building = deepcopy(self.text_building)
         floors = len(self.color_building)
         for floor in range(floors):
-            for row in self.color_building[floor]:
+            for i in range(len(self.color_building[floor])):
+                row = self.color_building[floor][i]
                 for col in range(len(row)):
                     if row[col] == 'w' or row[col] == 'h':
-                        self.object_locations["wall"].append((floor, row, col))
+                        self.object_locations["walls"].append((floor, i, col))
                         row[col] = object_colors["Black"]
                     elif row[col] == 'e':
-                        self.object_locations["exit"].append((floor, row, col))
+                        self.object_locations["exits"].append((floor, i, col))
                         row[col] = object_colors["Dark Brown"]
                     elif row[col] == 'm' or row[col] == 'n' or row[col] == 'l':
-                        self.object_locations["obstacle"].append((floor, row, col))
+                        self.object_locations["obstacles"].append((floor, i, col))
                         row[col] = object_colors["Grey"]
                     elif row[col] == 's':
-                        self.object_locations["stair"].append((floor, row, col))
+                        self.object_locations["stairs"].append((floor, i, col))
                         row[col] = object_colors["Stair Blue"]
                     elif row[col] == 'g':
-                        self.object_locations["glass"].append((floor, row, col))
+                        self.object_locations["glasses"].append((floor, i, col))
                         row[col] = object_colors["Light Brown"]
                     elif row[col] == 'd':
-                        self.object_locations["door"].append((floor, row, col))
+                        self.object_locations["doors"].append((floor, i, col))
                         row[col] = object_colors["Brown"]
                     elif row[col] == ' ' or row[col] == '1' or row[col] == '2':
-                        self.object_locations["empty"].append((floor, row, col))
+                        self.object_locations["empties"].append((floor, i, col))
                         row[col] = object_colors["White"]
                     elif row[col] == 'f':
-                        self.object_locations["fire"].append((floor, row, col))
+                        self.object_locations["fires"].append((floor, i, col))
                         row[col] = object_colors["Red"]
                     elif row[col] == 'b':
-                        self.object_locations["broken_glass"].append((floor, row, col))
+                        self.object_locations["broken_glasses"].append((floor, i, col))
                         row[col] = object_colors["Teal"]
                     elif row[col] == 'p':
-                        self.object_locations["exit_plan"].append((floor, row, col))
+                        self.object_locations["exit_plans"].append((floor, i, col))
                         row[col] = object_colors["Light Pink"]
 
     def convert_text_to_pathfinding_grid(self):
@@ -208,8 +209,6 @@ class Building:
                         row[col] = 3
 
     def print_building(self):
-        self.convert_text_to_colors()
-        self.convert_text_to_pathfinding_grid()
         for floor in range(len(self.color_building)):
             for row in range(self.color_building[floor]):
                 for col in range(self.color_building[floor][row]):
@@ -218,3 +217,7 @@ class Building:
                         print(person.color)
                     else:
                         print(self.color_building[floor][row][col])
+
+    def refresh(self):
+        self.convert_text_to_colors()
+        self.convert_text_to_pathfinding_grid()

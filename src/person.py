@@ -7,6 +7,7 @@ from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
 from prompt import get_choice_from_AI, get_random_choice
 import logging
+from copy import deepcopy
 
 
 class Strategy(Enum):
@@ -50,8 +51,6 @@ class Person:
             self.color = person_colors["Blue"]
 
         self.memory = memory
-
-        self.type_pk = randint(1, 8)
 
         if self.fear > 5:
             self.strategy = Strategy.defect
@@ -219,9 +218,9 @@ class Person:
                 options.append("G")
         if self.memory.fires:
             options.append("F")
-        if self.memory.broken_glass and self.is_next_to(self.memory.broken_glass):
+        if self.memory.broken_glasses and self.is_next_to(self.memory.broken_glasses):
             options.append("J")
-        if self.memory.evacuation_plan:
+        if self.memory.exit_plans:
             options.append("K")
         if self.is_next_to(self.memory.fires):
             options.append("I")
@@ -247,7 +246,7 @@ class Person:
 
     def follow_evacuation_plan(self):
         closest_exit_plan = self.get_closest(self.memory.exit_plans)
-        closest_exit = self.get_closest_from_p(closest_exit_plan, self.simulation.building.object_locations["exit"])
+        closest_exit = self.get_closest_from_p(closest_exit_plan, self.simulation.building.object_locations["exits"])
         return self.move_towards(closest_exit)
 
     def explore(self):
@@ -269,24 +268,30 @@ class Person:
     def move_towards(self, location):
         if location is None:
             return None
+        if not self.simulation.is_in_building(location):
+            return None
         floor1 = self.location[0]
         floor2 = location[0]
         if floor1 != floor2:
             return None
         n_x = None
         n_y = None
+        # if tries is 0, then the person will try to move around people
+        # if tries is 1, then the person will try to move through people
         for tries in range(2):
-            path = self.get_path(floor1, location, tries)
-            if len(path) != 0:
-                n_x, n_y = path[1]
+            path = self.get_path(location, tries)
+            if len(path) != 1:
+                node = path[1]
+                n_x = node.x
+                n_y = node.y
                 break
         if n_x is None or n_y is None:
             return None
         new_location = (floor1, n_x, n_y)
         return self.move_to(new_location)
 
-    def get_path(self, floor1, location, tries):
-        grid = self.get_grid(floor1, tries)
+    def get_path(self, location, tries):
+        grid = self.get_grid(tries)
         x1 = self.location[1]
         y1 = self.location[2]
         start = grid.node(x1, y1)
@@ -300,8 +305,9 @@ class Person:
             print(grid.grid_str(path=path, start=start, end=end))
         return path
 
-    def get_grid(self, floor1, tries):
-        temp_grid = self.simulation.building.grid[floor1]
+    def get_grid(self, tries):
+        floor = self.location[0]
+        temp_grid = deepcopy(self.simulation.building.grid[floor])
         if tries == 0:
             # try with moving around people (collisions are not allowed)
             for row in range(len(temp_grid)):
@@ -322,7 +328,7 @@ class Person:
             if self.can_break_glass():
                 # the person breaks the glass and hurts themselves doing it
                 self.simulation.building.text_building[glass_location[0]][glass_location[1]][glass_location[2]] = 'b'
-                self.memory.add("broken_glass", glass_location)
+                self.memory.add("broken_glasses", glass_location)
                 self.health -= 25
             else:
                 # too weak to break the glass, but they still hurt themselves trying
@@ -354,9 +360,13 @@ class Person:
         return False
 
     def move_to(self, location):
-        if self.is_one_away(self.location, location) and (
-                self.simulation.is_empty(location) or self.simulation.is_exit(
-                location) or self.simulation.is_stair(location) or self.simulation.is_person(location)):
+        if (self.simulation.is_in_building(location) and
+                self.is_one_away(self.location, location) and
+                (self.simulation.is_empty(location) or
+                 self.simulation.is_exit(location) or
+                 self.simulation.is_stair(location) or
+                 self.simulation.is_person(location) or
+                 self.simulation.is_door(location))):
             other = self.simulation.is_person(location)
             if other is not None:
                 return other
@@ -381,7 +391,7 @@ class Person:
         """
         if len(lst) == 0:
             return None
-        closest = lst[0]
+        closest = next(iter(lst))
         for location in lst:
             d1 = self.get_distance(location)
             d2 = self.get_distance(closest)
@@ -397,7 +407,7 @@ class Person:
         """
         if len(lst) == 0:
             return None
-        furthest = lst[0]
+        furthest = next(iter(lst))
         for location in lst:
             d1 = self.get_distance(location)
             d2 = self.get_distance(furthest)
@@ -452,8 +462,9 @@ class Person:
         floor = self.location[0]
         x = self.location[1]
         y = self.location[2]
-        for i in range(-(self.vision - 1), self.vision):
-            for j in range(-self.vision, self.vision + 1):
+        # -1 from vision because the search function will look at the current location
+        for i in range(-(self.vision-1), self.vision):
+            for j in range(-self.vision, self.vision+1):
                 if self.is_continue(i, j, x, y, floor, blocked):
                     continue
                 self.search((floor, x + i, y + j), what_is_around, blocked)
@@ -462,8 +473,8 @@ class Person:
     def is_continue(self, i, j, x, y, floor, blocked):
         if i == j:
             return True
-        if x + i > len(self.simulation.building.text_building[floor][0]) or y + i > len(
-                self.simulation.building.text_building[floor]):
+        if x + i > len(self.simulation.building.text_building[floor]) or y + i > len(
+                self.simulation.building.text_building[floor][0]):
             return True
         if self.is_blocked(blocked, x, y, i, j):
             return True
@@ -481,6 +492,8 @@ class Person:
 
     def add_item(self, blocked, floor, i, j, what_is_around, x, y):
         location = (floor, x + i, y + j)
+        if not self.simulation.is_in_building(location):
+            return
         if self.simulation.is_wall(location):
             what_is_around.add("walls", location)
             if not self.is_diagonal(i, j):
@@ -502,10 +515,10 @@ class Person:
         elif self.simulation.is_person(location):
             what_is_around.add("people", location)
         elif self.simulation.is_broken_glass(location):
-            what_is_around.add("broken_glass", location)
+            what_is_around.add("broken_glasses", location)
         elif self.simulation.is_room(location):
             self.room_type = "room"
-        elif self.simulation.__is_hall(location):
+        elif self.simulation.is_hallway(location):
             self.room_type = "hall"
         elif self.simulation.is_exit_plan(location):
             what_is_around.add("exit_plans", location)

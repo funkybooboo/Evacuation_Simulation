@@ -10,9 +10,9 @@ class Memory:
         self.empties = set()
         self.fires = set()
         self.people = set()
-        self.broken_glass = set()
+        self.broken_glasses = set()
         self.exit_plans = set()
-        self.items = ['doors', 'exits', 'stairs', 'glasses', 'obstacles', 'walls', 'empties', 'fires', 'people', 'broken_glass', 'exit_plans']
+        self.items = ['doors', 'exits', 'stairs', 'glasses', 'obstacles', 'walls', 'empties', 'fires', 'people', 'broken_glasses', 'exit_plans']
 
     def combine(self, other):
         for item in self.items:
@@ -38,4 +38,4 @@ class Memory:
             getattr(self, what).remove(where)
 
     def __str__(self):
-        return f"Doors: {self.doors}\nExits: {self.exits}\nStairs: {self.stairs}\nGlasses: {self.glasses}\nObstacles: {self.obstacles}\nWalls: {self.walls}\nEmpties: {self.empties}\nFires: {self.fires}\nPeople: {self.people}\nBroken Glass: {self.broken_glass}\nExit Plans: {self.exit_plans}"
+        return f"Doors: {self.doors}\nExits: {self.exits}\nStairs: {self.stairs}\nGlasses: {self.glasses}\nObstacles: {self.obstacles}\nWalls: {self.walls}\nEmpties: {self.empties}\nFires: {self.fires}\nPeople: {self.people}\nBroken Glass: {self.broken_glasses}\nExit Plans: {self.exit_plans}"

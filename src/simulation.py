@@ -6,11 +6,12 @@ import logging
 
 
 class Simulation:
-    def __init__(self, number_of_people, n, verbose=False, with_ai=False):
+    def __init__(self, number_of_people, n, time_for_firefights, verbose=False, with_ai=False):
         logging.basicConfig(filename=f'../logs/run{n}/simulation.log', level=logging.INFO,format='%(asctime)s - %(levelname)s - %(message)s')
         self.number_of_people_that_got_out = 0
         self.number_of_people = number_of_people
         self.n = n
+        self.time_for_firefights = time_for_firefights
         self.verbose = verbose
         self.with_ai = with_ai
         self.live_people = []
@@ -22,31 +23,32 @@ class Simulation:
 
     def __start_fire(self):
         while True:
-            floor = randint(0, len(self.building.text_building))
-            x = randint(0, len(self.building.text_building[0]))
-            y = randint(0, len(self.building.text_building[0][0]))
+            floor = randint(0, len(self.building.text_building)-1)
+            x = randint(0, len(self.building.text_building[0])-1)
+            y = randint(0, len(self.building.text_building[0][0])-1)
             location = (floor, x, y)
             if self.__set_fire(location):
                 break
 
     def __generate_people(self):
-        object_list = list(self.building.object_locations.keys())
-        for i in range(self.number_of_people):
-            floor = randint(0, len(self.building.text_building))
-            location = (floor, randint(0, len(self.building.text_building[0])), randint(0, len(self.building.text_building[0][0])))
+        object_list = ['doors', 'exits', 'stairs']
+        count = 0
+        while count < self.number_of_people:
+            floor = randint(0, len(self.building.text_building)-1)
+            location = (floor, randint(0, len(self.building.text_building[0])-1), randint(0, len(self.building.text_building[0][0])-1))
             if (self.is_obstacle(location) or self.is_fire(location) or self.is_person(location) or
                     self.is_wall(location) or self.is_stair(location) or self.is_glass(location) or
                     self.is_door(location) or self.is_exit(location)):
-                i -= 1
                 continue
             memory = Memory()
-            familiarity = randint(1, 11)
-            for _ in range(1, familiarity):
-                what = object_list[randint(0, len(self.building.object_locations))]
-                where = object_list[what][randint(0, len(self.building.object_locations[what]))]
+            familiarity = randint(0, 10)
+            for _ in range(0, familiarity):
+                what = object_list[randint(0, len(object_list)-1)]
+                where = self.building.object_locations[what][randint(0, len(self.building.object_locations[what])-1)]
                 memory.add(what, where)
-            self.live_people.append(Person(self, f'Person{i}', i, location, memory, self.n, self.verbose))
-            logging.info(f"Person{i} has been generated at location {location}")
+            self.live_people.append(Person(self, f'Person{count}', count, location, memory, self.n, self.verbose))
+            logging.info(f"Person{count} has been generated at location {location}")
+            count += 1
 
     def statistics(self):
         if self.verbose:
@@ -63,14 +65,17 @@ class Simulation:
         if self.verbose:
             print("Evacuating...")
         logging.info("Evacuating...")
-        while len(self.live_people) > 0:
+        time = 0
+        while len(self.live_people) > 0 and time < self.time_for_firefights:
             logging.info(f"Anew turn has started-------")
+            self.building.refresh()
             if self.verbose:
                 self.building.print_building()
                 print(f"{self.number_of_people} people remaining")
             logging.info(f"{self.number_of_people} people remaining")
             self.__move_people()
             self.__spread_fire()
+            time += 1
         if self.verbose:
             print("Evacuation complete")
         logging.info("Evacuation complete")
@@ -128,7 +133,7 @@ class Simulation:
 
             temp_live_people.append(person)
 
-        self.live_people = temp_live_people.copy()
+        self.live_people = temp_live_people
 
     def __is_dead(self, person):
         if person.is_dead():
@@ -149,15 +154,12 @@ class Simulation:
                         self.__set_fire(new_location)
 
     def __set_fire(self, location):
-        if self.__is_location_in_building(location) and not self.is_fire(location):
+        if not self.is_fire(location):
             # remove what was there
             self.building.text_building[location[0]][location[1]][location[2]] = 'f'
             self.fire_locations.append(location)
             return True
         return False
-
-    def __is_location_in_building(self, location):
-        return 0 <= location[0] < len(self.building.text_building) and 0 <= location[1] < len(self.building.text_building[0]) and 0 <= location[2] < len(self.building.text_building[0][0])
 
     @staticmethod
     def __is_fire_spread():
@@ -182,6 +184,9 @@ class Simulation:
     def is_wall(self, location):
         c = self.building.text_building[location[0]][location[1]][location[2]]
         return c == 'w' or c == 'h'
+
+    def is_in_building(self, location):
+        return 0 <= location[0] < len(self.building.text_building) and 0 <= location[1] < len(self.building.text_building[0]) and 0 <= location[2] < len(self.building.text_building[0][0])
 
     def is_stair(self, location):
         return self.building.text_building[location[0]][location[1]][location[2]] == 's'
