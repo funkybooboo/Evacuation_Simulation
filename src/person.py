@@ -556,7 +556,6 @@ class Person:
     def combat(self, other):
         wanted_location = other.location
         not_wanted_location = self.location
-        # TODO write a function that will take in account the whole different types of players and their strategies
         payoffs = self.__normal_form_game(other)
         person1_payoff = payoffs[0]
         person2_payoff = payoffs[1]
