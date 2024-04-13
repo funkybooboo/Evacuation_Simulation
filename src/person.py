@@ -17,21 +17,50 @@ class Strategy(Enum):
 
 class Person:
 
-    def __init__(self, simulation, name, pk, location, memory, n, verbose=False):
+    def __init__(self,
+                 simulation,
+                 name,
+                 pk,
+                 location,
+                 memory,
+                 n,
+                 verbose,
+                 max_visibility,
+                 min_visibility,
+                 max_strength,
+                 min_strength,
+                 max_speed,
+                 min_speed,
+                 max_fear,
+                 min_fear,
+                 max_age,
+                 min_age,
+                 max_health,
+                 min_health,
+                 follower_probability
+                 ):
+
         logging.basicConfig(filename=f'../logs/run{n}/person{pk}.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+        self.number_of_fights_won = 0
+        self.number_of_fights_lost = 0
+        self.number_of_fire_touches = 0
+        self.number_of_max_fear = 0
+        # TODO add some logic to keep track of numbers for statistics
+
         self.verbose = verbose
         self.simulation = simulation
         self.name = name
         self.pk = pk
-        self.age = randint(10, 80)
+        self.age = randint(min_age, max_age)
         # this effects how the person will do in a fight
-        self.strength = randint(1, 3)
+        self.strength = randint(min_strength, max_strength)
         # how many blocks can the person move in one turn
-        self.speed = randint(1, 3)
+        self.speed = randint(min_speed, max_speed)
         # how many blocks can the person see
-        self.vision = randint(1, 3)
+        self.vision = randint(min_visibility, max_visibility)
         # how likely the person is to panic
-        self.fear = randint(0, 10)
+        self.fear = randint(min_fear, max_fear)
         # where the person is located (1, 1, 1)
         # (floor, x, y)
         self.location = location
@@ -39,9 +68,10 @@ class Person:
         self.room_type = None
 
         # how much health the person has if the person's health reaches 0, the person dies
-        self.health = 100
+        self.health = randint(min_health, max_health)
 
-        self.is_follower = randint(0, 1) == 0
+        chance = follower_probability * 100
+        self.is_follower = randint(0, chance) % 2 == 0
 
         if self.is_follower:
             self.color_title = "Yellow"
@@ -58,6 +88,19 @@ class Person:
             self.strategy = Strategy.cooperate
 
         self.end_turn_in_fire = True
+
+        logging.info(f"name: {self.name}")
+        logging.info(f"age: {self.age}")
+        logging.info(f"age: {self.age}")
+        logging.info(f"strength: {self.strength}")
+        logging.info(f"speed: {self.speed}")
+        logging.info(f"vision: {self.vision}")
+        logging.info(f"fear: {self.fear}")
+        logging.info(f"health: {self.health}")
+        logging.info(f"is_follower: {self.is_follower}")
+        logging.info(f"strategy: {self.strategy}")
+        logging.info(f"location: {self.location}")
+        logging.info(f"color_title: {self.color_title}")
 
     def switch_strategy(self):
         logging.info(f"{self.name} switched strategies")

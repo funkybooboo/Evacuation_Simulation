@@ -6,9 +6,58 @@ import logging
 
 
 class Simulation:
-    def __init__(self, number_of_people, n, time_for_firefights, verbose=False, with_ai=False):
+    def __init__(self,
+                 number_of_people=50,
+                 n=0,
+                 time_for_firefights=1000,
+                 fire_spread_rate=0.2,
+                 max_visibility=5,
+                 min_visibility=1,
+                 max_strength=10,
+                 min_strength=1,
+                 max_speed=5,
+                 min_speed=1,
+                 max_fear=10,
+                 min_fear=1,
+                 max_age=80,
+                 min_age=10,
+                 max_health=100,
+                 min_health=80,
+                 follower_probability=0.5,
+                 verbose=False,
+                 with_ai=False
+                 ):
         logging.basicConfig(filename=f'../logs/run{n}/simulation.log', level=logging.INFO,format='%(asctime)s - %(levelname)s - %(message)s')
+
+        self.max_visibility = max_visibility
+        self.min_visibility = min_visibility
+        self.max_strength = max_strength
+        self.min_strength = min_strength
+        self.max_speed = max_speed
+        self.min_speed = min_speed
+        self.max_fear = max_fear
+        self.min_fear = min_fear
+        self.max_age = max_age
+        self.min_age = min_age
+        self.max_health = max_health
+        self.min_health = min_health
+        self.follower_probability = follower_probability
+
         self.number_of_people_that_got_out = 0
+        self.number_of_fights = 0
+        self.number_of_injuries = 0
+        self.number_of_deaths = 0
+        self.number_of_max_fear = 0
+        self.average_fear = 0
+        self.average_health = 0
+        self.average_age = 0
+        self.average_familiarity = 0
+        self.average_speed = 0
+        self.average_strength = 0
+        self.average_visibility = 0
+        # TODO add some logic to keep track of numbers for statistics
+
+        self.fire_spread_rate = fire_spread_rate
         self.number_of_people = number_of_people
         self.n = n
         self.time_for_firefights = time_for_firefights
@@ -17,6 +66,7 @@ class Simulation:
         self.live_people = []
         self.dead_people = []
         self.fire_locations = []
+
         self.building = Building(self)
         self.__generate_people()
         self.__start_fire()
@@ -46,7 +96,27 @@ class Simulation:
                 what = object_list[randint(0, len(object_list)-1)]
                 where = self.building.object_locations[what][randint(0, len(self.building.object_locations[what])-1)]
                 memory.add(what, where)
-            self.live_people.append(Person(self, f'Person{count}', count, location, memory, self.n, self.verbose))
+            self.live_people.append(Person(self,
+                                           f'Person{count}',
+                                           count,
+                                           location,
+                                           memory,
+                                           self.n,
+                                           self.verbose,
+                                           self.max_visibility,
+                                           self.min_visibility,
+                                           self.max_strength,
+                                           self.min_strength,
+                                           self.max_speed,
+                                           self.min_speed,
+                                           self.max_fear,
+                                           self.min_fear,
+                                           self.max_age,
+                                           self.min_age,
+                                           self.max_health,
+                                           self.min_health,
+                                           self.follower_probability
+                                           ))
             logging.info(f"Person{count} has been generated at location {location}")
             count += 1
 
@@ -154,6 +224,8 @@ class Simulation:
                         self.__set_fire(new_location)
 
     def __set_fire(self, location):
+        if not self.is_in_building(location):
+            raise Exception(f"Location is not in building: {location}")
         if not self.is_fire(location):
             # remove what was there
             self.building.text_building[location[0]][location[1]][location[2]] = 'f'
@@ -161,27 +233,37 @@ class Simulation:
             return True
         return False
 
-    @staticmethod
-    def __is_fire_spread():
-        return randint(0, 20) == 1
+    def __is_fire_spread(self):
+        chance = self.fire_spread_rate * 100
+        return randint(0, chance) == 1
 
     def is_exit(self, location):
+        if not self.is_in_building(location):
+            raise Exception(f"Location is not in building: {location}")
         return self.building.text_building[location[0]][location[1]][location[2]] == 'e'
 
     def is_obstacle(self, location):
+        if not self.is_in_building(location):
+            raise Exception(f"Location is not in building: {location}")
         c = self.building.text_building[location[0]][location[1]][location[2]]
         return c == 'm' or c == 'n' or c == 'l'
 
     def is_fire(self, location):
+        if not self.is_in_building(location):
+            raise Exception(f"Location is not in building: {location}")
         return location in self.fire_locations
 
     def is_person(self, location):
+        if not self.is_in_building(location):
+            raise Exception(f"Location is not in building: {location}")
         for person in self.live_people:
             if person.location == location:
                 return person
         return None
 
     def is_wall(self, location):
+        if not self.is_in_building(location):
+            raise Exception(f"Location is not in building: {location}")
         c = self.building.text_building[location[0]][location[1]][location[2]]
         return c == 'w' or c == 'h'
 
@@ -189,25 +271,41 @@ class Simulation:
         return 0 <= location[0] < len(self.building.text_building) and 0 <= location[1] < len(self.building.text_building[0]) and 0 <= location[2] < len(self.building.text_building[0][0])
 
     def is_stair(self, location):
+        if not self.is_in_building(location):
+            raise Exception(f"Location is not in building: {location}")
         return self.building.text_building[location[0]][location[1]][location[2]] == 's'
 
     def is_glass(self, location):
+        if not self.is_in_building(location):
+            raise Exception(f"Location is not in building: {location}")
         return self.building.text_building[location[0]][location[1]][location[2]] == 'g'
 
     def is_empty(self, location):
+        if not self.is_in_building(location):
+            raise Exception(f"Location is not in building: {location}")
         return self.building.text_building[location[0]][location[1]][location[2]] == ' '
 
     def is_door(self, location):
+        if not self.is_in_building(location):
+            raise Exception(f"Location is not in building: {location}")
         return self.building.text_building[location[0]][location[1]][location[2]] == 'd'
 
     def is_broken_glass(self, location):
+        if not self.is_in_building(location):
+            raise Exception(f"Location is not in building: {location}")
         return self.building.text_building[location[0]][location[1]][location[2]] == 'b'
 
     def is_room(self, location):
+        if not self.is_in_building(location):
+            raise Exception(f"Location is not in building: {location}")
         return self.building.text_building[location[0]][location[1]][location[2]] == '1'
 
     def is_hallway(self, location):
+        if not self.is_in_building(location):
+            raise Exception(f"Location is not in building: {location}")
         return self.building.text_building[location[0]][location[1]][location[2]] == '2'
 
     def is_exit_plan(self, location):
+        if not self.is_in_building(location):
+            raise Exception(f"Location is not in building: {location}")
         return self.building.text_building[location[0]][location[1]][location[2]] == 'p'
