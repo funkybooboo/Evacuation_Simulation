@@ -272,7 +272,7 @@ class Simulation:
 
     def __is_fire_spread(self):
         chance = int(self.fire_spread_rate * 100)
-        return randint(0, chance) == 1
+        return randint(0, 100) < chance
 
     def is_exit(self, location):
         if not self.is_in_building(location):

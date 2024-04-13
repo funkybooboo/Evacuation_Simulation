@@ -37,6 +37,27 @@ def main(args):
     logging.info(f"Follower probability: {args.follower_probability}")
     logging.info(f"Familiarity: {args.familiarity}")
 
+    if args.verbose:
+        print(f"Number of people: {args.number_of_people}")
+        print(f"Verbose: {args.verbose}")
+        print(f"With AI: {args.with_ai}")
+        print(f"Time for firefighters: {args.time_for_firefighters}")
+        print(f"Fire spread rate: {args.fire_spread_rate}")
+        print(f"Max visibility: {args.max_visibility}")
+        print(f"Min visibility: {args.min_visibility}")
+        print(f"Max strength: {args.max_strength}")
+        print(f"Min strength: {args.min_strength}")
+        print(f"Max speed: {args.max_speed}")
+        print(f"Min speed: {args.min_speed}")
+        print(f"Max fear: {args.max_fear}")
+        print(f"Min fear: {args.min_fear}")
+        print(f"Max age: {args.max_age}")
+        print(f"Min age: {args.min_age}")
+        print(f"Max health: {args.max_health}")
+        print(f"Min health: {args.min_health}")
+        print(f"Follower probability: {args.follower_probability}")
+        print(f"Familiarity: {args.familiarity}")
+
     # create simulation
     simulation = Simulation(
         args.number_of_people,

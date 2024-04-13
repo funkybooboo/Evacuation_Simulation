@@ -1,4 +1,3 @@
-from enum import Enum
 from random import randint
 from colors import person_colors
 from memory import Memory
@@ -8,11 +7,8 @@ from pathfinding.finder.a_star import AStarFinder
 from prompt import get_choice_from_AI, get_random_choice
 import logging
 from copy import deepcopy
-
-
-class Strategy(Enum):
-    cooperate = 0
-    defect = 1
+from strategy import Strategy
+from personality import Copycat, Cooperator, Detective, Simpleton, Cheater, Grudger, Random, Copykitten
 
 
 class Person:
@@ -40,7 +36,7 @@ class Person:
                  follower_probability,
                  familiarity
                  ):
-        logging.basicConfig(filename=f'../logs/run{simulation_count}/person{pk}.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+        logging.basicConfig(filename=f'../logs/run{simulation_count}/people/person{pk}.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
         self.number_of_fights_won = 0
         self.number_of_fights_lost = 0
@@ -68,7 +64,7 @@ class Person:
         # how much health the person has if the person's health reaches 0, the person dies
         self.health = randint(min_health, max_health)
         chance = int(follower_probability * 100)
-        self.is_follower = randint(0, chance) % 2 == 0
+        self.is_follower = randint(0, 100) < chance
         self.familiarity = familiarity
 
         if self.is_follower:
@@ -77,12 +73,13 @@ class Person:
         else:
             self.color_title = "Blue"
             self.color = person_colors["Blue"]
+
         self.memory = memory
-        if self.fear > 5:
-            self.strategy = Strategy.defect
-        else:
-            self.strategy = Strategy.cooperate
+
         self.end_turn_in_fire = True
+
+        self.personality = None
+
 
         logging.info(f"name: {self.name}")
         logging.info(f"age: {self.age}")
@@ -112,13 +109,6 @@ class Person:
             print(f"{self.name} has reached max fear {self.number_of_max_fear} times")
             print(f"{self.name} is a {self.color_title} {self.strategy} with {self.health} health at {self.location}.")
 
-    def switch_strategy(self):
-        # TODO add logic to switch strategies
-        logging.info(f"{self.name} switched strategies")
-        if self.strategy == Strategy.defect:
-            self.strategy = Strategy.cooperate
-        else:
-            self.strategy = Strategy.defect
 
     def __str__(self):
         return f"{self.name} is a {self.color_title} {self.strategy} with {self.health} health at {self.location}."
@@ -686,7 +676,7 @@ class Person:
             (Strategy.defect, Strategy.cooperate): (5, 0),
             (Strategy.defect, Strategy.defect): (1 + d1, 1 + d2),
         }
-        return payoffs[(self.strategy, other.strategy)]
+        return payoffs[(self.personality.get_strategy(), other.personality.get_strategy())]
 
     def get_number_of_people_near(self, distance=5):
         count = 0
