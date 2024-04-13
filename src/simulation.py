@@ -9,7 +9,7 @@ class Simulation:
     def __init__(self,
                  number_of_people=50,
                  simulation_count=0,
-                 time_for_firefights=1000,
+                 time_for_firefighters=1000,
                  fire_spread_rate=0.2,
                  max_visibility=5,
                  min_visibility=1,
@@ -66,7 +66,7 @@ class Simulation:
         self.fire_spread_rate = fire_spread_rate
         self.number_of_people = number_of_people
         self.simulation_count = simulation_count
-        self.time_for_firefights = time_for_firefights
+        self.time_for_firefighters = time_for_firefighters
         self.verbose = verbose
         self.with_ai = with_ai
         self.live_people = []
@@ -165,7 +165,7 @@ class Simulation:
             print("Evacuating...")
         logging.info("Evacuating...")
         time = 0
-        while len(self.live_people) > 0 and time < self.time_for_firefights:
+        while len(self.live_people) > 0 and time < self.time_for_firefighters:
             logging.info(f"Anew turn has started-------")
             self.building.refresh()
             if self.verbose:

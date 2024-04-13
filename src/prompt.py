@@ -1,6 +1,6 @@
 from random import randint
 
-from openai import OpenAI  # Possible version mismatches between poetry and teh openAI installation
+from openai import OpenAI
 from dotenv import load_dotenv
 import os
 
@@ -38,7 +38,7 @@ def get_response(situation, options, temperature):
             example += "\n"
     question = "Options:\n" + options + "\n----------------------\nPick a letter:"
 
-    with open("../data/APIKEY.txt", "r") as file:
+    with open("../data/openai_key.txt", "r") as file:
         OPENAI_API_KEY = file.readline().strip()
     if OPENAI_API_KEY is None:
         raise Exception("couldn't get key")
