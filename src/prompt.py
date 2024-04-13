@@ -65,14 +65,14 @@ def get_random_choice(options):
     return options[randint(0, len(options) - 1)]
 
 
-def get_choice_from_AI(situation, options, tempurature):
+def get_choice_from_AI(situation, options, temperature):
     options_with_text = ""
     for option in options:
         options_with_text += option
         options_with_text += ": "
         options_with_text += text[option]
         options_with_text += "\n"
-    response = get_response(situation, options_with_text, tempurature)
+    response = get_response(situation, options_with_text, temperature)
     if response is None:
         return None
     if response == "" or response == " ":

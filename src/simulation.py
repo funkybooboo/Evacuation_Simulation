@@ -3,6 +3,7 @@ from memory import Memory
 from random import randint
 from building import Building
 import logging
+import inspect
 
 
 class Simulation:
@@ -262,7 +263,7 @@ class Simulation:
 
     def __set_fire(self, location):
         if not self.is_in_building(location):
-            raise Exception(f"Location is not in building: {location}")
+            raise Exception(f"Location is not in building: {location} \ncaller name: {inspect.currentframe().f_back.f_code.co_name}")
         if not self.is_fire(location):
             # remove what was there
             self.building.text_building[location[0]][location[1]][location[2]] = 'f'
@@ -276,23 +277,23 @@ class Simulation:
 
     def is_exit(self, location):
         if not self.is_in_building(location):
-            raise Exception(f"Location is not in building: {location}")
+            raise Exception(f"Location is not in building: {location} \ncaller name: {inspect.currentframe().f_back.f_code.co_name}")
         return self.building.text_building[location[0]][location[1]][location[2]] == 'e'
 
     def is_obstacle(self, location):
         if not self.is_in_building(location):
-            raise Exception(f"Location is not in building: {location}")
+            raise Exception(f"Location is not in building: {location} \ncaller name: {inspect.currentframe().f_back.f_code.co_name}")
         c = self.building.text_building[location[0]][location[1]][location[2]]
         return c == 'm' or c == 'n' or c == 'l'
 
     def is_fire(self, location):
         if not self.is_in_building(location):
-            raise Exception(f"Location is not in building: {location}")
+            raise Exception(f"Location is not in building: {location} \ncaller name: {inspect.currentframe().f_back.f_code.co_name}")
         return location in self.fire_locations
 
     def is_person(self, location):
         if not self.is_in_building(location):
-            raise Exception(f"Location is not in building: {location}")
+            raise Exception(f"Location is not in building: {location} \ncaller name: {inspect.currentframe().f_back.f_code.co_name}")
         for person in self.live_people:
             if person.location == location:
                 return person
@@ -300,7 +301,7 @@ class Simulation:
 
     def is_wall(self, location):
         if not self.is_in_building(location):
-            raise Exception(f"Location is not in building: {location}")
+            raise Exception(f"Location is not in building: {location} \ncaller name: {inspect.currentframe().f_back.f_code.co_name}")
         c = self.building.text_building[location[0]][location[1]][location[2]]
         return c == 'w' or c == 'h'
 
@@ -310,40 +311,40 @@ class Simulation:
 
     def is_stair(self, location):
         if not self.is_in_building(location):
-            raise Exception(f"Location is not in building: {location}")
+            raise Exception(f"Location is not in building: {location} \ncaller name: {inspect.currentframe().f_back.f_code.co_name}")
         return self.building.text_building[location[0]][location[1]][location[2]] == 's'
 
     def is_glass(self, location):
         if not self.is_in_building(location):
-            raise Exception(f"Location is not in building: {location}")
+            raise Exception(f"Location is not in building: {location} \ncaller name: {inspect.currentframe().f_back.f_code.co_name}")
         return self.building.text_building[location[0]][location[1]][location[2]] == 'g'
 
     def is_empty(self, location):
         if not self.is_in_building(location):
-            raise Exception(f"Location is not in building: {location}")
+            raise Exception(f"Location is not in building: {location} \ncaller name: {inspect.currentframe().f_back.f_code.co_name}")
         return self.building.text_building[location[0]][location[1]][location[2]] == ' '
 
     def is_door(self, location):
         if not self.is_in_building(location):
-            raise Exception(f"Location is not in building: {location}")
+            raise Exception(f"Location is not in building: {location} \ncaller name: {inspect.currentframe().f_back.f_code.co_name}")
         return self.building.text_building[location[0]][location[1]][location[2]] == 'd'
 
     def is_broken_glass(self, location):
         if not self.is_in_building(location):
-            raise Exception(f"Location is not in building: {location}")
+            raise Exception(f"Location is not in building: {location} \ncaller name: {inspect.currentframe().f_back.f_code.co_name}")
         return self.building.text_building[location[0]][location[1]][location[2]] == 'b'
 
     def is_room(self, location):
         if not self.is_in_building(location):
-            raise Exception(f"Location is not in building: {location}")
+            raise Exception(f"Location is not in building: {location} \ncaller name: {inspect.currentframe().f_back.f_code.co_name}")
         return self.building.text_building[location[0]][location[1]][location[2]] == '1'
 
     def is_hallway(self, location):
         if not self.is_in_building(location):
-            raise Exception(f"Location is not in building: {location}")
+            raise Exception(f"Location is not in building: {location} \ncaller name: {inspect.currentframe().f_back.f_code.co_name}")
         return self.building.text_building[location[0]][location[1]][location[2]] == '2'
 
     def is_exit_plan(self, location):
         if not self.is_in_building(location):
-            raise Exception(f"Location is not in building: {location}")
+            raise Exception(f"Location is not in building: {location} \ncaller name: {inspect.currentframe().f_back.f_code.co_name}")
         return self.building.text_building[location[0]][location[1]][location[2]] == 'p'
