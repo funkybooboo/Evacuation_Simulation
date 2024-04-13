@@ -8,13 +8,13 @@ def main(args):
 
     # create log directory
     with open('run', 'r') as f:
-        n = int(f.read())
+        simulation_count = int(f.read())
     with open('run', 'w') as f:
-        f.write(str(n + 1))
-    mkdir(f'../logs/run{n}')
+        f.write(str(simulation_count + 1))
+    mkdir(f'../logs/run{simulation_count}')
 
     # set up logging
-    logging.basicConfig(filename=f'../logs/run{n}/main.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    logging.basicConfig(filename=f'../logs/run{simulation_count}/main.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
     # default values
     number_of_people = 100
@@ -35,7 +35,10 @@ def main(args):
     min_age = 10
     max_health = 100
     min_health = 80
+    # probability of a person being a follower: ie they like people
     follower_probability = 0.5
+    # number of objects a person can remember at the beginning
+    familiarity = 15
 
     # parse arguments from command line
     if len(args) > 1 and args[0].isdigit():
@@ -74,6 +77,8 @@ def main(args):
         min_health = int(args[17])
     if len(args) > 18 and args[17].isdigit():
         follower_probability = float(args[18])
+    if len(args) > 19 and args[18].isdigit():
+        familiarity = float(args[19])
 
     # log arguments
     logging.info(f"Number of people: {number_of_people}")
@@ -94,11 +99,12 @@ def main(args):
     logging.info(f"Max health: {max_health}")
     logging.info(f"Min health: {min_health}")
     logging.info(f"Follower probability: {follower_probability}")
+    logging.info(f"Familiarity: {familiarity}")
 
     # create simulation
     simulation = Simulation(
         number_of_people,
-        n,
+        simulation_count,
         time_for_firefights,
         fire_spread_rate,
         max_visibility,
@@ -115,7 +121,8 @@ def main(args):
         min_health,
         follower_probability,
         verbose,
-        with_ai
+        with_ai,
+        familiarity
     )
     # see statistics before evacuation
     simulation.statistics()

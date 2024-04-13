@@ -23,7 +23,7 @@ class Person:
                  pk,
                  location,
                  memory,
-                 n,
+                 simulation_count,
                  verbose,
                  max_visibility,
                  min_visibility,
@@ -37,16 +37,16 @@ class Person:
                  min_age,
                  max_health,
                  min_health,
-                 follower_probability
+                 follower_probability,
+                 familiarity
                  ):
-
-        logging.basicConfig(filename=f'../logs/run{n}/person{pk}.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+        logging.basicConfig(filename=f'../logs/run{simulation_count}/person{pk}.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
         self.number_of_fights_won = 0
         self.number_of_fights_lost = 0
+        self.number_of_fights_tied = 0
         self.number_of_fire_touches = 0
         self.number_of_max_fear = 0
-        # TODO add some logic to keep track of numbers for statistics
 
         self.verbose = verbose
         self.simulation = simulation
@@ -64,14 +64,12 @@ class Person:
         # where the person is located (1, 1, 1)
         # (floor, x, y)
         self.location = location
-
         self.room_type = None
-
         # how much health the person has if the person's health reaches 0, the person dies
         self.health = randint(min_health, max_health)
-
-        chance = follower_probability * 100
+        chance = int(follower_probability * 100)
         self.is_follower = randint(0, chance) % 2 == 0
+        self.familiarity = familiarity
 
         if self.is_follower:
             self.color_title = "Yellow"
@@ -79,14 +77,11 @@ class Person:
         else:
             self.color_title = "Blue"
             self.color = person_colors["Blue"]
-
         self.memory = memory
-
         if self.fear > 5:
             self.strategy = Strategy.defect
         else:
             self.strategy = Strategy.cooperate
-
         self.end_turn_in_fire = True
 
         logging.info(f"name: {self.name}")
@@ -102,7 +97,23 @@ class Person:
         logging.info(f"location: {self.location}")
         logging.info(f"color_title: {self.color_title}")
 
+    def statistics(self):
+        logging.info(f"{self.name} has won {self.number_of_fights_won} fights")
+        logging.info(f"{self.name} has lost {self.number_of_fights_lost} fights")
+        logging.info(f"{self.name} has tied {self.number_of_fights_tied} fights")
+        logging.info(f"{self.name} has touched fire {self.number_of_fire_touches} times")
+        logging.info(f"{self.name} has reached max fear {self.number_of_max_fear} times")
+        logging.info(f"{self.name} is a {self.color_title} {self.strategy} with {self.health} health at {self.location}.")
+        if self.verbose:
+            print(f"{self.name} has won {self.number_of_fights_won} fights")
+            print(f"{self.name} has lost {self.number_of_fights_lost} fights")
+            print(f"{self.name} has tied {self.number_of_fights_tied} fights")
+            print(f"{self.name} has touched fire {self.number_of_fire_touches} times")
+            print(f"{self.name} has reached max fear {self.number_of_max_fear} times")
+            print(f"{self.name} is a {self.color_title} {self.strategy} with {self.health} health at {self.location}.")
+
     def switch_strategy(self):
+        # TODO add logic to switch strategies
         logging.info(f"{self.name} switched strategies")
         if self.strategy == Strategy.defect:
             self.strategy = Strategy.cooperate
@@ -121,6 +132,8 @@ class Person:
     def move(self):
         logging.info(f"{self.name} is moving")
         logging.info(f"{self.name} is at {self.location}")
+        if self.fear == self.simulation.max_fear:
+            self.number_of_max_fear += 1
         other = None
         for i in range(self.speed):
             if self.is_dead():
@@ -135,6 +148,7 @@ class Person:
             if self.location in self.simulation.fire_locations:
                 self.health -= 25
                 self.end_turn_in_fire = True
+                self.number_of_fire_touches += 1
             else:
                 self.end_turn_in_fire = False
             # at a stair
@@ -620,6 +634,8 @@ class Person:
         person1_payoff = payoffs[0]
         person2_payoff = payoffs[1]
         if person1_payoff > person2_payoff:
+            self.number_of_fights_won += 1
+            other.number_of_fights_lost += 1
             other.health -= 5
             if other.fear < 10:
                 other.fear += 1
@@ -628,12 +644,16 @@ class Person:
             self.location = wanted_location
             other.location = not_wanted_location
         elif payoffs[0] < payoffs[1]:
+            self.number_of_fights_lost += 1
+            other.number_of_fights_won += 1
             self.health -= 5
             if self.fear < 10:
                 self.fear += 1
             if other.fear > 0:
                 other.fear -= 1
         else:
+            self.number_of_fights_tied += 1
+            other.number_of_fights_tied += 1
             self.health -= 5
             other.health -= 5
             if self.fear < 10:
@@ -641,20 +661,23 @@ class Person:
             if other.fear < 10:
                 other.fear += 1
 
-    @staticmethod
-    def get_age_group(age):
-        if 9 < age < 19:
+    def get_age_group(self):
+        if 0 < self.age < 10:
+            return -2
+        elif 9 < self.age < 19:
             return -1
-        elif 18 < age < 36:
+        elif 18 < self.age < 36:
             return 1
-        elif 35 < age < 51:
+        elif 35 < self.age < 51:
             return 0
-        elif 50 < age < 81:
+        elif 50 < self.age < 81:
             return -1
+        else:
+            return -2
 
     def __normal_form_game(self, other):
-        s1 = self.get_age_group(self.age)
-        s2 = self.get_age_group(other.age)
+        s1 = self.get_age_group()
+        s2 = other.get_age_group()
         d1 = self.strength + s1
         d2 = other.strength + s2
         payoffs = {
@@ -672,7 +695,7 @@ class Person:
                 count += 1
         return count
 
-    def is_near(self, location, distance):
+    def is_near(self, location, distance=5):
         d1 = self.get_distance(location)
         if d1 < distance:
             return True

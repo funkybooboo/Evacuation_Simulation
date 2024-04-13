@@ -8,7 +8,7 @@ import logging
 class Simulation:
     def __init__(self,
                  number_of_people=50,
-                 n=0,
+                 simulation_count=0,
                  time_for_firefights=1000,
                  fire_spread_rate=0.2,
                  max_visibility=5,
@@ -25,9 +25,11 @@ class Simulation:
                  min_health=80,
                  follower_probability=0.5,
                  verbose=False,
-                 with_ai=False
+                 with_ai=False,
+                 familiarity=15
                  ):
-        logging.basicConfig(filename=f'../logs/run{n}/simulation.log', level=logging.INFO,format='%(asctime)s - %(levelname)s - %(message)s')
+        logging.basicConfig(filename=f'../logs/run{simulation_count}/simulation.log', level=logging.INFO,
+                            format='%(asctime)s - %(levelname)s - %(message)s')
 
         self.max_visibility = max_visibility
         self.min_visibility = min_visibility
@@ -42,12 +44,17 @@ class Simulation:
         self.max_health = max_health
         self.min_health = min_health
         self.follower_probability = follower_probability
+        self.familiarity = familiarity
 
         self.number_of_people_that_got_out = 0
         self.number_of_fights = 0
         self.number_of_injuries = 0
         self.number_of_deaths = 0
+        self.number_of_deaths_by_fire = 0
+        self.number_of_deaths_by_fighting = 0
+        self.number_of_deaths_by_moving = 0
         self.number_of_max_fear = 0
+        self.number_of_followers = 0
         self.average_fear = 0
         self.average_health = 0
         self.average_age = 0
@@ -55,11 +62,10 @@ class Simulation:
         self.average_speed = 0
         self.average_strength = 0
         self.average_visibility = 0
-        # TODO add some logic to keep track of numbers for statistics
 
         self.fire_spread_rate = fire_spread_rate
         self.number_of_people = number_of_people
-        self.n = n
+        self.simulation_count = simulation_count
         self.time_for_firefights = time_for_firefights
         self.verbose = verbose
         self.with_ai = with_ai
@@ -69,13 +75,32 @@ class Simulation:
 
         self.building = Building(self)
         self.__generate_people()
+        self.get_averages()
         self.__start_fire()
+
+    def get_averages(self):
+        for person in self.live_people:
+            self.average_fear += person.fear
+            self.average_health += person.health
+            self.average_age += person.age
+            self.average_familiarity += person.familiarity
+            self.average_speed += person.speed
+            self.average_strength += person.strength
+            self.average_visibility += person.visibility
+        if len(self.live_people) > 0:
+            self.average_fear /= len(self.live_people)
+            self.average_health /= len(self.live_people)
+            self.average_age /= len(self.live_people)
+            self.average_familiarity /= len(self.live_people)
+            self.average_speed /= len(self.live_people)
+            self.average_strength /= len(self.live_people)
+            self.average_visibility /= len(self.live_people)
 
     def __start_fire(self):
         while True:
-            floor = randint(0, len(self.building.text_building)-1)
-            x = randint(0, len(self.building.text_building[0])-1)
-            y = randint(0, len(self.building.text_building[0][0])-1)
+            floor = randint(0, len(self.building.text_building) - 1)
+            x = randint(0, len(self.building.text_building[0]) - 1)
+            y = randint(0, len(self.building.text_building[0][0]) - 1)
             location = (floor, x, y)
             if self.__set_fire(location):
                 break
@@ -84,39 +109,43 @@ class Simulation:
         object_list = ['doors', 'exits', 'stairs']
         count = 0
         while count < self.number_of_people:
-            floor = randint(0, len(self.building.text_building)-1)
-            location = (floor, randint(0, len(self.building.text_building[0])-1), randint(0, len(self.building.text_building[0][0])-1))
+            floor = randint(0, len(self.building.text_building) - 1)
+            location = (floor, randint(0, len(self.building.text_building[0]) - 1),
+                        randint(0, len(self.building.text_building[0][0]) - 1))
             if (self.is_obstacle(location) or self.is_fire(location) or self.is_person(location) or
                     self.is_wall(location) or self.is_stair(location) or self.is_glass(location) or
                     self.is_door(location) or self.is_exit(location)):
                 continue
             memory = Memory()
-            familiarity = randint(0, 10)
+            familiarity = randint(0, self.familiarity)
             for _ in range(0, familiarity):
-                what = object_list[randint(0, len(object_list)-1)]
-                where = self.building.object_locations[what][randint(0, len(self.building.object_locations[what])-1)]
+                what = object_list[randint(0, len(object_list) - 1)]
+                where = self.building.object_locations[what][randint(0, len(self.building.object_locations[what]) - 1)]
                 memory.add(what, where)
-            self.live_people.append(Person(self,
-                                           f'Person{count}',
-                                           count,
-                                           location,
-                                           memory,
-                                           self.n,
-                                           self.verbose,
-                                           self.max_visibility,
-                                           self.min_visibility,
-                                           self.max_strength,
-                                           self.min_strength,
-                                           self.max_speed,
-                                           self.min_speed,
-                                           self.max_fear,
-                                           self.min_fear,
-                                           self.max_age,
-                                           self.min_age,
-                                           self.max_health,
-                                           self.min_health,
-                                           self.follower_probability
-                                           ))
+            person = Person(self,
+                            f'Person{count}',
+                            count,
+                            location,
+                            memory,
+                            self.simulation_count,
+                            self.verbose,
+                            self.max_visibility,
+                            self.min_visibility,
+                            self.max_strength,
+                            self.min_strength,
+                            self.max_speed,
+                            self.min_speed,
+                            self.max_fear,
+                            self.min_fear,
+                            self.max_age,
+                            self.min_age,
+                            self.max_health,
+                            self.min_health,
+                            self.follower_probability,
+                            familiarity
+                            )
+            self.number_of_followers += 1 if person.is_follower else 0
+            self.live_people.append(person)
             logging.info(f"Person{count} has been generated at location {location}")
             count += 1
 
@@ -161,13 +190,16 @@ class Simulation:
                 continue
 
             if person.end_turn_in_fire and person.location in self.fire_locations:
+                self.number_of_injuries += 1
                 person.health -= 50
             elif not person.end_turn_in_fire and person.location in self.fire_locations:
+                self.number_of_injuries += 1
                 person.health -= 25
 
             # Die by fire
             if self.__is_dead(person):
                 logging.info(f"{person.name} has died by fire")
+                self.number_of_deaths_by_fire += 1
                 continue
 
             other_person = person.move()
@@ -175,15 +207,19 @@ class Simulation:
             # Die by moving
             if self.__is_dead(person):
                 logging.info(f"{person.name} has died by moving")
+                self.number_of_deaths_by_moving += 1
                 continue
 
             if other_person:
                 logging.info(f"{person.name} is fighting {other_person.name}")
                 person.combat(other_person)
+                self.number_of_fights += 1
+                self.number_of_injuries += 2
 
             # Die by combat
             if self.__is_dead(person):
                 logging.info(f"{person.name} has died by combat")
+                self.number_of_deaths_by_fighting += 1
                 continue
 
             # the person is still alive and made it to an exit
@@ -200,13 +236,14 @@ class Simulation:
                 if self.verbose:
                     print(f"{person.name} has escaped by jumping out of window")
                 continue
-
+            self.number_of_max_fear += 1 if person.fear == self.max_fear else 0
             temp_live_people.append(person)
 
         self.live_people = temp_live_people
 
     def __is_dead(self, person):
         if person.is_dead():
+            self.number_of_deaths += 1
             self.dead_people.append(person)
             if self.verbose:
                 print(f"{person.name} has died at location {person.location}")
@@ -234,7 +271,7 @@ class Simulation:
         return False
 
     def __is_fire_spread(self):
-        chance = self.fire_spread_rate * 100
+        chance = int(self.fire_spread_rate * 100)
         return randint(0, chance) == 1
 
     def is_exit(self, location):
@@ -268,7 +305,8 @@ class Simulation:
         return c == 'w' or c == 'h'
 
     def is_in_building(self, location):
-        return 0 <= location[0] < len(self.building.text_building) and 0 <= location[1] < len(self.building.text_building[0]) and 0 <= location[2] < len(self.building.text_building[0][0])
+        return 0 <= location[0] < len(self.building.text_building) and 0 <= location[1] < len(
+            self.building.text_building[0]) and 0 <= location[2] < len(self.building.text_building[0][0])
 
     def is_stair(self, location):
         if not self.is_in_building(location):
