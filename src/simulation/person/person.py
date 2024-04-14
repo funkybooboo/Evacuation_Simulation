@@ -21,19 +21,13 @@ class Person:
                  memory,
                  simulation_count,
                  verbose,
-                 max_visibility,
-                 min_visibility,
-                 max_strength,
-                 min_strength,
-                 max_speed,
-                 min_speed,
-                 max_fear,
-                 min_fear,
-                 max_age,
-                 min_age,
-                 max_health,
-                 min_health,
-                 follower_probability,
+                 age,
+                 strength,
+                 speed,
+                 visibility,
+                 fear,
+                 health,
+                 is_follower,
                  familiarity,
                  personality,
                  personality_title
@@ -48,23 +42,23 @@ class Person:
         self.simulation = simulation
         self.name = name
         self.pk = pk
-        self.age = randint(min_age, max_age)
+        self.age = age
         # this effects how the person will do in a fight
-        self.strength = randint(min_strength, max_strength)
+        self.strength = strength
         # how many blocks can the person move in one turn
-        self.speed = randint(min_speed, max_speed)
+        self.speed = speed
         # how many blocks can the person see
-        self.visibility = randint(min_visibility, max_visibility)
+        self.visibility = visibility
         # how likely the person is to panic
-        self.fear = randint(min_fear, max_fear)
+        self.fear = fear
         # where the person is located (1, 1, 1)
         # (floor, x, y)
         self.location = location
         self.room_type = None
         # how much health the person has if the person's health reaches 0, the person dies
-        self.health = randint(min_health, max_health)
-        chance = int(follower_probability * 100)
-        self.is_follower = randint(0, 100) < chance
+        self.health = health
+
+        self.is_follower = is_follower
         self.familiarity = familiarity
 
         if self.is_follower:
@@ -85,7 +79,8 @@ class Person:
 
         self.choice = Choice(self)
 
-        self.logger = setup_logger("person_logger", f'../../../logs/run{simulation_count}/people/person{pk}.log', verbose)
+        self.logger = setup_logger("person_logger", f'../../../logs/run{simulation_count}/people/person{pk}.log',
+                                   verbose)
         self.logger.info('This log is for INFO purposes from person')
 
         self.logger.info(f"name: {self.name}")
@@ -566,9 +561,9 @@ class Person:
 
     def dont_know_where_anything_is(self):
         if (self.get_on_my_floor(self.memory.doors) or
-            self.get_on_my_floor(self.memory.exits) or
-            self.get_on_my_floor(self.memory.exit_plans) or
-            self.get_on_my_floor(self.memory.stairs)
+                self.get_on_my_floor(self.memory.exits) or
+                self.get_on_my_floor(self.memory.exit_plans) or
+                self.get_on_my_floor(self.memory.stairs)
         ):
             return False
         return True
@@ -584,7 +579,8 @@ class Person:
         return new_lst
 
     def know_about_important_location(self):
-        if self.get_on_my_floor(self.memory.exits) or self.get_on_my_floor(self.memory.exit_plans) or self.get_on_my_floor(self.memory.stairs):
+        if self.get_on_my_floor(self.memory.exits) or self.get_on_my_floor(
+                self.memory.exit_plans) or self.get_on_my_floor(self.memory.stairs):
             return True
         return False
 
