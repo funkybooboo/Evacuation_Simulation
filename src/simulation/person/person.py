@@ -1,14 +1,14 @@
 from random import randint
 from src.simulation.colors import person_colors
-from memory import Memory
+from .memory import Memory
 from pathfinding.core.diagonal_movement import DiagonalMovement
 from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
-from prompt import get_choice_from_AI, get_random_choice
+from .prompt import get_choice_from_AI, get_random_choice
 import logging
 from copy import deepcopy
-from strategy import Strategy
-from fight_entry import FightEntry
+from .strategy import Strategy
+from .fight_entry import FightEntry
 
 
 class Person:
@@ -56,7 +56,7 @@ class Person:
         # how many blocks can the person move in one turn
         self.speed = randint(min_speed, max_speed)
         # how many blocks can the person see
-        self.vision = randint(min_visibility, max_visibility)
+        self.visibility = randint(min_visibility, max_visibility)
         # how likely the person is to panic
         self.fear = randint(min_fear, max_fear)
         # where the person is located (1, 1, 1)
@@ -89,7 +89,7 @@ class Person:
         logging.info(f"age: {self.age}")
         logging.info(f"strength: {self.strength}")
         logging.info(f"speed: {self.speed}")
-        logging.info(f"vision: {self.vision}")
+        logging.info(f"vision: {self.visibility}")
         logging.info(f"fear: {self.fear}")
         logging.info(f"health: {self.health}")
         logging.info(f"is_follower: {self.is_follower}")
@@ -511,8 +511,8 @@ class Person:
         x = self.location[1]
         y = self.location[2]
         # -1 from vision because the search function will look at the current location
-        for i in range(-(self.vision - 1), self.vision):
-            for j in range(-self.vision, self.vision + 1):
+        for i in range(-(self.visibility - 1), self.visibility):
+            for j in range(-self.visibility, self.visibility + 1):
                 if self.is_continue(i, j, x, y, floor, blocked):
                     continue
                 self.search((floor, x + i, y + j), what_is_around, blocked)

@@ -1,4 +1,4 @@
-from colors import object_colors
+from .colors import object_colors
 from copy import deepcopy
 
 

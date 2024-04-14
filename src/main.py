@@ -17,14 +17,14 @@ def main(args):
                         format='%(asctime)s - %(levelname)s - %(message)s')
 
     personalities = {
-        "copycat": args.copycat,
-        "cooperator": args.cooperator,
-        "detective": args.detective,
-        "simpleton": args.simpleton,
-        "cheater": args.cheater,
-        "grudger": args.grudger,
-        "copykitten": args.copykitten,
-        "random": args.random
+        "Copycat": args.copycat,
+        "Cooperator": args.cooperator,
+        "Detective": args.detective,
+        "Simpleton": args.simpleton,
+        "Cheater": args.cheater,
+        "Grudger": args.grudger,
+        "Copykitten": args.copykitten,
+        "Random": args.random
     }
 
     # log arguments

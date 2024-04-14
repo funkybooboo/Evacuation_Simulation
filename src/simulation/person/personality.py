@@ -1,6 +1,6 @@
 from random import randint
 from abc import ABC, abstractmethod
-from strategy import Strategy
+from .strategy import Strategy
 
 
 class Personality(ABC):

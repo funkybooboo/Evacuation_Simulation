@@ -2,7 +2,7 @@ from simulation.person.person import Person
 from simulation.person.memory import Memory
 from simulation.person.personality import Copycat, Cooperator, Detective, Simpleton, Cheater, Grudger, Random, Copykitten
 from random import randint
-from building import Building
+from .building import Building
 import logging
 import inspect
 
@@ -63,8 +63,7 @@ class Simulation:
         self.max_number_of_random = int(personalities["Random"] * number_of_people)
         self.number_of_random = 0
 
-        if self.max_number_of_copycat + self.max_number_of_cooperator + self.max_number_of_detective + self.max_number_of_simpleton + self.max_number_of_cheater + self.max_number_of_grudger + self.max_number_of_copykitten + self.max_number_of_random != number_of_people:
-            raise Exception("Number of people and personalities don't match")
+        self.fix_numbers(number_of_people)
 
         self.max_visibility = max_visibility
         self.min_visibility = min_visibility
@@ -114,6 +113,34 @@ class Simulation:
         self.__generate_people()
         self.get_averages()
         self.__start_fire()
+
+    def fix_numbers(self, number_of_people):
+        current_number = self.max_number_of_copycat + self.max_number_of_cooperator + self.max_number_of_detective + self.max_number_of_simpleton + self.max_number_of_cheater + self.max_number_of_grudger + self.max_number_of_copykitten + self.max_number_of_random
+        maxes = [self.max_number_of_copycat, self.max_number_of_cooperator, self.max_number_of_detective,
+                 self.max_number_of_simpleton, self.max_number_of_cheater, self.max_number_of_grudger,
+                 self.max_number_of_copykitten, self.max_number_of_random]
+        if current_number < number_of_people:
+            max = -1
+            for m in maxes:
+                if m > max:
+                    max = m
+            max_index = maxes.index(max)
+            maxes[max_index] += number_of_people - current_number
+        elif current_number > number_of_people:
+            max = -1
+            for m in maxes:
+                if m > max:
+                    max = m
+            max_index = maxes.index(max)
+            maxes[max_index] -= current_number
+        self.max_number_of_copycat = maxes[0]
+        self.max_number_of_cooperator = maxes[1]
+        self.max_number_of_detective = maxes[2]
+        self.max_number_of_simpleton = maxes[3]
+        self.max_number_of_cheater = maxes[4]
+        self.max_number_of_grudger = maxes[5]
+        self.max_number_of_copykitten = maxes[6]
+        self.max_number_of_random = maxes[7]
 
     def get_averages(self):
         for person in self.live_people:
@@ -358,8 +385,6 @@ class Simulation:
         return location in self.fire_locations
 
     def is_person(self, location):
-        if not self.is_in_building(location):
-            raise Exception(f"Location is not in building: {location} \ncaller name: {inspect.currentframe().f_back.f_code.co_name}")
         for person in self.live_people:
             if person.location == location:
                 return person
