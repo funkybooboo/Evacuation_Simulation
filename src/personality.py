@@ -20,7 +20,7 @@ class Personality(ABC):
 
 
 class Copycat(Personality):
-    def get_strategy(self, opponent_strategy):
+    def get_strategy(self, opponent_strategy, fight_history):
         if not opponent_strategy:
             return Strategy.cooperate
         if opponent_strategy == Strategy.cooperate:
@@ -30,13 +30,13 @@ class Copycat(Personality):
 
 
 class Cooperator(Personality):
-    def get_strategy(self, opponent_strategy):
+    def get_strategy(self, opponent_strategy, fight_history):
         return Strategy.cooperate
 
 
 class Detective(Personality): 
     # Starts with: Cooperate, Defect, Cooperate, Cooperate. 
-    # Afterwards, if your opponent ever retaliates with a Defect, it plays like a Copycat. 
+    # Afterward, if your opponent ever retaliates with a Defect, it plays like a Copycat.
     # Otherwise, it plays like an Always Defect.
     def get_strategy(self, opponent_strategy, fight_history):
         if len(self.strategy_history) == 0:
@@ -50,9 +50,9 @@ class Detective(Personality):
             return Strategy.cooperate
         if not opponent_strategy:
             self.strategy_history = []
-            return self.get_strategy(opponent_strategy)
+            return self.get_strategy(opponent_strategy, fight_history)
         if opponent_strategy == Strategy.defect:
-            if self.opponent_strategy == Strategy.cooperate:
+            if opponent_strategy == Strategy.cooperate:
                 return Strategy.cooperate
             return Strategy.defect
         return Strategy.defect
@@ -65,32 +65,43 @@ class Simpleton(Personality):
     “concedes when punished” and cooperates after a defect/defect result
     “retaliates against unprovoked aggression”, defecting if you defect on it while it cooperates.
     """
-    def get_strategy(self, opponent_strategy):
+    def get_strategy(self, opponent_strategy, fight_history):
         if not opponent_strategy:
             return Strategy.cooperate
-        if opponent_strategy == Strategy.cooperate:
+        if len(fight_history)-1 == -1:
             return Strategy.cooperate
-        if opponent_strategy == Strategy.defect and self.strategy_history == Strategy.cooperate:
+        if len(fight_history)-1 == 0:
+            return Strategy.cooperate
+        if len(fight_history)-1 == 1 and opponent_strategy == Strategy.defect:
             return Strategy.defect
-        if opponent_strategy == Strategy.defect and self.strategy_history == Strategy.defect:
+        if len(fight_history)-1 == 1 and opponent_strategy == Strategy.cooperate:
+            return Strategy.cooperate
+        if len(fight_history)-1 > 1 and opponent_strategy == Strategy.defect:
+            return Strategy.defect
+        if len(fight_history)-1 > 1 and opponent_strategy == Strategy.cooperate:
             return Strategy.cooperate
 
 
 class Cheater(Personality):
-    def get_strategy(self, opponent_strategy):
+    def get_strategy(self, opponent_strategy, fight_history):
         return Strategy.defect
 
 
 class Grudger(Personality):
-    def get_strategy(self, opponent_strategy):
-        pass
+    """
+    Starts with cooperate and continues cooperating until you defect even once.
+    From then on it will always defect no matter what you do.
+    """
+    def get_strategy(self, opponent_strategy, fight_history):
+        if not opponent_strategy:
+            return Strategy.cooperate
 
 
 class Copykitten(Personality):
-    def get_strategy(self, opponent_strategy):
+    def get_strategy(self, opponent_strategy, fight_history):
         pass
 
 
 class Random(Personality):
-    def get_strategy(self, opponent_strategy):
+    def get_strategy(self, opponent_strategy, fight_history):
         return Strategy.cooperate if randint(0, 1) == 1 else Strategy.defect
