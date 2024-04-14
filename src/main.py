@@ -108,7 +108,7 @@ def get_args():
     # Add arguments
     parser.add_argument('--number_of_people', type=int, help='Number of people', default=50)
     parser.add_argument('--verbose', type=bool, help='Verbosity', default=False)
-    parser.add_argument('--choice_mode', type=int, help='How do people make choices? 0: Random, 1: AI, 2: Logic', default=0)
+    parser.add_argument('--choice_mode', type=int, help='How do people make choices? 0: Random, 1: AI, 2: Logic, 3: You Choose!', default=0)
     parser.add_argument('--time_for_firefighters', type=int, help='Time for firefighters', default=1000)
     parser.add_argument('--fire_spread_rate', type=int, help='Fire spread rate', default=0.1)
     parser.add_argument('--max_visibility', type=int, help='Maximum visibility', default=5)
@@ -160,8 +160,8 @@ def validate_args(args):
         raise ValueError("Familiarity must be greater than 0")
     if args.copycat + args.cooperator + args.detective + args.simpleton + args.cheater + args.grudger + args.copykitten + args.random != 1:
         raise ValueError("Sum of all personalities must be 1")
-    if args.choice_mode < 0 or args.choice_mode > 2:
-        raise ValueError("Choice mode must be 0, 1 or 2")
+    if args.choice_mode < 0 or args.choice_mode > 3:
+        raise ValueError("Choice mode must be 0, 1, 2, or 3")
 
 
 if __name__ == "__main__":

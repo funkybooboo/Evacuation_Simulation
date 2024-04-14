@@ -164,7 +164,6 @@ class Choice:
         os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
         load_dotenv()
         client = OpenAI()
-
         response = client.chat.completions.create(
             model="gpt-3.5-turbo-0125",  # may change model
             temperature=self.temperature,  # will be passed in fear level
@@ -200,8 +199,18 @@ class Choice:
             options_with_text += "\n"
         return options_with_text
 
+    def get_choice_from_user(self):
+        options_with_text = self.get_options_with_text()
+        print(f"situation: \n{self.situation}")
+        print(f"temperature (0-1 how rational the choice should be): \n{self.temperature}")
+        print(f"options_with_text: \n{options_with_text}")
+        while True:
+            choice = input("Please choose an option: ")
+            if choice in self.options:
+                return choice
+            print("That's not a valid option")
+
     def get_choice_from_logic(self):
         pass
 
-    def get_choice_from_user(self):
-        pass
+
