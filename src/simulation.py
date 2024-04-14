@@ -1,5 +1,6 @@
 from person import Person
 from memory import Memory
+from personality import Copycat, Cooperator, Detective, Simpleton, Cheater, Grudger, Random, Copykitten
 from random import randint
 from building import Building
 import logging
@@ -27,10 +28,43 @@ class Simulation:
                  follower_probability=0.5,
                  verbose=False,
                  with_ai=False,
-                 familiarity=15
+                 familiarity=15,
+                 personalities=None
                  ):
+        if personalities is None:
+            personalities = {
+                "Copycat": 0.125,
+                "Cooperator": 0.125,
+                "Detective": 0.125,
+                "Simpleton": 0.125,
+                "Cheater": 0.125,
+                "Grudger": 0.125,
+                "Copykitten": 0.125,
+                "Random": 0.125
+            }
         logging.basicConfig(filename=f'../logs/run{simulation_count}/simulation.log', level=logging.INFO,
                             format='%(asctime)s - %(levelname)s - %(message)s')
+
+        self.personalities = personalities
+        self.max_number_of_copycat = int(personalities["Copycat"] * number_of_people)
+        self.number_of_copycat = 0
+        self.max_number_of_cooperator = int(personalities["Cooperator"] * number_of_people)
+        self.number_of_cooperator = 0
+        self.max_number_of_detective = int(personalities["Detective"] * number_of_people)
+        self.number_of_detective = 0
+        self.max_number_of_simpleton = int(personalities["Simpleton"] * number_of_people)
+        self.number_of_simpleton = 0
+        self.max_number_of_cheater = int(personalities["Cheater"] * number_of_people)
+        self.number_of_cheater = 0
+        self.max_number_of_grudger = int(personalities["Grudger"] * number_of_people)
+        self.number_of_grudger = 0
+        self.max_number_of_copykitten = int(personalities["Copykitten"] * number_of_people)
+        self.number_of_copykitten = 0
+        self.max_number_of_random = int(personalities["Random"] * number_of_people)
+        self.number_of_random = 0
+
+        if self.max_number_of_copycat + self.max_number_of_cooperator + self.max_number_of_detective + self.max_number_of_simpleton + self.max_number_of_cheater + self.max_number_of_grudger + self.max_number_of_copykitten + self.max_number_of_random != number_of_people:
+            raise Exception("Number of people and personalities don't match")
 
         self.max_visibility = max_visibility
         self.min_visibility = min_visibility
@@ -123,6 +157,9 @@ class Simulation:
                 what = object_list[randint(0, len(object_list) - 1)]
                 where = self.building.object_locations[what][randint(0, len(self.building.object_locations[what]) - 1)]
                 memory.add(what, where)
+            personality = self.get_personality()
+            if personality is None:
+                raise Exception("Personality is None")
             person = Person(self,
                             f'Person{count}',
                             count,
@@ -143,12 +180,40 @@ class Simulation:
                             self.max_health,
                             self.min_health,
                             self.follower_probability,
-                            familiarity
+                            familiarity,
+                            personality
                             )
             self.number_of_followers += 1 if person.is_follower else 0
             self.live_people.append(person)
             logging.info(f"Person{count} has been generated at location {location}")
             count += 1
+
+    def get_personality(self):
+        if self.number_of_copycat < self.max_number_of_copycat:
+            self.number_of_copycat += 1
+            return Copycat()
+        if self.number_of_cooperator < self.max_number_of_cooperator:
+            self.number_of_cooperator += 1
+            return Cooperator()
+        if self.number_of_detective < self.max_number_of_detective:
+            self.number_of_detective += 1
+            return Detective()
+        if self.number_of_simpleton < self.max_number_of_simpleton:
+            self.number_of_simpleton += 1
+            return Simpleton()
+        if self.number_of_cheater < self.max_number_of_cheater:
+            self.number_of_cheater += 1
+            return Cheater()
+        if self.number_of_grudger < self.max_number_of_grudger:
+            self.number_of_grudger += 1
+            return Grudger()
+        if self.number_of_copykitten < self.max_number_of_copykitten:
+            self.number_of_copykitten += 1
+            return Copykitten()
+        if self.number_of_random < self.max_number_of_random:
+            self.number_of_random += 1
+            return Random()
+        return None
 
     def statistics(self):
         if self.verbose:

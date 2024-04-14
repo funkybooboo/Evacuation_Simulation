@@ -16,6 +16,17 @@ def main(args):
     logging.basicConfig(filename=f'../logs/run{simulation_count}/main.log', level=logging.INFO,
                         format='%(asctime)s - %(levelname)s - %(message)s')
 
+    personalities = {
+        "copycat": args.copycat,
+        "cooperator": args.cooperator,
+        "detective": args.detective,
+        "simpleton": args.simpleton,
+        "cheater": args.cheater,
+        "grudger": args.grudger,
+        "copykitten": args.copykitten,
+        "random": args.random
+    }
+
     # log arguments
     logging.info(f"Number of people: {args.number_of_people}")
     logging.info(f"Verbose: {args.verbose}")
@@ -36,6 +47,7 @@ def main(args):
     logging.info(f"Min health: {args.min_health}")
     logging.info(f"Follower probability: {args.follower_probability}")
     logging.info(f"Familiarity: {args.familiarity}")
+    logging.info(f"Personalities: {personalities}")
 
     if args.verbose:
         print(f"Number of people: {args.number_of_people}")
@@ -57,6 +69,7 @@ def main(args):
         print(f"Min health: {args.min_health}")
         print(f"Follower probability: {args.follower_probability}")
         print(f"Familiarity: {args.familiarity}")
+        print(f"Personalities: {personalities}")
 
     # create simulation
     simulation = Simulation(
@@ -79,7 +92,8 @@ def main(args):
         args.follower_probability,
         args.verbose,
         args.with_ai,
-        args.familiarity
+        args.familiarity,
+        personalities
     )
     # see statistics before evacuation
     simulation.statistics()
@@ -111,6 +125,14 @@ def get_args():
     parser.add_argument('--min_health', type=int, help='Minimum health', default=80)
     parser.add_argument('--follower_probability', type=float, help='Follower probability', default=0.5)
     parser.add_argument('--familiarity', type=int, help='Familiarity', default=10)
+    parser.add_argument('--copycat', type=float, help='Copycat', default=0.125)
+    parser.add_argument('--cooperator', type=float, help='Cooperator', default=0.125)
+    parser.add_argument('--detective', type=float, help='Detective', default=0.125)
+    parser.add_argument('--simpleton', type=float, help='Simpleton', default=0.125)
+    parser.add_argument('--cheater', type=float, help='Cheater', default=0.125)
+    parser.add_argument('--grudger', type=float, help='Grudger', default=0.125)
+    parser.add_argument('--copykitten', type=float, help='Copykitten', default=0.125)
+    parser.add_argument('--random', type=float, help='Random', default=0.125)
     # Parse arguments
     args = parser.parse_args()
     validate_args(args)
@@ -132,6 +154,12 @@ def validate_args(args):
         raise ValueError("Max age must be greater than min age")
     if args.max_health < args.min_health:
         raise ValueError("Max health must be greater than min health")
+    if args.follower_probability < 0 or args.follower_probability > 1:
+        raise ValueError("Follower probability must be between 0 and 1")
+    if args.familiarity < 0:
+        raise ValueError("Familiarity must be greater than 0")
+    if args.copycat + args.cooperator + args.detective + args.simpleton + args.cheater + args.grudger + args.copykitten + args.random != 1:
+        raise ValueError("Sum of all personalities must be 1")
 
 
 if __name__ == "__main__":

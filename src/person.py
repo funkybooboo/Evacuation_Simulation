@@ -8,7 +8,6 @@ from prompt import get_choice_from_AI, get_random_choice
 import logging
 from copy import deepcopy
 from strategy import Strategy
-from personality import Copycat, Cooperator, Detective, Simpleton, Cheater, Grudger, Random, Copykitten
 
 
 class Person:
@@ -34,9 +33,11 @@ class Person:
                  max_health,
                  min_health,
                  follower_probability,
-                 familiarity
+                 familiarity,
+                 personality
                  ):
-        logging.basicConfig(filename=f'../logs/run{simulation_count}/people/person{pk}.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+        logging.basicConfig(filename=f'../logs/run{simulation_count}/people/person{pk}.log', level=logging.INFO,
+                            format='%(asctime)s - %(levelname)s - %(message)s')
 
         self.number_of_fights_won = 0
         self.number_of_fights_lost = 0
@@ -78,8 +79,7 @@ class Person:
 
         self.end_turn_in_fire = True
 
-        self.personality = None
-
+        self.personality = personality
 
         logging.info(f"name: {self.name}")
         logging.info(f"age: {self.age}")
@@ -90,7 +90,6 @@ class Person:
         logging.info(f"fear: {self.fear}")
         logging.info(f"health: {self.health}")
         logging.info(f"is_follower: {self.is_follower}")
-        logging.info(f"strategy: {self.strategy}")
         logging.info(f"location: {self.location}")
         logging.info(f"color_title: {self.color_title}")
 
@@ -100,18 +99,17 @@ class Person:
         logging.info(f"{self.name} has tied {self.number_of_fights_tied} fights")
         logging.info(f"{self.name} has touched fire {self.number_of_fire_touches} times")
         logging.info(f"{self.name} has reached max fear {self.number_of_max_fear} times")
-        logging.info(f"{self.name} is a {self.color_title} {self.strategy} with {self.health} health at {self.location}.")
+        logging.info(f"{self.name} is a {self.color_title} with {self.health} health at {self.location}.")
         if self.verbose:
             print(f"{self.name} has won {self.number_of_fights_won} fights")
             print(f"{self.name} has lost {self.number_of_fights_lost} fights")
             print(f"{self.name} has tied {self.number_of_fights_tied} fights")
             print(f"{self.name} has touched fire {self.number_of_fire_touches} times")
             print(f"{self.name} has reached max fear {self.number_of_max_fear} times")
-            print(f"{self.name} is a {self.color_title} {self.strategy} with {self.health} health at {self.location}.")
-
+            print(f"{self.name} is a {self.color_title} with {self.health} health at {self.location}.")
 
     def __str__(self):
-        return f"{self.name} is a {self.color_title} {self.strategy} with {self.health} health at {self.location}."
+        return f"{self.name} is a {self.color_title} with {self.health} health at {self.location}."
 
     def is_dead(self):
         is_dead = False
@@ -278,7 +276,7 @@ class Person:
         long_time = -1
         closest_exit = self.get_closest(self.memory.exits)
         if closest_exit:
-            d = self.get_distance(closest_exit) 
+            d = self.get_distance(closest_exit)
             if not d:
                 return long_time
             number_of_people = self.get_number_of_people_near()
@@ -305,7 +303,7 @@ class Person:
         if furthest_wall:
             return self.move_towards(furthest_wall)
         return self.move_randomly()
-    
+
     def move_randomly(self):
         x = randint(-1, 1)
         y = randint(-1, 1)
@@ -474,7 +472,7 @@ class Person:
         x2 = location[1]
         y2 = location[2]
         return (((x1 - x2) ** 2) + ((y1 - y2) ** 2)) ** 0.5
-    
+
     def get_closest_from_p(self, p, lst):
         """
         get the closet of something from a list. ex: get the closest wall, get the closest person, etc.
@@ -490,7 +488,7 @@ class Person:
             if d1 < d2:
                 closest = location
         return closest
-    
+
     @staticmethod
     def get_distance_from_p(p, location):
         if location is None:
@@ -510,8 +508,8 @@ class Person:
         x = self.location[1]
         y = self.location[2]
         # -1 from vision because the search function will look at the current location
-        for i in range(-(self.vision-1), self.vision):
-            for j in range(-self.vision, self.vision+1):
+        for i in range(-(self.vision - 1), self.vision):
+            for j in range(-self.vision, self.vision + 1):
                 if self.is_continue(i, j, x, y, floor, blocked):
                     continue
                 self.search((floor, x + i, y + j), what_is_around, blocked)
@@ -676,7 +674,9 @@ class Person:
             (Strategy.defect, Strategy.cooperate): (5, 0),
             (Strategy.defect, Strategy.defect): (1 + d1, 1 + d2),
         }
-        return payoffs[(self.personality.get_strategy(), other.personality.get_strategy())]
+        strategy1 = self.personality.get_strategy(None)
+        strategy2 = other.personality.get_strategy(strategy2)
+        return payoffs[(strategy1, strategy2)]
 
     def get_number_of_people_near(self, distance=5):
         count = 0
