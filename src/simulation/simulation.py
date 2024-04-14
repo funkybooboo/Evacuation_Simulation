@@ -172,9 +172,8 @@ class Simulation:
                 break
 
     def __generate_people(self):
-        object_list = ['doors', 'exits', 'stairs']
-        count = 0
-        while count < self.number_of_people:
+        pk = 0
+        while pk < self.number_of_people:
             floor = randint(0, len(self.building.text_building) - 1)
             location = (floor, randint(0, len(self.building.text_building[0]) - 1),
                         randint(0, len(self.building.text_building[0][0]) - 1))
@@ -182,44 +181,52 @@ class Simulation:
                     self.is_wall(location) or self.is_stair(location) or self.is_glass(location) or
                     self.is_door(location) or self.is_exit(location)):
                 continue
-            memory = Memory()
-            familiarity = randint(0, self.familiarity)
-            for _ in range(0, familiarity):
-                what = object_list[randint(0, len(object_list) - 1)]
-                where = self.building.object_locations[what][randint(0, len(self.building.object_locations[what]) - 1)]
-                memory.add(what, where)
-            personality, personality_title = self.get_personality()
-            if personality is None:
-                raise Exception("Personality is None")
+            self.generate_person(location, pk)
+            pk += 1
 
-            person = Person(self,
-                            f'Person{count}',
-                            count,
-                            location,
-                            memory,
-                            self.simulation_count,
-                            self.verbose,
-                            self.max_visibility,
-                            self.min_visibility,
-                            self.max_strength,
-                            self.min_strength,
-                            self.max_speed,
-                            self.min_speed,
-                            self.max_fear,
-                            self.min_fear,
-                            self.max_age,
-                            self.min_age,
-                            self.max_health,
-                            self.min_health,
-                            self.follower_probability,
-                            familiarity,
-                            personality,
-                            personality_title
-                            )
-            self.number_of_followers += 1 if person.is_follower else 0
-            self.live_people.append(person)
-            self.logger.info(f"Person{count} has been generated at location {location}")
-            count += 1
+    def generate_person(self, location, pk):
+        familiarity, memory = self.generate_starting_memory()
+        personality, personality_title = self.get_personality()
+        if personality is None:
+            raise Exception("Personality is None")
+        age = randint(self.min_age, self.max_age)
+        health = randint(self.min_health, self.max_health)
+        speed = randint(self.min_speed, self.max_speed)
+        strength = randint(self.min_strength, self.max_strength)
+        visibility = randint(self.min_visibility, self.max_visibility)
+        fear = randint(self.min_fear, self.max_fear)
+        is_follower = randint(0, 1) < self.follower_probability
+        person = Person(self,
+                        f'Person{pk}',
+                        pk,
+                        location,
+                        memory,
+                        self.simulation_count,
+                        self.verbose,
+                        age,
+                        strength,
+                        speed,
+                        visibility,
+                        fear,
+                        health,
+                        is_follower,
+                        familiarity,
+                        personality,
+                        personality_title
+                        )
+        self.number_of_followers += 1 if is_follower else 0
+        self.live_people.append(person)
+        self.logger.info(f"Person{pk} has been generated at location {location}")
+
+    def generate_starting_memory(self):
+        object_list = ['doors', 'exits', 'stairs']
+        memory = Memory()
+        familiarity = randint(0, self.familiarity)
+        for _ in range(0, familiarity):
+            what = object_list[randint(0, len(object_list) - 1)]
+            where = self.building.object_locations[what][randint(0, len(self.building.object_locations[what]) - 1)]
+            memory.add(what, where)
+        return familiarity, memory
 
     def get_personality(self):
         if self.number_of_copycat < self.max_number_of_copycat:
