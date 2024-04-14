@@ -8,6 +8,7 @@ from prompt import get_choice_from_AI, get_random_choice
 import logging
 from copy import deepcopy
 from strategy import Strategy
+from fight_entry import FightEntry
 
 
 class Person:
@@ -80,6 +81,8 @@ class Person:
         self.end_turn_in_fire = True
 
         self.personality = personality
+
+        self.fight_history = []
 
         logging.info(f"name: {self.name}")
         logging.info(f"age: {self.age}")
@@ -674,8 +677,18 @@ class Person:
             (Strategy.defect, Strategy.cooperate): (5, 0),
             (Strategy.defect, Strategy.defect): (1 + d1, 1 + d2),
         }
-        strategy1 = self.personality.get_strategy(None)
-        strategy2 = other.personality.get_strategy(strategy1)
+        
+        my_fight_history = []
+        for entry in self.fight_history:
+            if entry.opponent_pk == other.pk:
+                my_fight_history.append(entry)
+        their_fight_history = []
+        for entry in other.fight_history:
+            if entry.opponent_pk == self.pk:
+                their_fight_history.append(entry)
+
+        strategy1 = self.personality.get_strategy(None, my_fight_history)
+        strategy2 = other.personality.get_strategy(strategy1, their_fight_history)
         return payoffs[(strategy1, strategy2)]
 
     def get_number_of_people_near(self, distance=5):
