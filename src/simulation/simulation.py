@@ -1,6 +1,6 @@
-from person import Person
-from memory import Memory
-from personality import Copycat, Cooperator, Detective, Simpleton, Cheater, Grudger, Random, Copykitten
+from simulation.person.person import Person
+from simulation.person.memory import Memory
+from simulation.person.personality import Copycat, Cooperator, Detective, Simpleton, Cheater, Grudger, Random, Copykitten
 from random import randint
 from building import Building
 import logging

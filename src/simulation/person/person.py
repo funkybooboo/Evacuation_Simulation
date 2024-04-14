@@ -1,5 +1,5 @@
 from random import randint
-from colors import person_colors
+from src.simulation.colors import person_colors
 from memory import Memory
 from pathfinding.core.diagonal_movement import DiagonalMovement
 from pathfinding.core.grid import Grid
@@ -689,7 +689,7 @@ class Person:
 
         strategy1 = self.personality.get_strategy(None, my_fight_history)
         strategy2 = other.personality.get_strategy(strategy1, their_fight_history)
-        
+
         self.fight_history.append(FightEntry(self.pk, other.pk, self.simulation.time, strategy1, strategy2))
         other.fight_history.append(FightEntry(other.pk, self.pk, self.simulation.time, strategy2, strategy1))
 

@@ -1,4 +1,4 @@
-from simulation import Simulation
+from simulation.simulation import Simulation
 from os import mkdir
 import logging
 import argparse
@@ -6,9 +6,9 @@ import argparse
 
 def main(args):
     # create log directory
-    with open('run', 'r') as f:
+    with open('simulation/run', 'r') as f:
         simulation_count = int(f.read())
-    with open('run', 'w') as f:
+    with open('simulation/run', 'w') as f:
         f.write(str(simulation_count + 1))
     mkdir(f'../logs/run{simulation_count}')
 
