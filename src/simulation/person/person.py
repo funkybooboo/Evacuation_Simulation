@@ -167,40 +167,38 @@ class Person:
         elif choice == 'B':
             return self.move_randomly()
         elif choice == 'C':
-            closest_person = self.get_closest(self.memory.people)
+            closest_person = self.get_closest(self.location, self.memory.people)
             return self.move_towards(closest_person)
         elif choice == 'D':
-            closest_door = self.get_closest(self.memory.doors)
+            closest_door = self.get_closest(self.location, self.memory.doors)
             return self.move_towards(closest_door)
         elif choice == 'E':
-            closest_glass = self.get_closest(self.memory.glasses)
+            closest_glass = self.get_closest(self.location, self.memory.glasses)
             return self.move_towards(closest_glass)
         elif choice == 'F':
-            closest_fire = self.get_closest(self.memory.fires)
+            closest_fire = self.get_closest(self.location, self.memory.fires)
             return self.move_towards(closest_fire)
         elif choice == 'G':
-            closest_glass = self.get_closest(self.memory.glasses)
+            closest_glass = self.get_closest(self.location, self.memory.glasses)
             if not self.break_glass(closest_glass):
                 raise Exception("Cant break glass unless you are near it")
             return None
         elif choice == 'H':
-            closest_person = self.get_closest(self.memory.people)
+            closest_person = self.get_closest(self.location, self.memory.people)
             return self.move_towards(closest_person)
         elif choice == 'I':
-            closest_door = self.get_closest(self.memory.doors)
+            closest_door = self.get_closest(self.location, self.memory.doors)
             return self.move_towards(closest_door)
         elif choice == 'J':
-            closest_glass = self.get_closest(self.memory.broken_glass)
-            if not self.jump_out_of_window(closest_glass):
-                raise Exception("Cant jump out of window unless you are near it")
-            return None
+            closest_glass = self.get_closest(self.location, self.memory.broken_glass)
+            return self.jump_out_of_window(closest_glass)
         elif choice == 'K':
             return self.follow_evacuation_plan()
         elif choice == 'L':
-            closest_exit = self.get_closest(self.memory.exits)
+            closest_exit = self.get_closest(self.location, self.memory.exits)
             return self.move_towards(closest_exit)
         elif choice == 'M':
-            closest_stair = self.get_closest(self.memory.stairs)
+            closest_stair = self.get_closest(self.location, self.memory.stairs)
             return self.move_towards(closest_stair)
         elif choice == 'N':
             return None
@@ -221,11 +219,11 @@ class Person:
             Strength: {self.strength}
             Health: {self.health}
             Fear: {self.fear}
-            Nearest Exit: {self.get_closest(self.memory.exits)}
-            Nearest Stairs: {self.get_closest(self.memory.stairs)}
-            Nearest Person: {self.get_closest(self.memory.people)}
-            Nearest Window: {self.get_closest(self.memory.glasses)}
-            Nearest Fire: {self.get_closest(self.memory.fires)}
+            Nearest Exit: {self.get_closest(self.location, self.memory.exits)}
+            Nearest Stairs: {self.get_closest(self.location, self.memory.stairs)}
+            Nearest Person: {self.get_closest(self.location, self.memory.people)}
+            Nearest Window: {self.get_closest(self.location, self.memory.glasses)}
+            Nearest Fire: {self.get_closest(self.location, self.memory.fires)}
             People Near: {self.get_number_of_people_near()}
             Know Evacuation Plan: {self.memory.evacuation_plan}
             Time to Get Out: {self.get_time_to_get_out()}
@@ -277,9 +275,9 @@ class Person:
 
     def get_time_to_get_out(self):
         long_time = -1
-        closest_exit = self.get_closest(self.memory.exits)
+        closest_exit = self.get_closest(self.location, self.memory.exits)
         if closest_exit:
-            d = self.get_distance(closest_exit)
+            d = self.get_distance(self.location, closest_exit)
             if not d:
                 return long_time
             number_of_people = self.get_number_of_people_near()
@@ -293,25 +291,27 @@ class Person:
         return False
 
     def follow_evacuation_plan(self):
-        closest_exit_plan = self.get_closest(self.memory.exit_plans)
-        closest_exit = self.get_closest_from_p(closest_exit_plan, self.simulation.building.object_locations["exits"])
+        closest_exit_plan = self.get_closest(self.location, self.memory.exit_plans)
+        closest_exit = self.get_closest(closest_exit_plan, self.simulation.building.object_locations["exits"])
         return self.move_towards(closest_exit)
 
     def explore(self):
         if "room" == self.room_type:
-            closest_door = self.get_closest(self.memory.doors)
+            closest_door = self.get_closest(self.location, self.memory.doors)
             if closest_door:
                 return self.move_towards(closest_door)
-        furthest_wall = self.get_furthest(self.memory.walls)
-        if furthest_wall:
-            return self.move_towards(furthest_wall)
+        furthest_empty = self.get_furthest(self.location, self.memory.empties)
+        if furthest_empty:
+            return self.move_towards(furthest_empty)
         return self.move_randomly()
 
     def move_randomly(self):
-        x = randint(-1, 1)
-        y = randint(-1, 1)
-        new_location = (self.location[0], self.location[1] + x, self.location[2] + y)
-        return self.move_to(new_location)
+        for i in range(8):
+            x = randint(-1, 1)
+            y = randint(-1, 1)
+            new_location = (self.location[0], self.location[1] + x, self.location[2] + y)
+            return self.move_to(new_location)
+        return None
 
     def move_towards(self, location):
         if location is None:
@@ -328,7 +328,7 @@ class Person:
         # if tries is 1, then the person will try to move through people
         for tries in range(2):
             path = self.get_path(location, tries)
-            if len(path) != 1:
+            if not len(path) == 0:
                 node = path[1]
                 n_x = node.x
                 n_y = node.y
@@ -398,9 +398,8 @@ class Person:
             elif floor > 3:
                 # hurt self on the way down
                 self.health -= randint(50, 100)
-            self.move_to(broken_glass_location)
-            return True
-        return False
+            return self.move_to(broken_glass_location)
+        return None
 
     def can_break_glass(self):
         if self.strength > 2:
@@ -410,98 +409,67 @@ class Person:
     def move_to(self, location):
         if (self.simulation.is_in_building(location) and
                 self.is_one_away(self.location, location) and
-                (self.simulation.is_empty(location) or
-                 self.simulation.is_exit(location) or
-                 self.simulation.is_stair(location) or
-                 self.simulation.is_person(location) or
-                 self.simulation.is_door(location))):
+                self.simulation.is_valid_location_for_person(location)):
             other = self.simulation.is_person(location)
             if other is not None:
                 return other
             self.location = location
             return None
         else:
-            raise Exception("You can only move one block at a time")
+            raise Exception("You can only move one block at a time or you can't move through walls or large obstacles")
 
     @staticmethod
     def is_one_away(location1, location2):
         if location1[0] != location2[0]:
             return False
-        if abs(location1[1] - location2[1]) > 1:
-            return False
-        if abs(location1[2] - location2[2]) > 1:
+        x = abs(location1[1] - location2[1])
+        y = abs(location1[2] - location2[2])
+        if x > 1 or y > 1:
             return False
         return True
 
-    def get_closest(self, lst):
+    def get_closest(self, location1, lst):
         """
         get the closet of something from a list. ex: get the closest wall, get the closest person, etc.
         """
         if len(lst) == 0:
             return None
         closest = next(iter(lst))
-        for location in lst:
-            d1 = self.get_distance(location)
-            d2 = self.get_distance(closest)
+        for location2 in lst:
+            d1 = self.get_distance(location1, location2)
+            d2 = self.get_distance(location1, closest)
             if d1 is None or d2 is None:
                 continue
             if d1 < d2:
-                closest = location
+                closest = location2
         return closest
 
-    def get_furthest(self, lst):
+    def get_furthest(self, location1, lst):
         """
         get the furthest of something from a list. ex: get the furthest wall, get the furthest person, etc.
         """
         if len(lst) == 0:
             return None
         furthest = next(iter(lst))
-        for location in lst:
-            d1 = self.get_distance(location)
-            d2 = self.get_distance(furthest)
+        for location2 in lst:
+            d1 = self.get_distance(location1, location2)
+            d2 = self.get_distance(location1, furthest)
             if d1 is None or d2 is None:
                 continue
             if d1 > d2:
-                furthest = location
+                furthest = location2
         return furthest
 
-    def get_distance(self, location):
-        if location is None:
-            return None
-        if self.location[0] != location[0]:
-            return None
-        x1 = self.location[1]
-        y1 = self.location[2]
-        x2 = location[1]
-        y2 = location[2]
-        return (((x1 - x2) ** 2) + ((y1 - y2) ** 2)) ** 0.5
-
-    def get_closest_from_p(self, p, lst):
-        """
-        get the closet of something from a list. ex: get the closest wall, get the closest person, etc.
-        """
-        if len(lst) == 0:
-            return None
-        closest = lst[0]
-        for location in lst:
-            d1 = self.get_distance_from_p(p, location)
-            d2 = self.get_distance_from_p(p, closest)
-            if d1 is None or d2 is None:
-                continue
-            if d1 < d2:
-                closest = location
-        return closest
-
     @staticmethod
-    def get_distance_from_p(p, location):
-        if location is None:
+    def get_distance(location1, location2):
+        if location2 is None:
             return None
-        if p[0] != location[0]:
+        if location1.location[0] != location2[0]:
             return None
-        x1 = p[1]
-        y1 = p[2]
-        x2 = location[1]
-        y2 = location[2]
+        x1 = location1.location[1]
+        y1 = location1.location[2]
+        x2 = location2[1]
+        y2 = location2[2]
         return (((x1 - x2) ** 2) + ((y1 - y2) ** 2)) ** 0.5
 
     def look_around(self):
@@ -698,11 +666,11 @@ class Person:
     def get_number_of_people_near(self, distance=5):
         count = 0
         for person in self.memory.people:
-            if self.is_near(person.location, distance):
+            if self.is_near(self.location, person.location, distance):
                 count += 1
         return count
 
-    def is_near(self, location, distance=5):
-        d1 = self.get_distance(location)
+    def is_near(self, location1, location2, distance=5):
+        d1 = self.get_distance(location1, location2)
         if d1 < distance:
             return True

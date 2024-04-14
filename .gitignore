@@ -2,3 +2,4 @@
 .DS_Store
 data/APIKEY.txt
 src/__pycache__/
+/logs

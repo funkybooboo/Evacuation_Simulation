@@ -120,18 +120,18 @@ class Simulation:
                  self.max_number_of_simpleton, self.max_number_of_cheater, self.max_number_of_grudger,
                  self.max_number_of_copykitten, self.max_number_of_random]
         if current_number < number_of_people:
-            max = -1
+            max_ = -1
             for m in maxes:
-                if m > max:
-                    max = m
-            max_index = maxes.index(max)
+                if m > max_:
+                    max_ = m
+            max_index = maxes.index(max_)
             maxes[max_index] += number_of_people - current_number
         elif current_number > number_of_people:
-            max = -1
+            max_ = -1
             for m in maxes:
-                if m > max:
-                    max = m
-            max_index = maxes.index(max)
+                if m > max_:
+                    max_ = m
+            max_index = maxes.index(max_)
             maxes[max_index] -= current_number
         self.max_number_of_copycat = maxes[0]
         self.max_number_of_cooperator = maxes[1]
@@ -379,6 +379,24 @@ class Simulation:
         c = self.building.text_building[location[0]][location[1]][location[2]]
         return c == 'm' or c == 'n' or c == 'l'
 
+    def is_mini_obstacle(self, location):
+        if not self.is_in_building(location):
+            raise Exception(f"Location is not in building: {location} \ncaller name: {inspect.currentframe().f_back.f_code.co_name}")
+        c = self.building.text_building[location[0]][location[1]][location[2]]
+        return c == 'm'
+
+    def is_normal_obstacle(self, location):
+        if not self.is_in_building(location):
+            raise Exception(f"Location is not in building: {location} \ncaller name: {inspect.currentframe().f_back.f_code.co_name}")
+        c = self.building.text_building[location[0]][location[1]][location[2]]
+        return c == 'n'
+
+    def is_large_obstacle(self, location):
+        if not self.is_in_building(location):
+            raise Exception(f"Location is not in building: {location} \ncaller name: {inspect.currentframe().f_back.f_code.co_name}")
+        c = self.building.text_building[location[0]][location[1]][location[2]]
+        return c == 'l'
+
     def is_fire(self, location):
         if not self.is_in_building(location):
             raise Exception(f"Location is not in building: {location} \ncaller name: {inspect.currentframe().f_back.f_code.co_name}")
@@ -394,7 +412,13 @@ class Simulation:
         if not self.is_in_building(location):
             raise Exception(f"Location is not in building: {location} \ncaller name: {inspect.currentframe().f_back.f_code.co_name}")
         c = self.building.text_building[location[0]][location[1]][location[2]]
-        return c == 'w' or c == 'h'
+        return c == 'w'
+
+    def is_half_wall(self, location):
+        if not self.is_in_building(location):
+            raise Exception(f"Location is not in building: {location} \ncaller name: {inspect.currentframe().f_back.f_code.co_name}")
+        c = self.building.text_building[location[0]][location[1]][location[2]]
+        return c == 'h'
 
     def is_in_building(self, location):
         return 0 <= location[0] < len(self.building.text_building) and 0 <= location[1] < len(
@@ -439,3 +463,6 @@ class Simulation:
         if not self.is_in_building(location):
             raise Exception(f"Location is not in building: {location} \ncaller name: {inspect.currentframe().f_back.f_code.co_name}")
         return self.building.text_building[location[0]][location[1]][location[2]] == 'p'
+
+    def is_valid_location_for_person(self, location):
+        return not self.is_large_obstacle(location) and not self.is_wall(location) and not self.is_glass(location)
