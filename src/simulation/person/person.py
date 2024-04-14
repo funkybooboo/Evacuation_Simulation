@@ -37,7 +37,7 @@ class Person:
                  familiarity,
                  personality
                  ):
-        logging.basicConfig(filename=f'../logs/run{simulation_count}/people/person{pk}.log', level=logging.INFO,
+        logging.basicConfig(filename=f'../../../logs/run{simulation_count}/people/person{pk}.log', level=logging.INFO,
                             format='%(asctime)s - %(levelname)s - %(message)s')
 
         self.number_of_fights_won = 0

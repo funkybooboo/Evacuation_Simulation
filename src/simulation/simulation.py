@@ -42,7 +42,7 @@ class Simulation:
                 "Copykitten": 0.125,
                 "Random": 0.125
             }
-        logging.basicConfig(filename=f'../logs/run{simulation_count}/simulation.log', level=logging.INFO,
+        logging.basicConfig(filename=f'../../logs/run{simulation_count}/simulation.log', level=logging.INFO,
                             format='%(asctime)s - %(levelname)s - %(message)s')
 
         self.personalities = personalities
