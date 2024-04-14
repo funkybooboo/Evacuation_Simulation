@@ -186,7 +186,7 @@ class Simulation:
                 what = object_list[randint(0, len(object_list) - 1)]
                 where = self.building.object_locations[what][randint(0, len(self.building.object_locations[what]) - 1)]
                 memory.add(what, where)
-            personality = self.get_personality()
+            personality, personality_title = self.get_personality()
             if personality is None:
                 raise Exception("Personality is None")
             person = Person(self,
@@ -210,7 +210,8 @@ class Simulation:
                             self.min_health,
                             self.follower_probability,
                             familiarity,
-                            personality
+                            personality,
+                            personality_title
                             )
             self.number_of_followers += 1 if person.is_follower else 0
             self.live_people.append(person)
@@ -220,28 +221,28 @@ class Simulation:
     def get_personality(self):
         if self.number_of_copycat < self.max_number_of_copycat:
             self.number_of_copycat += 1
-            return Copycat()
+            return Copycat(), "Copycat"
         if self.number_of_cooperator < self.max_number_of_cooperator:
             self.number_of_cooperator += 1
-            return Cooperator()
+            return Cooperator(), "Cooperator"
         if self.number_of_detective < self.max_number_of_detective:
             self.number_of_detective += 1
-            return Detective()
+            return Detective(), "Detective"
         if self.number_of_simpleton < self.max_number_of_simpleton:
             self.number_of_simpleton += 1
-            return Simpleton()
+            return Simpleton(), "Simpleton"
         if self.number_of_cheater < self.max_number_of_cheater:
             self.number_of_cheater += 1
-            return Cheater()
+            return Cheater(), "Cheater"
         if self.number_of_grudger < self.max_number_of_grudger:
             self.number_of_grudger += 1
-            return Grudger()
+            return Grudger(), "Grudger"
         if self.number_of_copykitten < self.max_number_of_copykitten:
             self.number_of_copykitten += 1
-            return Copykitten()
+            return Copykitten(), "Copykitten"
         if self.number_of_random < self.max_number_of_random:
             self.number_of_random += 1
-            return Random()
+            return Random(), "Random"
         return None
 
     def statistics(self):

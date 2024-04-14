@@ -35,7 +35,8 @@ class Person:
                  min_health,
                  follower_probability,
                  familiarity,
-                 personality
+                 personality,
+                 personality_title
                  ):
         logging.basicConfig(filename=f'../../../logs/run{simulation_count}/people/person{pk}.log', level=logging.INFO,
                             format='%(asctime)s - %(levelname)s - %(message)s')
@@ -81,6 +82,7 @@ class Person:
         self.end_turn_in_fire = True
 
         self.personality = personality
+        self.personality_title = personality_title
 
         self.fight_history = []
 
@@ -229,7 +231,7 @@ class Person:
             Nearest Window: {self.get_closest(self.location, self.memory.glasses)}
             Nearest Fire: {self.get_closest(self.location, self.memory.fires)}
             People Near: {self.get_number_of_people_near()}
-            Know Evacuation Plan: {self.memory.evacuation_plan}
+            Know Evacuation Plan: {self.memory.exit_plans}
             Time to Get Out: {self.get_time_to_get_out()}
             Room Type: {self.room_type}
             """
@@ -468,10 +470,10 @@ class Person:
     def get_distance(location1, location2):
         if location2 is None:
             return None
-        if location1.location[0] != location2[0]:
+        if location1[0] != location2[0]:
             return None
-        x1 = location1.location[1]
-        y1 = location1.location[2]
+        x1 = location1[1]
+        y1 = location1[2]
         x2 = location2[1]
         y2 = location2[2]
         return (((x1 - x2) ** 2) + ((y1 - y2) ** 2)) ** 0.5
