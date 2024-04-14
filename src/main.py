@@ -1,6 +1,6 @@
 from simulation.simulation import Simulation
 from os import mkdir
-import logging
+from src.simulation.logger import setup_logger
 import argparse
 
 
@@ -13,8 +13,8 @@ def main(args):
     mkdir(f'../logs/run{simulation_count}')
 
     # set up logging
-    logging.basicConfig(filename=f'../logs/run{simulation_count}/main.log', level=logging.INFO,
-                        format='%(asctime)s - %(levelname)s - %(message)s')
+    logger = setup_logger("main_logger", f'../logs/run{simulation_count}/main.log')
+    logger.info('This log is for INFO purposes from main')
 
     personalities = {
         "Copycat": args.copycat,
@@ -28,48 +28,26 @@ def main(args):
     }
 
     # log arguments
-    logging.info(f"Number of people: {args.number_of_people}")
-    logging.info(f"Verbose: {args.verbose}")
-    logging.info(f"Choice Mode: {args.choice_mode}")
-    logging.info(f"Time for firefighters: {args.time_for_firefighters}")
-    logging.info(f"Fire spread rate: {args.fire_spread_rate}")
-    logging.info(f"Max visibility: {args.max_visibility}")
-    logging.info(f"Min visibility: {args.min_visibility}")
-    logging.info(f"Max strength: {args.max_strength}")
-    logging.info(f"Min strength: {args.min_strength}")
-    logging.info(f"Max speed: {args.max_speed}")
-    logging.info(f"Min speed: {args.min_speed}")
-    logging.info(f"Max fear: {args.max_fear}")
-    logging.info(f"Min fear: {args.min_fear}")
-    logging.info(f"Max age: {args.max_age}")
-    logging.info(f"Min age: {args.min_age}")
-    logging.info(f"Max health: {args.max_health}")
-    logging.info(f"Min health: {args.min_health}")
-    logging.info(f"Follower probability: {args.follower_probability}")
-    logging.info(f"Familiarity: {args.familiarity}")
-    logging.info(f"Personalities: {personalities}")
-
-    if args.verbose:
-        print(f"Number of people: {args.number_of_people}")
-        print(f"Verbose: {args.verbose}")
-        print(f"Choice Mode: {args.choice_mode}")
-        print(f"Time for firefighters: {args.time_for_firefighters}")
-        print(f"Fire spread rate: {args.fire_spread_rate}")
-        print(f"Max visibility: {args.max_visibility}")
-        print(f"Min visibility: {args.min_visibility}")
-        print(f"Max strength: {args.max_strength}")
-        print(f"Min strength: {args.min_strength}")
-        print(f"Max speed: {args.max_speed}")
-        print(f"Min speed: {args.min_speed}")
-        print(f"Max fear: {args.max_fear}")
-        print(f"Min fear: {args.min_fear}")
-        print(f"Max age: {args.max_age}")
-        print(f"Min age: {args.min_age}")
-        print(f"Max health: {args.max_health}")
-        print(f"Min health: {args.min_health}")
-        print(f"Follower probability: {args.follower_probability}")
-        print(f"Familiarity: {args.familiarity}")
-        print(f"Personalities: {personalities}")
+    logger.info(f"Number of people: {args.number_of_people}")
+    logger.info(f"Verbose: {args.verbose}")
+    logger.info(f"Choice Mode: {args.choice_mode}")
+    logger.info(f"Time for firefighters: {args.time_for_firefighters}")
+    logger.info(f"Fire spread rate: {args.fire_spread_rate}")
+    logger.info(f"Max visibility: {args.max_visibility}")
+    logger.info(f"Min visibility: {args.min_visibility}")
+    logger.info(f"Max strength: {args.max_strength}")
+    logger.info(f"Min strength: {args.min_strength}")
+    logger.info(f"Max speed: {args.max_speed}")
+    logger.info(f"Min speed: {args.min_speed}")
+    logger.info(f"Max fear: {args.max_fear}")
+    logger.info(f"Min fear: {args.min_fear}")
+    logger.info(f"Max age: {args.max_age}")
+    logger.info(f"Min age: {args.min_age}")
+    logger.info(f"Max health: {args.max_health}")
+    logger.info(f"Min health: {args.min_health}")
+    logger.info(f"Follower probability: {args.follower_probability}")
+    logger.info(f"Familiarity: {args.familiarity}")
+    logger.info(f"Personalities: {personalities}")
 
     # create simulation
     simulation = Simulation(
