@@ -210,10 +210,9 @@ class Person:
             return None
         n_x = None
         n_y = None
-        # if tries is 0, then the person will try to move around people
-        # if tries is 1, then the person will try to move through people
-        for tries in range(2):
-            path = self.get_path(location, tries)
+        for i in range(4):
+            grid = self.get_grid(i)
+            path = self.get_path(location, grid)
             if not len(path) == 0:
                 node = path[1]
                 n_x = node.x
@@ -224,8 +223,7 @@ class Person:
         new_location = (floor1, n_x, n_y)
         return self.move_to(new_location)
 
-    def get_path(self, location, tries):
-        grid = self.get_grid(tries)
+    def get_path(self, location, grid):
         x1 = self.location[1]
         y1 = self.location[2]
         start = grid.node(x1, y1)
@@ -239,23 +237,30 @@ class Person:
             print(grid.grid_str(path=path, start=start, end=end))
         return path
 
-    def get_grid(self, tries):
+    def get_grid(self, i):
         floor = self.location[0]
         temp_grid = deepcopy(self.simulation.building.grid[floor])
-        if tries == 0:
-            # try with moving around people (collisions are not allowed)
-            for row in range(len(temp_grid)):
-                for col in range(len(temp_grid[row])):
-                    if temp_grid[row][col] == -1:
-                        temp_grid[row][col] = 0
+        if i == 0:
+            self.switcher(temp_grid, 0, 0)
+        elif i == 1:
+            self.switcher(temp_grid, 3, 0)
+        elif i == 2:
+            self.switcher(temp_grid, 0, 3)
+        elif i == 3:
+            self.switcher(temp_grid, 3, 3)
         else:
-            # try without moving around people (collisions are allowed)
-            for row in range(len(temp_grid)):
-                for col in range(len(temp_grid[row])):
-                    if temp_grid[row][col] == -1:
-                        temp_grid[row][col] = 1
+            raise Exception("invalid i")
         grid = Grid(matrix=temp_grid)
         return grid
+
+    @staticmethod
+    def switcher(temp_grid, p, f):
+        for row in range(len(temp_grid)):
+            for col in range(len(temp_grid[row])):
+                if temp_grid[row][col] == -1:
+                    temp_grid[row][col] = p
+                elif temp_grid[row][col] == -2:
+                    temp_grid[row][col] = f
 
     def break_glass(self, glass_location):
         if self.is_one_away(self.location, glass_location):
@@ -560,3 +565,57 @@ class Person:
         d1 = self.get_distance(location1, location2)
         if d1 < distance:
             return True
+
+    def dont_know_where_anything_is(self):
+        if (self.get_on_my_floor(self.memory.doors) or
+            self.get_on_my_floor(self.memory.exits) or
+            self.get_on_my_floor(self.memory.exit_plans) or
+            self.get_on_my_floor(self.memory.stairs)
+        ):
+            return False
+        return True
+
+    def is_good_fighter(self):
+        return 17 < self.age < 45 and self.strength > self.simulation.max_strength // 2
+
+    def get_on_my_floor(self, lst):
+        new_lst = []
+        for location in lst:
+            if location[0] == self.location[0]:
+                new_lst.append(location)
+        return new_lst
+
+    def know_about_important_location(self):
+        if self.get_on_my_floor(self.memory.exits) or self.get_on_my_floor(self.memory.exit_plans) or self.get_on_my_floor(self.memory.stairs):
+            return True
+        return False
+
+    def is_in_room(self):
+        return self.room_type == "room"
+
+    def is_in_hall(self):
+        return self.room_type == "hallway"
+
+    def is_trapped_by_fire(self):
+        farthest_empty = self.get_furthest(self.location, self.memory.empties)
+        grid_with_blocked = self.get_grid(0)
+        path_with_blocked = self.get_path(farthest_empty, grid_with_blocked)
+        grid_with_unblocked = self.get_grid(2)
+        path_with_unblocked = self.get_path(farthest_empty, grid_with_unblocked)
+        return self.__is_trapped(path_with_blocked, path_with_unblocked)
+
+    def is_trapped_by_people(self):
+        farthest_empty = self.get_furthest(self.location, self.memory.empties)
+        grid_with_blocked = self.get_grid(0)
+        path_with_blocked = self.get_path(farthest_empty, grid_with_blocked)
+        grid_with_unblocked = self.get_grid(1)
+        path_with_unblocked = self.get_path(farthest_empty, grid_with_unblocked)
+        return self.__is_trapped(path_with_blocked, path_with_unblocked)
+
+    @staticmethod
+    def __is_trapped(path_with_blocked, path_with_unblocked):
+        if path_with_blocked:
+            return False
+        if path_with_unblocked:
+            return True
+        return False

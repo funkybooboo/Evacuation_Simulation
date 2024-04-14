@@ -101,6 +101,9 @@ class Choice:
         else:
             return 0.3
 
+    def is_irrational(self):
+        return self.temperature < 0.5 and self.person.fear > 8
+
     def get_situation_string(self):
         situation = \
             f"""
@@ -185,17 +188,26 @@ class Choice:
         )
         return response
 
-    def get_random_choice(self):
-        return self.options[randint(0, len(self.options) - 1)]
-
     def get_choice_from_AI(self):
         response = self.get_response_from_AI()
         if response is None:
-            return None
-        if response in self.options:
+            raise Exception("AI did not respond")
+        choice = self.get_choice_from_response(response)
+        if choice is None:
+            raise Exception("AI did not give a valid choice")
+        if choice in self.options:
             return response
-        else:
-            return None
+        raise Exception("AI did not give a valid choice")
+
+    @staticmethod
+    def get_choice_from_response(response):
+        for message in response["choices"]:
+            if message["role"] == "assistant":
+                return message["content"]
+        return None
+
+    def get_random_choice(self):
+        return self.options[randint(0, len(self.options) - 1)]
 
     def get_options_with_text(self):
         options_with_text = ""
@@ -218,6 +230,27 @@ class Choice:
             print("That's not a valid option")
 
     def get_choice_from_logic(self):
+        # "A": "Explore",
+        # "B": "Move randomly",
+        # "C": "Move towards a person",
+        # "D": "Move towards a door",
+        # "E": "Move towards window",
+        # "F": "Move towards the fire",
+        # "G": "Break window",
+        # "H": "Fight someone for a spot",
+        # "I": "Run through fire to safety",
+        # "J": "Jump out of building",
+        # "K": "Follow evacuation plan",
+        # "L": "Move to exit",
+        # "M": "Move to stair",
+        # "N": "Do nothing"
+        if self.is_irrational():
+            return self.make_irrational_choice()
+        else:
+            return self.make_rational_choice()
+
+    def make_rational_choice(self):
         pass
 
-
+    def make_irrational_choice(self):
+        pass

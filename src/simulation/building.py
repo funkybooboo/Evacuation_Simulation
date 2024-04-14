@@ -199,13 +199,15 @@ class Building:
                     person = self.simulation.is_person((floor, row, col))
                     if person:
                         row[col] = -1
+                    elif row[col] == 'f':
+                        row[col] = -2
                     elif row[col] == 'w' or row[col] == 'g' or row[col] == 'l':
                         row[col] = 0
                     elif row[col] == ' ' or row[col] == 'd' or row[col] == 'e' or row[col] == 's' or row[col] == 'p' or row[col] == '1' or row[col] == '2':
                         row[col] = 1
                     elif row[col] == 'h' or row[col] == 'm':
                         row[col] = 2
-                    elif row[col] == 'n' or row[col] == 'f':
+                    elif row[col] == 'n':
                         row[col] = 3
 
     def print_building(self):
