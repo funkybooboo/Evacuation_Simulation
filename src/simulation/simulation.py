@@ -44,7 +44,7 @@ class Simulation:
                 "Random": 0.125
             }
 
-        self.logger = setup_logger("simulation_logger", f'../../logs/run{simulation_count}/simulation.log')
+        self.logger = setup_logger("simulation_logger", f'../../logs/run{simulation_count}/simulation.log', verbose)
         self.logger.info('This log is for INFO purposes from simulation')
 
         self.personalities = personalities

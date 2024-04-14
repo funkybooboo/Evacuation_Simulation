@@ -6,18 +6,7 @@ class Building:
     def __init__(self, simulation):
         self.simulation = simulation
         self.text_building = self.generate_building()
-        self.object_locations = {
-            "door": [],
-            "exit": [],
-            "stair": [],
-            "glass": [],
-            "obstacle": [],
-            "wall": [],
-            "empty": [],
-            "fire": [],
-            "broken_glass": [],
-            "exit_plan": [],
-        }
+        self.object_locations = {}
         self.color_building = []
         self.convert_text_to_colors()
         self.grid = []
