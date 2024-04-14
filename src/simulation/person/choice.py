@@ -74,8 +74,6 @@ def get_choice_from_AI(situation, options, temperature):
     response = get_response(situation, options_with_text, temperature)
     if response is None:
         return None
-    if response == "" or response == " ":
-        return None
     if response in valid:
         return response
     else:

@@ -114,7 +114,7 @@ class Person:
             print(f"{self.name} is a {self.color_title} with {self.health} health at {self.location}.")
 
     def __str__(self):
-        return f"{self.name} is a {self.color_title} with {self.health} health at {self.location}."
+        return f"{self.name} {self.personality_title} {self.color_title} {self.health} {self.location}."
 
     def is_dead(self):
         is_dead = False
