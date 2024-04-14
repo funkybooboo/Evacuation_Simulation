@@ -4,12 +4,12 @@ from .memory import Memory
 from pathfinding.core.diagonal_movement import DiagonalMovement
 from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
-from .choice import get_choice_from_AI, get_random_choice, get_choice_from_logic
 import logging
 from src.simulation.logger import setup_logger
 from copy import deepcopy
 from .strategy import Strategy
 from .fight_entry import FightEntry
+from .choice import Choice
 
 
 class Person:
@@ -85,6 +85,8 @@ class Person:
 
         self.fight_history = []
 
+        self.choice = Choice(self)
+
         logging.info(f"name: {self.name}")
         logging.info(f"age: {self.age}")
         logging.info(f"age: {self.age}")
@@ -151,135 +153,11 @@ class Person:
         return other
 
     def move_one_block(self):
-        options = self.get_options_for_AI()
-        situation = self.get_situation_for_AI()
-        temperature = self.get_temperature_for_AI()
-        if self.simulation.choice_mode == 0:
-            choice = get_random_choice(options)
-        elif self.simulation.choice_mode == 1:
-            choice = get_choice_from_AI(situation, options, temperature)
-        elif self.simulation.choice_mode == 2:
-            choice = get_choice_from_logic(situation, options, temperature)
-        elif self.simulation.choice_mode == 3:
-            choice = get_choice_from_user(situation, options, temperature)
-        else:
-            raise Exception("Invalid choice mode")
-        return self.make_choice(choice)
-
-    def make_choice(self, choice):
-        logging.info(f"{self.name} is making choice {choice}")
+        choice, other = self.choice.make()
         if choice is None:
-            raise Exception("AI did not give a valid choice")
-        if choice == 'A':
-            return self.explore()
-        elif choice == 'B':
-            return self.move_randomly()
-        elif choice == 'C':
-            closest_person = self.get_closest(self.location, self.memory.people)
-            return self.move_towards(closest_person)
-        elif choice == 'D':
-            closest_door = self.get_closest(self.location, self.memory.doors)
-            return self.move_towards(closest_door)
-        elif choice == 'E':
-            closest_glass = self.get_closest(self.location, self.memory.glasses)
-            return self.move_towards(closest_glass)
-        elif choice == 'F':
-            closest_fire = self.get_closest(self.location, self.memory.fires)
-            return self.move_towards(closest_fire)
-        elif choice == 'G':
-            closest_glass = self.get_closest(self.location, self.memory.glasses)
-            if not self.break_glass(closest_glass):
-                raise Exception("Cant break glass unless you are near it")
-            return None
-        elif choice == 'H':
-            closest_person = self.get_closest(self.location, self.memory.people)
-            return self.move_towards(closest_person)
-        elif choice == 'I':
-            closest_door = self.get_closest(self.location, self.memory.doors)
-            return self.move_towards(closest_door)
-        elif choice == 'J':
-            closest_glass = self.get_closest(self.location, self.memory.broken_glass)
-            return self.jump_out_of_window(closest_glass)
-        elif choice == 'K':
-            return self.follow_evacuation_plan()
-        elif choice == 'L':
-            closest_exit = self.get_closest(self.location, self.memory.exits)
-            return self.move_towards(closest_exit)
-        elif choice == 'M':
-            closest_stair = self.get_closest(self.location, self.memory.stairs)
-            return self.move_towards(closest_stair)
-        elif choice == 'N':
-            return None
-        else:
-            raise Exception("Invalid choice")
-
-    def get_temperature_for_AI(self):
-        if self.fear >= 5:
-            return 0.7
-        else:
-            return 0.3
-
-    def get_situation_for_AI(self):
-        situation = \
-            f"""
-            Do you like people: {self.is_follower}
-            Floor: {self.location[0]}
-            Strength: {self.strength}
-            Health: {self.health}
-            Fear: {self.fear}
-            Nearest Exit: {self.get_closest(self.location, self.memory.exits)}
-            Nearest Stairs: {self.get_closest(self.location, self.memory.stairs)}
-            Nearest Person: {self.get_closest(self.location, self.memory.people)}
-            Nearest Window: {self.get_closest(self.location, self.memory.glasses)}
-            Nearest Fire: {self.get_closest(self.location, self.memory.fires)}
-            People Near: {self.get_number_of_people_near()}
-            Know Evacuation Plan: {self.memory.exit_plans}
-            Time to Get Out: {self.get_time_to_get_out()}
-            Room Type: {self.room_type}
-            """
-        return situation
-
-    def get_options_for_AI(self):
-        # dont have to return all of these but here is the idea
-        # option A: explore | always open
-        # option B: move randomly | always open
-        # option C: move towards a person | if know about person, more likely if you like people
-        # option D: move towards a door | if know about door
-        # option E: move towards a glass | if know about glass
-        # option F: move towards a fire | if know about fire and stuck in room
-        # option G: break glass | if next to glass
-        # option H: fight someone for a spot | if someone is in a spot you want
-        # option I: run through fire to safety | if stuck in room
-        # option J: jump out of building | if next to
-        # option K: follow evacuation plan | if know about evacuation plan
-        # option L: move to exit | if know about exit on your floor
-        # option M: move to stair | if know about stair on your floor
-        # option N: do nothing | always open
-        options = ["A", "B", "N"]
-        if self.memory.exits:
-            options.append("L")
-        if self.memory.stairs:
-            options.append("M")
-        if self.memory.people:
-            options.append("C")
-            if self.is_next_to(self.memory.people):
-                options.append("H")
-        if self.memory.doors:
-            options.append("D")
-        if self.memory.glasses:
-            options.append("E")
-            if self.can_break_glass() and self.is_next_to(self.memory.glasses):
-                options.append("G")
-        if self.memory.fires:
-            options.append("F")
-        if self.memory.broken_glasses and self.is_next_to(self.memory.broken_glasses):
-            options.append("J")
-        if self.memory.exit_plans:
-            options.append("K")
-        if self.is_next_to(self.memory.fires):
-            options.append("I")
-        options.sort()
-        return options
+            raise Exception("did not give a valid choice")
+        logging.info(f"{self.name} made choice {choice}")
+        return other
 
     def get_time_to_get_out(self):
         long_time = -1
