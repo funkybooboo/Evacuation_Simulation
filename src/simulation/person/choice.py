@@ -245,12 +245,69 @@ class Choice:
         # "M": "Move to stair",
         # "N": "Do nothing"
         if self.is_irrational():
-            return self.make_irrational_choice()
+            return self.get_irrational_choice()
         else:
-            return self.make_rational_choice()
+            return self.get_rational_choice()
 
-    def make_rational_choice(self):
-        pass
+    def get_rational_choice(self):
+        if self.person.is_trapped():
+            return self.get_rational_trapped_choice()
+        else:
+            return self.get_rational_untrapped_choice()
 
-    def make_irrational_choice(self):
-        pass
+    def get_rational_trapped_choice(self):
+        if self.person.is_trapped_by_people():
+            if self.person.fire_nearby():
+                if self.person.can_get_to_window() and self.person.can_break_glass():
+                    return "E"
+                if self.person.can_get_to_broken_glass():
+                    return "J"
+                return "H"
+            else:
+                return "N"
+        if self.person.is_trapped_by_fire():
+            if self.person.can_get_to_window():
+                return "E"
+            else:
+                return "I"
+        return "N"
+
+    def get_rational_untrapped_choice(self):
+        if self.person.know_about_important_location():
+            if self.person.get_closest(self.person.location, self.person.memory.exits):
+                return "L"
+            if self.person.get_closest(self.person.location, self.person.memory.stairs):
+                return "M"
+            if self.person.get_closest(self.person.location, self.person.memory.exit_plans):
+                return "K"
+        if self.person.is_in_room():
+            return "D"
+        if self.person.is_in_hall():
+            if self.person.get_closest(self.person.location, self.person.memory.people):
+                return "C"
+        return "A"
+
+    def get_irrational_choice(self):
+        if self.person.is_trapped():
+            return self.get_irrational_trapped_choice()
+        else:
+            return self.get_irrational_untrapped_choice()
+
+    def get_irrational_trapped_choice(self):
+        if self.person.is_trapped_by_people():
+            if self.person.fire_nearby():
+                if self.person.can_get_to_window():
+                    return "E"
+                else:
+                    return "H"
+            else:
+                return "N"
+        if self.person.is_trapped_by_fire():
+            if self.person.can_get_to_window():
+                return "E"
+            else:
+                return "I"
+        return "N"
+
+    def get_irrational_untrapped_choice(self):
+        return self.get_random_choice()

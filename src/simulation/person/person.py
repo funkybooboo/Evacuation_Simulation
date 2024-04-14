@@ -617,3 +617,40 @@ class Person:
         if path_with_unblocked:
             return True
         return False
+
+    def is_trapped(self):
+        return self.is_trapped_by_fire() or self.is_trapped_by_people()
+
+    def lots_of_people_near(self):
+        return self.get_number_of_people_near() > 5
+
+    def has_good_health(self):
+        return self.health > 50
+
+    def has_low_health(self):
+        return self.health < 25
+
+    def fire_nearby(self):
+        for location in self.memory.fires:
+            if self.is_near(self.location, location):
+                return True
+        return False
+
+    def can_get_to_broken_glass(self):
+        closest_broken_glass = self.get_closest(self.location, self.memory.broken_glasses)
+        if closest_broken_glass:
+            return self.can_get_to_location(closest_broken_glass)
+        return False
+
+    def can_get_to_window(self):
+        closest_glass = self.get_closest(self.location, self.memory.glasses)
+        if closest_glass:
+            return self.can_get_to_location(closest_glass)
+        return False
+
+    def can_get_to_location(self, location):
+        grid = self.get_grid(0)
+        path = self.get_path(location, grid)
+        if path:
+            return True
+        return False
