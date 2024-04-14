@@ -230,9 +230,8 @@ class Person:
         end = grid.node(x2, y2)
         finder = AStarFinder(diagonal_movement=DiagonalMovement.always)
         path, runs = finder.find_path(start, end, grid)
-        if self.verbose:
-            print('operations:', runs, 'path length:', len(path))
-            print(grid.grid_str(path=path, start=start, end=end))
+        self.logger.info(f'operations:', runs, 'path length:', len(path))
+        self.logger.info(grid.grid_str(path=path, start=start, end=end))
         return path
 
     def get_grid(self, i):
