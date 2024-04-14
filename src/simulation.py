@@ -108,6 +108,8 @@ class Simulation:
         self.dead_people = []
         self.fire_locations = []
 
+        self.time = 0
+
         self.building = Building(self)
         self.__generate_people()
         self.get_averages()
@@ -230,8 +232,8 @@ class Simulation:
         if self.verbose:
             print("Evacuating...")
         logging.info("Evacuating...")
-        time = 0
-        while len(self.live_people) > 0 and time < self.time_for_firefighters:
+        while len(self.live_people) > 0 and self.time < self.time_for_firefighters:
+            self.time += 1
             logging.info(f"Anew turn has started-------")
             self.building.refresh()
             if self.verbose:
@@ -240,7 +242,6 @@ class Simulation:
             logging.info(f"{self.number_of_people} people remaining")
             self.__move_people()
             self.__spread_fire()
-            time += 1
         if self.verbose:
             print("Evacuation complete")
         logging.info("Evacuation complete")

@@ -677,7 +677,7 @@ class Person:
             (Strategy.defect, Strategy.cooperate): (5, 0),
             (Strategy.defect, Strategy.defect): (1 + d1, 1 + d2),
         }
-        
+
         my_fight_history = []
         for entry in self.fight_history:
             if entry.opponent_pk == other.pk:
@@ -689,6 +689,10 @@ class Person:
 
         strategy1 = self.personality.get_strategy(None, my_fight_history)
         strategy2 = other.personality.get_strategy(strategy1, their_fight_history)
+        
+        self.fight_history.append(FightEntry(self.pk, other.pk, self.simulation.time, strategy1, strategy2))
+        other.fight_history.append(FightEntry(other.pk, self.pk, self.simulation.time, strategy2, strategy1))
+
         return payoffs[(strategy1, strategy2)]
 
     def get_number_of_people_near(self, distance=5):
