@@ -4,7 +4,6 @@ from .memory import Memory
 from pathfinding.core.diagonal_movement import DiagonalMovement
 from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
-import logging
 from src.simulation.logger import setup_logger
 from copy import deepcopy
 from .strategy import Strategy
@@ -46,7 +45,6 @@ class Person:
         self.number_of_fire_touches = 0
         self.number_of_max_fear = 0
 
-        self.verbose = verbose
         self.simulation = simulation
         self.name = name
         self.pk = pk
@@ -87,33 +85,33 @@ class Person:
 
         self.choice = Choice(self)
 
-        logging.info(f"name: {self.name}")
-        logging.info(f"age: {self.age}")
-        logging.info(f"age: {self.age}")
-        logging.info(f"strength: {self.strength}")
-        logging.info(f"speed: {self.speed}")
-        logging.info(f"vision: {self.visibility}")
-        logging.info(f"fear: {self.fear}")
-        logging.info(f"health: {self.health}")
-        logging.info(f"is_follower: {self.is_follower}")
-        logging.info(f"location: {self.location}")
-        logging.info(f"color_title: {self.color_title}")
+        self.logger = setup_logger("person_logger", f'../../../logs/run{simulation_count}/people/person{pk}.log', verbose)
+        self.logger.info('This log is for INFO purposes from person')
 
-    # person_logger = setup_logger("person_logger", "f'../../../logs/run{self.simulation_count}/people/person'os.makedirs(log_directory, exist_ok=True")
+        self.logger.info(f"name: {self.name}")
+        self.logger.info(f"age: {self.age}")
+        self.logger.info(f"age: {self.age}")
+        self.logger.info(f"strength: {self.strength}")
+        self.logger.info(f"speed: {self.speed}")
+        self.logger.info(f"vision: {self.visibility}")
+        self.logger.info(f"fear: {self.fear}")
+        self.logger.info(f"health: {self.health}")
+        self.logger.info(f"is_follower: {self.is_follower}")
+        self.logger.info(f"location: {self.location}")
+        self.logger.info(f"color_title: {self.color_title}")
+
     def statistics(self):
-        logging.info(f"{self.name} has won {self.number_of_fights_won} fights")
-        logging.info(f"{self.name} has lost {self.number_of_fights_lost} fights")
-        logging.info(f"{self.name} has tied {self.number_of_fights_tied} fights")
-        logging.info(f"{self.name} has touched fire {self.number_of_fire_touches} times")
-        logging.info(f"{self.name} has reached max fear {self.number_of_max_fear} times")
-        logging.info(f"{self.name} is a {self.color_title} with {self.health} health at {self.location}.")
-        if self.verbose:
-            print(f"{self.name} has won {self.number_of_fights_won} fights")
-            print(f"{self.name} has lost {self.number_of_fights_lost} fights")
-            print(f"{self.name} has tied {self.number_of_fights_tied} fights")
-            print(f"{self.name} has touched fire {self.number_of_fire_touches} times")
-            print(f"{self.name} has reached max fear {self.number_of_max_fear} times")
-            print(f"{self.name} is a {self.color_title} with {self.health} health at {self.location}.")
+        stats = [
+            f"{self.name} has won {self.number_of_fights_won} fights",
+            f"{self.name} has lost {self.number_of_fights_lost} fights",
+            f"{self.name} has tied {self.number_of_fights_tied} fights",
+            f"{self.name} has touched fire {self.number_of_fire_touches} times",
+            f"{self.name} has reached max fear {self.number_of_max_fear} times",
+            f"{self.name} is a {self.color_title} person with {self.health} health and {self.strength} strength at {self.location}.",
+        ]
+
+        for stat in stats:
+            self.logger.info(stat)
 
     def __str__(self):
         return f"{self.name} {self.personality_title} {self.color_title} {self.health} {self.location}."
@@ -125,8 +123,8 @@ class Person:
         return is_dead
 
     def move(self):
-        logging.info(f"{self.name} is moving")
-        logging.info(f"{self.name} is at {self.location}")
+        self.logger.info(f"{self.name} is moving")
+        self.logger.info(f"{self.name} is at {self.location}")
         if self.fear == self.simulation.max_fear:
             self.number_of_max_fear += 1
         other = None
@@ -149,14 +147,14 @@ class Person:
             # at a stair
             if self.simulation.is_stair(self.location):
                 self.location = (self.location[0] - 1, self.location[1], self.location[2])
-        logging.info(f"{self.name} is at {self.location}")
+        self.logger.info(f"{self.name} is at {self.location}")
         return other
 
     def move_one_block(self):
         choice, other = self.choice.make()
         if choice is None:
             raise Exception("did not give a valid choice")
-        logging.info(f"{self.name} made choice {choice}")
+        self.logger.info(f"{self.name} made choice {choice}")
         return other
 
     def get_time_to_get_out(self):
