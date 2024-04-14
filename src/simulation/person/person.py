@@ -6,6 +6,7 @@ from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
 from .choice import get_choice_from_AI, get_random_choice, get_choice_from_logic
 import logging
+from src.simulation.logger import setup_logger
 from copy import deepcopy
 from .strategy import Strategy
 from .fight_entry import FightEntry
@@ -38,8 +39,6 @@ class Person:
                  personality,
                  personality_title
                  ):
-        logging.basicConfig(filename=f'../../../logs/run{simulation_count}/people/person{pk}.log', level=logging.INFO,
-                            format='%(asctime)s - %(levelname)s - %(message)s')
 
         self.number_of_fights_won = 0
         self.number_of_fights_lost = 0
@@ -98,6 +97,7 @@ class Person:
         logging.info(f"location: {self.location}")
         logging.info(f"color_title: {self.color_title}")
 
+    # person_logger = setup_logger("person_logger", "f'../../../logs/run{self.simulation_count}/people/person'os.makedirs(log_directory, exist_ok=True")
     def statistics(self):
         logging.info(f"{self.name} has won {self.number_of_fights_won} fights")
         logging.info(f"{self.name} has lost {self.number_of_fights_lost} fights")
