@@ -675,7 +675,7 @@ class Person:
             (Strategy.defect, Strategy.defect): (1 + d1, 1 + d2),
         }
         strategy1 = self.personality.get_strategy(None)
-        strategy2 = other.personality.get_strategy(strategy2)
+        strategy2 = other.personality.get_strategy(strategy1)
         return payoffs[(strategy1, strategy2)]
 
     def get_number_of_people_near(self, distance=5):
