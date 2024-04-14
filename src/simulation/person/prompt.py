@@ -1,5 +1,4 @@
 from random import randint
-
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
@@ -26,13 +25,13 @@ valid = text.keys()
 
 def get_response(situation, options, temperature):
     context = ""
-    with open("../data/context.txt", "r") as file:
+    with open("../../../data/context.txt", "r") as file:
         for line in file.readlines():
             context += line
             context += "\n"
 
     example = ""
-    with open("../data/example.txt", "r") as file:
+    with open("../../../data/example.txt", "r") as file:
         for line in file.readlines():
             example += line
             example += "\n"
