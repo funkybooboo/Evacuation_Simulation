@@ -30,7 +30,7 @@ def main(args):
     # log arguments
     logging.info(f"Number of people: {args.number_of_people}")
     logging.info(f"Verbose: {args.verbose}")
-    logging.info(f"With AI: {args.with_ai}")
+    logging.info(f"Choice Mode: {args.choice_mode}")
     logging.info(f"Time for firefighters: {args.time_for_firefighters}")
     logging.info(f"Fire spread rate: {args.fire_spread_rate}")
     logging.info(f"Max visibility: {args.max_visibility}")
@@ -52,7 +52,7 @@ def main(args):
     if args.verbose:
         print(f"Number of people: {args.number_of_people}")
         print(f"Verbose: {args.verbose}")
-        print(f"With AI: {args.with_ai}")
+        print(f"Choice Mode: {args.choice_mode}")
         print(f"Time for firefighters: {args.time_for_firefighters}")
         print(f"Fire spread rate: {args.fire_spread_rate}")
         print(f"Max visibility: {args.max_visibility}")
@@ -91,7 +91,7 @@ def main(args):
         args.min_health,
         args.follower_probability,
         args.verbose,
-        args.with_ai,
+        args.choice_mode,
         args.familiarity,
         personalities
     )
@@ -108,7 +108,7 @@ def get_args():
     # Add arguments
     parser.add_argument('--number_of_people', type=int, help='Number of people', default=50)
     parser.add_argument('--verbose', type=bool, help='Verbosity', default=False)
-    parser.add_argument('--with_ai', type=bool, help='With AI', default=False)
+    parser.add_argument('--choice_mode', type=int, help='How do people make choices? 0: Random, 1: AI, 2: Logic', default=0)
     parser.add_argument('--time_for_firefighters', type=int, help='Time for firefighters', default=1000)
     parser.add_argument('--fire_spread_rate', type=int, help='Fire spread rate', default=0.1)
     parser.add_argument('--max_visibility', type=int, help='Maximum visibility', default=5)
@@ -160,6 +160,8 @@ def validate_args(args):
         raise ValueError("Familiarity must be greater than 0")
     if args.copycat + args.cooperator + args.detective + args.simpleton + args.cheater + args.grudger + args.copykitten + args.random != 1:
         raise ValueError("Sum of all personalities must be 1")
+    if args.choice_mode < 0 or args.choice_mode > 2:
+        raise ValueError("Choice mode must be 0, 1 or 2")
 
 
 if __name__ == "__main__":

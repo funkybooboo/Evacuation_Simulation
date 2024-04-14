@@ -80,3 +80,8 @@ def get_choice_from_AI(situation, options, temperature):
         return response
     else:
         return None
+
+
+def get_choice_from_logic(situation, options, temperature):
+    # TODO implement logic
+    pass

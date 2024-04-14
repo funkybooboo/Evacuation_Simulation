@@ -4,7 +4,7 @@ from .memory import Memory
 from pathfinding.core.diagonal_movement import DiagonalMovement
 from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
-from .prompt import get_choice_from_AI, get_random_choice
+from .choice import get_choice_from_AI, get_random_choice, get_choice_from_logic
 import logging
 from copy import deepcopy
 from .strategy import Strategy
@@ -150,12 +150,16 @@ class Person:
 
     def move_one_block(self):
         options = self.get_options_for_AI()
-        if self.simulation.with_ai:
-            situation = self.get_situation_for_AI()
-            temperature = self.get_temperature_for_AI()
-            choice = get_choice_from_AI(situation, options, temperature)
-        else:
+        situation = self.get_situation_for_AI()
+        temperature = self.get_temperature_for_AI()
+        if self.simulation.choice_mode == 0:
             choice = get_random_choice(options)
+        elif self.simulation.choice_mode == 1:
+            choice = get_choice_from_AI(situation, options, temperature)
+        elif self.simulation.choice_mode == 2:
+            choice = get_choice_from_logic(situation, options, temperature)
+        else:
+            raise Exception("Invalid choice mode")
         return self.make_choice(choice)
 
     def make_choice(self, choice):

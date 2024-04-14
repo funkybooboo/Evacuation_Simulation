@@ -27,7 +27,7 @@ class Simulation:
                  min_health=80,
                  follower_probability=0.5,
                  verbose=False,
-                 with_ai=False,
+                 choice_mode=0,
                  familiarity=15,
                  personalities=None
                  ):
@@ -102,7 +102,7 @@ class Simulation:
         self.simulation_count = simulation_count
         self.time_for_firefighters = time_for_firefighters
         self.verbose = verbose
-        self.with_ai = with_ai
+        self.choice_mode = choice_mode
         self.live_people = []
         self.dead_people = []
         self.fire_locations = []
