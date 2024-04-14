@@ -23,13 +23,20 @@ class Choice:
             "N": "Do nothing"
         }
         self.valid = self.text.keys()
+        self.situation = ""
+        self.options = ""
+        self.temperature = 0
+        self.options_with_text = ""
+        self.person = person
+
+    def get_info(self):
         self.situation = self.get_situation_string()
         self.options = self.get_options()
         self.temperature = self.get_temperature()
         self.options_with_text = self.get_options_with_text()
-        self.person = person
 
     def make(self):
+        self.get_info()
         if self.person.simulation.choice_mode == 0:
             choice = self.get_random_choice()
         elif self.person.simulation.choice_mode == 1:

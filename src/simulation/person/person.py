@@ -153,7 +153,7 @@ class Person:
         return other
 
     def move_one_block(self):
-        other, choice = self.choice.make()
+        choice, other = self.choice.make()
         if choice is None:
             raise Exception("did not give a valid choice")
         logging.info(f"{self.name} made choice {choice}")
