@@ -65,19 +65,36 @@ def get_random_choice(options):
 
 
 def get_choice_from_AI(situation, options, temperature):
+    options_with_text = get_options_with_text(options)
+    response = get_response(situation, options_with_text, temperature)
+    if response is None:
+        return None
+    if response in options:
+        return response
+    else:
+        return None
+
+
+def get_options_with_text(options):
     options_with_text = ""
     for option in options:
         options_with_text += option
         options_with_text += ": "
         options_with_text += text[option]
         options_with_text += "\n"
-    response = get_response(situation, options_with_text, temperature)
-    if response is None:
-        return None
-    if response in valid:
-        return response
-    else:
-        return None
+    return options_with_text
+
+
+def get_choice_from_user(situation, options, temperature):
+    options_with_text = get_options_with_text(options)
+    print(f"situation: \n{situation}")
+    print(f"temperature (0-1 how rational the choice should be): \n{temperature}")
+    print(f"options_with_text: \n{options_with_text}")
+    while True:
+        choice = input("Please choose an option: ")
+        if choice in options:
+            return choice
+        print("That's not a valid option")
 
 
 def get_choice_from_logic(situation, options, temperature):

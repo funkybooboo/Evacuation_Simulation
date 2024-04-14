@@ -160,6 +160,8 @@ class Person:
             choice = get_choice_from_AI(situation, options, temperature)
         elif self.simulation.choice_mode == 2:
             choice = get_choice_from_logic(situation, options, temperature)
+        elif self.simulation.choice_mode == 3:
+            choice = get_choice_from_user(situation, options, temperature)
         else:
             raise Exception("Invalid choice mode")
         return self.make_choice(choice)
