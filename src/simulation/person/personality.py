@@ -93,13 +93,25 @@ class Grudger(Personality):
     From then on it will always defect no matter what you do.
     """
     def get_strategy(self, opponent_strategy, fight_history):
-        if not opponent_strategy:
-            return Strategy.cooperate
+        has_defected = False
+        for fight_entry in fight_history:
+            if fight_entry.opponent_strategy == Strategy.defect:
+                has_defected = True
+                break
+        if has_defected:
+            return Strategy.defect
+        return Strategy.cooperate
 
 
 class Copykitten(Personality):
     def get_strategy(self, opponent_strategy, fight_history):
-        pass
+        if opponent_strategy == Strategy.cooperate:
+            return Strategy.cooperate
+        last_strategy = fight_history[len(fight_history)-1]
+        last_last_strategy = fight_history[len(fight_history)-2]
+        if last_strategy == Strategy.cooperate or last_last_strategy == Strategy.cooperate:
+            return Strategy.cooperate
+        return Strategy.defect
 
 
 class Random(Personality):
