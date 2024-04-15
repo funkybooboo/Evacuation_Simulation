@@ -378,18 +378,16 @@ class Person:
         y = self.location[2]
         # -1 from vision because the search function will look at the current location
         for i in range(-(self.visibility - 1), self.visibility):
-            for j in range(-self.visibility, self.visibility + 1):
+            for j in range(-(self.visibility - 1), self.visibility):
                 if self.is_continue(i, j, x, y, blocked):
                     continue
                 self.search((floor, x + i, y + j), what_is_around, blocked)
         return what_is_around
 
     def is_continue(self, i, j, x, y, blocked):
-        if i == j:
-            return True
         a = x + i
         b = y + j
-        if 0 > a > self.simulation.building.row_count-1 or 0 > b > self.simulation.building.col_count-1:
+        if 0 > a > self.simulation.building.x_size - 1 or 0 > b > self.simulation.building.y_size - 1:
             return True
         if self.is_blocked(blocked, x, y, i, j):
             return True
@@ -442,8 +440,8 @@ class Person:
     def is_blocked(self, blocked, x, y, i, j):
         left = 0
         top = 0
-        right = self.simulation.building.row_count
-        bottom = self.simulation.building.col_count
+        right = self.simulation.building.x_size
+        bottom = self.simulation.building.y_size
         for block in blocked:
             b_x = block[0]
             b_y = block[1]
@@ -577,8 +575,7 @@ class Person:
         if (self.get_on_my_floor(self.memory.doors) or
                 self.get_on_my_floor(self.memory.exits) or
                 self.get_on_my_floor(self.memory.exit_plans) or
-                self.get_on_my_floor(self.memory.stairs)
-        ):
+                self.get_on_my_floor(self.memory.stairs)):
             return False
         return True
 

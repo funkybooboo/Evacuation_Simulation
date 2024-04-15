@@ -11,9 +11,9 @@ class Building:
         self.convert_text_to_colors()
         self.grid = []
         self.convert_text_to_pathfinding_grid()
-        self.floor_count = len(self.text_building)
-        self.row_count = len(self.text_building[0])
-        self.col_count = len(self.text_building[0][0])
+        self.floor_size = len(self.text_building)
+        self.x_size = len(self.text_building[0])
+        self.y_size = len(self.text_building[0][0])
 
     @staticmethod
     def generate_building():

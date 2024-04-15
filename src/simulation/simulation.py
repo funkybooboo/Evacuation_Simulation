@@ -417,9 +417,9 @@ class Simulation:
         return c == 'h'
 
     def is_in_building(self, location):
-        if 0 <= location[0] < self.building.floor_count and 0 <= location[1] < self.building.row_count and 0 <= location[2] < self.building.col_count:
+        if 0 <= location[0] < self.building.floor_size and 0 <= location[1] < self.building.x_size and 0 <= location[2] < self.building.y_size:
             return True
-        raise Exception(f"Location is not in building: {location} \ncaller name: {inspect.currentframe().f_back.f_code.co_name}")
+        raise Exception(f"Location is not in building: {location} Caller name: {inspect.currentframe().f_back.f_code.co_name}")
 
     def is_stair(self, location):
         self.is_in_building(location)
