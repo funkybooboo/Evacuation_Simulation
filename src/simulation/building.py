@@ -203,6 +203,7 @@ class Building:
                         row[col] = 2
                     elif row[col] == 'h' or row[col] == 'n':
                         row[col] = 3
+            print(self.grid[floor])
 
     def print_building(self):
         for floor in range(len(self.color_building)):
