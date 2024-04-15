@@ -1,9 +1,9 @@
-from person.person import Person
-from person.memory import Memory
-from person.personality import Copycat, Cooperator, Detective, Simpleton, Cheater, Grudger, Random, Copykitten
+from .person.person import Person
+from .person.memory import Memory
+from .person.personality import Copycat, Cooperator, Detective, Simpleton, Cheater, Grudger, Random, Copykitten
 from random import randint
 from .building import Building
-from logger import setup_logger
+from .logger import setup_logger
 import logging
 import inspect
 
@@ -44,7 +44,7 @@ class Simulation:
                 "Random": 0.125
             }
 
-        self.logger = setup_logger("simulation_logger", f'../../logs/run{simulation_count}/simulation.log')
+        self.logger = setup_logger("simulation_logger", f'../logs/run{simulation_count}/simulation.log', verbose)
         self.logger.info('This log is for INFO purposes from simulation')
 
         self.personalities = personalities

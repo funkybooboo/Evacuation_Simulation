@@ -13,7 +13,7 @@ def main(args):
     mkdir(f'../logs/run{simulation_count}')
 
     # set up logging
-    logger = setup_logger("main_logger", f'../logs/run{simulation_count}/main.log')
+    logger = setup_logger("main_logger", f'../logs/run{simulation_count}/main.log', args.verbose)
     logger.info('This log is for INFO purposes from main')
 
     personalities = {

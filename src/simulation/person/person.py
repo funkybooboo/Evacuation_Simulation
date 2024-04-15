@@ -79,7 +79,7 @@ class Person:
 
         self.choice = Choice(self)
 
-        self.logger = setup_logger("person_logger", f'../../../logs/run{simulation_count}/people/person{pk}.log',
+        self.logger = setup_logger("person_logger", f'../logs/run{simulation_count}/people/person{pk}.log',
                                    verbose)
         self.logger.info('This log is for INFO purposes from person')
 
