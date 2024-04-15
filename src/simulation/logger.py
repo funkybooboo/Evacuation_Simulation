@@ -1,10 +1,7 @@
 import logging
-import os
 
 
 def setup_logger(name, log_file, verbose, level=logging.INFO):
-    """Function to setup as many loggers as you want"""
-
     handler = logging.FileHandler(log_file)
     handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
 
