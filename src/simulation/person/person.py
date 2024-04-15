@@ -175,7 +175,7 @@ class Person:
         return self.move_towards(closest_exit)
 
     def explore(self):
-        if "room" == self.room_type:
+        if self.is_in_room():
             closest_door = self.get_closest(self.location, self.memory.doors)
             if closest_door:
                 return self.move_towards(closest_door)
@@ -195,8 +195,7 @@ class Person:
     def move_towards(self, location):
         if location is None:
             return None
-        if not self.simulation.is_in_building(location):
-            return None
+        self.simulation.is_in_building(location)
         floor1 = self.location[0]
         floor2 = location[0]
         if floor1 != floor2:
@@ -206,23 +205,39 @@ class Person:
         for i in range(4):
             grid = self.get_grid(i)
             path = self.get_path(location, grid)
-            if not len(path) == 0:
+            if path and len(path) >= 2:
                 node = path[1]
                 n_x = node.x
                 n_y = node.y
-                break
+                new_location = (floor1, n_x, n_y)
+                if self.is_one_away(self.location, new_location):
+                    break
+                n_x = None
+                n_y = None
         if n_x is None or n_y is None:
             return None
         new_location = (floor1, n_x, n_y)
         return self.move_to(new_location)
 
     def get_path(self, location, grid):
+        if location is None:
+            raise Exception("location is None")
+        if grid is None:
+            raise Exception("grid is None")
+        if not self.simulation.is_in_building(self.location):
+            raise Exception(f"location is not in building: {self.location}")
+        if not self.simulation.is_in_building(location):
+            raise Exception(f"location is not in building: {location}")
+        for row in grid.nodes:
+            for node in row:
+                if node.weight == -3:
+                    node.walkable = False
         x1 = self.location[1]
         y1 = self.location[2]
-        start = grid.node(x1, y1)
+        start = grid.node(y1, x1)
         x2 = location[1]
         y2 = location[2]
-        end = grid.node(x2, y2)
+        end = grid.node(y2, x2)
         finder = AStarFinder(diagonal_movement=DiagonalMovement.always)
         path, runs = finder.find_path(start, end, grid)
         self.logger.info(f'operations:', runs, 'path length:', len(path))
@@ -233,11 +248,11 @@ class Person:
         floor = self.location[0]
         temp_grid = deepcopy(self.simulation.building.grid[floor])
         if i == 0:
-            self.switcher(temp_grid, 0, 0)
+            self.switcher(temp_grid, -3, -3)
         elif i == 1:
-            self.switcher(temp_grid, 3, 0)
+            self.switcher(temp_grid, 3, -3)
         elif i == 2:
-            self.switcher(temp_grid, 0, 3)
+            self.switcher(temp_grid, -3, 3)
         elif i == 3:
             self.switcher(temp_grid, 3, 3)
         else:
@@ -290,16 +305,16 @@ class Person:
         return False
 
     def move_to(self, location):
-        if (self.simulation.is_in_building(location) and
-                self.is_one_away(self.location, location) and
-                self.simulation.is_valid_location_for_person(location)):
-            other = self.simulation.is_person(location)
-            if other is not None:
-                return other
-            self.location = location
-            return None
-        else:
-            raise Exception("You can only move one block at a time or you can't move through walls or large obstacles")
+        self.simulation.is_in_building(location)
+        if not self.is_one_away(self.location, location):
+            raise Exception(f"location is not one away: {location}")
+        if not self.simulation.is_valid_location_for_person(location):
+            raise Exception(f"location is not valid: {location} {self.simulation.building.text_building[location[0]][location[1]][location[2]]}")
+        other = self.simulation.is_person(location)
+        if other is not None:
+            return other
+        self.location = location
+        return None
 
     @staticmethod
     def is_one_away(location1, location2):
@@ -364,16 +379,17 @@ class Person:
         # -1 from vision because the search function will look at the current location
         for i in range(-(self.visibility - 1), self.visibility):
             for j in range(-self.visibility, self.visibility + 1):
-                if self.is_continue(i, j, x, y, floor, blocked):
+                if self.is_continue(i, j, x, y, blocked):
                     continue
                 self.search((floor, x + i, y + j), what_is_around, blocked)
         return what_is_around
 
-    def is_continue(self, i, j, x, y, floor, blocked):
+    def is_continue(self, i, j, x, y, blocked):
         if i == j:
             return True
-        if x + i > len(self.simulation.building.text_building[floor]) or y + i > len(
-                self.simulation.building.text_building[floor][0]):
+        a = x + i
+        b = y + j
+        if 0 > a > self.simulation.building.row_count-1 or 0 > b > self.simulation.building.col_count-1:
             return True
         if self.is_blocked(blocked, x, y, i, j):
             return True
@@ -385,14 +401,13 @@ class Person:
         y = start_location[2]
         for i in range(-1, 2):
             for j in range(-1, 2):
-                if self.is_continue(i, j, x, y, floor, blocked):
+                if self.is_continue(i, j, x, y, blocked):
                     continue
-                self.add_item(blocked, floor, i, j, what_is_around, x, y)
+                self.add_to_memory(blocked, floor, i, j, what_is_around, x, y)
 
-    def add_item(self, blocked, floor, i, j, what_is_around, x, y):
+    def add_to_memory(self, blocked, floor, i, j, what_is_around, x, y):
         location = (floor, x + i, y + j)
-        if not self.simulation.is_in_building(location):
-            return
+        self.simulation.is_in_building(location)
         if self.simulation.is_wall(location):
             what_is_around.add("walls", location)
             if not self.is_diagonal(i, j):
@@ -422,13 +437,13 @@ class Person:
         elif self.simulation.is_exit_plan(location):
             what_is_around.add("exit_plans", location)
         else:
-            raise Exception("I see a char you didn't tell me about")
+            raise Exception(f"I see a char you didn't tell me about: {self.simulation.building.text_building[floor][x + i][y + j]}")
 
     def is_blocked(self, blocked, x, y, i, j):
         left = 0
         top = 0
-        right = len(self.simulation.building.text_building[0])
-        bottom = len(self.simulation.building.text_building)
+        right = self.simulation.building.row_count
+        bottom = self.simulation.building.col_count
         for block in blocked:
             b_x = block[0]
             b_y = block[1]
@@ -548,8 +563,8 @@ class Person:
 
     def get_number_of_people_near(self, distance=5):
         count = 0
-        for person in self.memory.people:
-            if self.is_near(self.location, person.location, distance):
+        for location in self.memory.people:
+            if self.is_near(self.location, location, distance):
                 count += 1
         return count
 

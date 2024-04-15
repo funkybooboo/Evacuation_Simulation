@@ -230,20 +230,6 @@ class Choice:
             print("That's not a valid option")
 
     def get_choice_from_logic(self):
-        # "A": "Explore",
-        # "B": "Move randomly",
-        # "C": "Move towards a person",
-        # "D": "Move towards a door",
-        # "E": "Move towards window",
-        # "F": "Move towards the fire",
-        # "G": "Break window",
-        # "H": "Fight someone for a spot",
-        # "I": "Run through fire to safety",
-        # "J": "Jump out of building",
-        # "K": "Follow evacuation plan",
-        # "L": "Move to exit",
-        # "M": "Move to stair",
-        # "N": "Do nothing"
         if self.is_irrational():
             return self.get_irrational_choice()
         else:

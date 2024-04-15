@@ -11,6 +11,7 @@ def main(args):
     with open('simulation/run', 'w') as f:
         f.write(str(simulation_count + 1))
     mkdir(f'../logs/run{simulation_count}')
+    mkdir(f'../logs/run{simulation_count}/people')
 
     # set up logging
     logger = setup_logger("main_logger", f'../logs/run{simulation_count}/main.log', args.verbose)

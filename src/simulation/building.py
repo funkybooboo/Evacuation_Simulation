@@ -6,22 +6,14 @@ class Building:
     def __init__(self, simulation):
         self.simulation = simulation
         self.text_building = self.generate_building()
-        self.object_locations = {
-            "door": [],
-            "exit": [],
-            "stair": [],
-            "glass": [],
-            "obstacle": [],
-            "wall": [],
-            "empty": [],
-            "fire": [],
-            "broken_glass": [],
-            "exit_plan": [],
-        }
+        self.object_locations = {}
         self.color_building = []
         self.convert_text_to_colors()
         self.grid = []
         self.convert_text_to_pathfinding_grid()
+        self.floor_count = len(self.text_building)
+        self.row_count = len(self.text_building[0])
+        self.col_count = len(self.text_building[0][0])
 
     @staticmethod
     def generate_building():
@@ -39,6 +31,8 @@ class Building:
         # p evacuation plan marker
         # 1 is room indicator
         # 2 is hall indicator
+        # f is fire
+        # b is broken glass
 
         building = [
             [   #21 by 31
@@ -202,12 +196,12 @@ class Building:
                     elif row[col] == 'f':
                         row[col] = -2
                     elif row[col] == 'w' or row[col] == 'g' or row[col] == 'l':
-                        row[col] = 0
-                    elif row[col] == ' ' or row[col] == 'd' or row[col] == 'e' or row[col] == 's' or row[col] == 'p' or row[col] == '1' or row[col] == '2':
+                        row[col] = -3
+                    elif row[col] == ' ' or row[col] == 'd' or row[col] == 'e' or row[col] == 's' or row[col] == 'p' or row[col] == '1' or row[col] == '2' or row[col] == 'b':
                         row[col] = 1
-                    elif row[col] == 'h' or row[col] == 'm':
+                    elif row[col] == 'm':
                         row[col] = 2
-                    elif row[col] == 'n':
+                    elif row[col] == 'h' or row[col] == 'n':
                         row[col] = 3
             print(self.grid[floor])
 
