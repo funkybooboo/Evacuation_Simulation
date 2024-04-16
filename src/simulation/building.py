@@ -210,7 +210,7 @@ class Building:
                     self.matrix[floor][row][col] = cell
 
     def print(self):
-        space = "  "
+        space = "   "
         self.logger.info("Printing building")
         categories = [
             "wall", "exit", "object", "stair", "glass",
@@ -223,13 +223,27 @@ class Building:
             print(colors["reset"])
         for floor in range(len(self.color)):
             print(f"Floor {floor}")
+            print("   ", end="")
+            for col in range(len(self.color[floor][0])):
+                if col > 9:
+                    token = str(col) + " "
+                else:
+                    token = str(col) + "  "
+                print(token, end="")
+            print()
             for row in range(len(self.color[floor])):
                 for col in range(len(self.color[floor][row])):
+                    if col == 0:
+                        if row > 9:
+                            token = " " + str(row)
+                        else:
+                            token = "  " + str(row)
+                        print(token, end="")
                     cost = self.matrix[floor][row][col]
                     if cost < 0:
-                        cost = str(cost)
-                    else:
                         cost = " " + str(cost)
+                    else:
+                        cost = "  " + str(cost)
                     person = self.simulation.is_person((floor, row, col))
                     token = self.color[floor][row][col]
                     if person:
