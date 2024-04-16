@@ -9,6 +9,7 @@ from copy import deepcopy
 from .strategy import Strategy
 from .fight_entry import FightEntry
 from .choice import Choice
+from os import mkdir
 
 
 class Person:
@@ -19,8 +20,6 @@ class Person:
                  pk,
                  location,
                  memory,
-                 simulation_count,
-                 verbose,
                  age,
                  strength,
                  speed,
@@ -32,6 +31,9 @@ class Person:
                  personality,
                  personality_title
                  ):
+        mkdir(f'../logs/run{simulation.simulation_count}/people/person{pk}')
+        self.logger = setup_logger("person_logger", f'../logs/run{simulation.simulation_count}/people/person{pk}/person{pk}.log', simulation.verbose)
+        self.logger.info('This log is for INFO purposes from person')
 
         self.number_of_fights_won = 0
         self.number_of_fights_lost = 0
@@ -78,10 +80,6 @@ class Person:
         self.fight_history = []
 
         self.choice = Choice(self)
-
-        self.logger = setup_logger("person_logger", f'../logs/run{simulation_count}/people/person{pk}.log',
-                                   verbose)
-        self.logger.info('This log is for INFO purposes from person')
 
         self.logger.info(f"name: {self.name}")
         self.logger.info(f"age: {self.age}")

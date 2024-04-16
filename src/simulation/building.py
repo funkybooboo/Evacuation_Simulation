@@ -1,9 +1,12 @@
 from .colors import object_colors
 from copy import deepcopy
+from .logger import setup_logger
 
 
 class Building:
     def __init__(self, simulation):
+        logger = setup_logger("building_logger", f'../logs/run{simulation.simulation_count}/simulation/building.log', simulation.verbose)
+        self.logger = logger
         self.simulation = simulation
         self.text_building = self.generate_building()
         self.object_locations = {}
@@ -15,8 +18,7 @@ class Building:
         self.x_size = len(self.text_building[0])
         self.y_size = len(self.text_building[0][0])
 
-    @staticmethod
-    def generate_building():
+    def generate_building(self):
         # w is wall
         # h is half-wall
         # o is obstacle
@@ -131,6 +133,7 @@ class Building:
         return building
 
     def convert_text_to_colors(self):
+        self.logger.info("Converting text to colors")
         self.object_locations = {
             "doors": [],
             "exits": [],
@@ -185,6 +188,7 @@ class Building:
         # 1 is easily passable
         # 2 is passable
         # 3 is difficultly passable
+        self.logger.info("Converting text to pathfinding grid")
         self.grid = deepcopy(self.text_building)
         floors = len(self.grid)
         for floor in range(floors):
@@ -203,9 +207,9 @@ class Building:
                         row[col] = 2
                     elif row[col] == 'h' or row[col] == 'n':
                         row[col] = 3
-            print(self.grid[floor])
 
     def print_building(self):
+        self.logger.info("Printing building")
         for floor in range(len(self.color_building)):
             for row in range(self.color_building[floor]):
                 for col in range(self.color_building[floor][row]):
@@ -216,5 +220,11 @@ class Building:
                         print(self.color_building[floor][row][col])
 
     def refresh(self):
+        self.logger.info("Refreshing building")
         self.convert_text_to_colors()
         self.convert_text_to_pathfinding_grid()
+        self.logger.info(self.color_building)
+        self.logger.info(self.grid)
+        self.logger.info(self.object_locations)
+        self.logger.info(self.text_building)
+

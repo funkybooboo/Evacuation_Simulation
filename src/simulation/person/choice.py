@@ -2,10 +2,13 @@ from random import randint
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
+from src.simulation.logger import setup_logger
 
 
 class Choice:
     def __init__(self, person):
+        self.logger = setup_logger("choice_logger", f'../logs/run{person.simulation.sisimulation_count}/people/person{person.pk}/choice.log', person.verbose)
+
         self.text = {
             "A": "Explore",
             "B": "Move randomly",
@@ -37,6 +40,9 @@ class Choice:
 
     def make(self):
         self.get_info()
+        self.logger.info(f"Situation: {self.situation}")
+        self.logger.info(f"Options: {self.options}")
+        self.logger.info(f"Temperature: {self.temperature}")
         if self.person.simulation.choice_mode == 0:
             choice = self.get_random_choice()
         elif self.person.simulation.choice_mode == 1:
@@ -47,6 +53,7 @@ class Choice:
             choice = self.get_choice_from_user()
         else:
             raise Exception("Invalid choice mode")
+        self.logger.info(f"Choice: {choice}")
         return choice, self.make_choice(choice)
 
     def make_choice(self, choice):
