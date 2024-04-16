@@ -21,13 +21,13 @@ class Vision:
         y = location[1]
         for i in range(-1, 2):
             for j in range(-1, 2):
-                if self.__is_continue(x + i, y + j, blocked):
+                if self.__is_out_of_bounds(x + i, y + j) or self.__is_blocked(blocked, x, y):
                     continue
                 self.__add_to_memory(blocked, i, j, what_is_around, x, y)
                 self.__search((x + i, y + j), visibility - 1, what_is_around, blocked)
 
-    def __is_continue(self, x, y, blocked):
-        return 0 > x >= self.simulation.building.x_size or 0 > y >= self.simulation.building.y_size or self.__is_blocked(blocked, x, y)
+    def __is_out_of_bounds(self, x, y):
+        return 0 > x >= self.simulation.building.x_size or 0 > y >= self.simulation.building.y_size
 
     def __add_to_memory(self, blocked, i, j, what_is_around, x, y):
         location = (self.person.location[0], x + i, y + j)
@@ -65,7 +65,7 @@ class Vision:
         elif self.simulation.is_exit_plan(location):
             what_is_around.add("exit_plans", location)
         else:
-            raise Exception(f"I see a char you didn't tell me about: {self.simulation.building.text[floor][x + i][y + j]}")
+            raise Exception(f"I see a char you didn't tell me about: {self.simulation.building.text[self.person.location[0]][x + i][y + j]}")
 
     def __block(self, blocked, i, j, x, y):
         x = x + i
