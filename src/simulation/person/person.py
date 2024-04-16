@@ -1,14 +1,10 @@
-from random import randint
-from src.simulation.colors import colors
-from pathfinding.core.diagonal_movement import DiagonalMovement
-from pathfinding.core.grid import Grid
-from pathfinding.finder.a_star import AStarFinder
 from src.simulation.logger import setup_logger
-from copy import deepcopy
+from src.simulation.colors import colors
 from .strategy import Strategy
 from .fight_entry import FightEntry
-from .choice import Choice
+from .thinker import Thinker
 from .vision import Vision
+from .movement import Movement
 from os import mkdir
 
 
@@ -79,9 +75,11 @@ class Person:
 
         self.fight_history = []
 
-        self.choice = Choice(self)
+        self.thinker = Thinker(self)
 
-        self.vision = Vision(self.simulation, self)
+        self.vision = Vision(self)
+
+        self.movement = Movement(self)
 
         self.logger.info(f"name: {self.name}")
         self.logger.info(f"age: {self.age}")
@@ -108,172 +106,7 @@ class Person:
     def is_dead(self):
         return self.health <= 0
 
-    def move(self):
-        self.logger.info(f"{self.name} is moving")
-        self.logger.info(f"{self.name} is at {self.location}")
-        if self.fear == self.simulation.max_fear:
-            self.number_of_max_fear += 1
-        other = None
-        for _ in range(self.speed):
-            if self.is_dead():
-                break
-            self.memory.combine(self.vision.look_around())
-            other = self.move_one_block()
-            # hit person
-            if other:
-                break
-            # in a fire
-            if self.location in self.simulation.fire_locations:
-                self.health -= 25
-                self.end_turn_in_fire = True
-                self.number_of_fire_touches += 1
-            else:
-                self.end_turn_in_fire = False
-            # at a stair
-            if self.simulation.is_stair(self.location):
-                self.location = (self.location[0] - 1, self.location[1], self.location[2])
-        self.logger.info(f"{self.name} is at {self.location}")
-        return other
-
-    def move_one_block(self):
-        return self.choice.make()
-
-    def get_time_to_get_out(self):
-        long_time = -1
-        closest_exit = self.get_closest(self.location, self.memory.exits)
-        if closest_exit:
-            d = self.get_distance(self.location, closest_exit)
-            if not d:
-                return long_time
-            number_of_people = self.get_number_of_people_near()
-            return number_of_people + d
-        return long_time
-
-    def is_next_to(self, lst):
-        for location in lst:
-            if self.is_one_away(self.location, location):
-                return True
-        return False
-
-    def follow_evacuation_plan(self):
-        closest_exit_plan = self.get_closest(self.location, self.memory.exit_plans)
-        closest_exit = self.get_closest(closest_exit_plan, self.simulation.building.object_locations["exits"])
-        return self.move_towards(closest_exit)
-
-    def explore(self):
-        if self.is_in_room():
-            closest_door = self.get_closest(self.location, self.memory.doors)
-            if closest_door:
-                return self.move_towards(closest_door)
-        furthest_empty = self.get_furthest(self.location, self.memory.empties)
-        if furthest_empty:
-            return self.move_towards(furthest_empty)
-        return self.move_randomly()
-
-    def move_randomly(self):
-        for i in range(8):
-            x = randint(-1, 1)
-            y = randint(-1, 1)
-            new_location = (self.location[0], self.location[1] + x, self.location[2] + y)
-            if self.simulation.is_valid_location_for_person(new_location):
-                return self.move_to(new_location)
-        return None
-
-    def move_towards(self, location):
-        if location is None:
-            return None
-        self.simulation.is_in_building(location)
-        floor1 = self.location[0]
-        floor2 = location[0]
-        if floor1 != floor2:
-            return None
-        n_x = None
-        n_y = None
-        for i in range(4):
-            grid = self.get_grid(i)
-            path = self.get_path(location, grid)
-            if path and len(path) >= 2:
-                node = path[1]
-                n_x = node.x
-                n_y = node.y
-                new_location = (floor1, n_x, n_y)
-                if self.is_one_away(self.location, new_location):
-                    break
-                n_x = None
-                n_y = None
-        if n_x is None or n_y is None:
-            return None
-        new_location = (floor1, n_x, n_y)
-        return self.move_to(new_location)
-
-    def get_path(self, location, grid):
-        if location is None:
-            raise Exception("location is None")
-        if grid is None:
-            raise Exception("grid is None")
-        if not self.simulation.is_in_building(self.location):
-            raise Exception(f"location is not in building: {self.location}")
-        if not self.simulation.is_in_building(location):
-            raise Exception(f"location is not in building: {location}")
-        for row in grid.nodes:
-            for node in row:
-                if node.weight == -3:
-                    node.walkable = False
-        x1 = self.location[1]
-        y1 = self.location[2]
-        start = grid.node(y1, x1)
-        x2 = location[1]
-        y2 = location[2]
-        end = grid.node(y2, x2)
-        finder = AStarFinder(diagonal_movement=DiagonalMovement.always)
-        path, runs = finder.find_path(start, end, grid)
-        self.logger.info(f'operations:', runs, 'path length:', len(path))
-        self.logger.info(f'path:', path)
-        self.logger.info(grid.grid_str(path=path, start=start, end=end))
-        return path
-
-    def get_grid(self, i):
-        floor = self.location[0]
-        matrix = deepcopy(self.simulation.building.matrix[floor])
-        if i == 0:
-            self.switcher(matrix, -3, -3)
-        elif i == 1:
-            self.switcher(matrix, 3, -3)
-        elif i == 2:
-            self.switcher(matrix, -3, 3)
-        elif i == 3:
-            self.switcher(matrix, 3, 3)
-        else:
-            raise Exception("invalid i")
-        grid = Grid(matrix=matrix)
-        return grid
-
-    @staticmethod
-    def switcher(matrix, p, f):
-        for row in range(len(matrix)):
-            for col in range(len(matrix[row])):
-                if matrix[row][col] == -1:
-                    matrix[row][col] = p
-                elif matrix[row][col] == -2:
-                    matrix[row][col] = f
-
-    def break_glass(self, glass_location):
-        if self.is_one_away(self.location, glass_location):
-            if self.can_break_glass():
-                # the person breaks the glass and hurts themselves doing it
-                self.simulation.building.text[glass_location[0]][glass_location[1]][glass_location[2]] = 'b'
-                self.memory.add("broken_glasses", glass_location)
-                self.health -= 25
-            else:
-                # too weak to break the glass, but they still hurt themselves trying
-                self.health -= 5
-            return True
-        return False
-
-    def can_break_glass(self):
-        return self.strength > 5
-
-    def move_to(self, location):
+    def place(self, location):
         self.simulation.is_in_building(location)
         if not self.is_one_away(self.location, location):
             raise Exception(f"location is not one away: {location}")
@@ -295,51 +128,27 @@ class Person:
             return False
         return True
 
-    def get_closest(self, location1, lst):
-        """
-        get the closet of something from a list. ex: get the closest wall, get the closest person, etc.
-        """
-        if len(lst) == 0:
-            return None
-        closest = next(iter(lst))
-        for location2 in lst:
-            if location1[0] != location2[0]:
-                continue
-            d1 = self.get_distance(location1, location2)
-            d2 = self.get_distance(location1, closest)
-            if d1 is None or d2 is None:
-                continue
-            if d1 < d2:
-                closest = location2
-        return closest
+    def is_next_to(self, lst):
+        for location in lst:
+            if self.is_one_away(self.location, location):
+                return True
+        return False
 
-    def get_furthest(self, location1, lst):
-        """
-        get the furthest of something from a list. ex: get the furthest wall, get the furthest person, etc.
-        """
-        if len(lst) == 0:
-            return None
-        furthest = next(iter(lst))
-        for location2 in lst:
-            d1 = self.get_distance(location1, location2)
-            d2 = self.get_distance(location1, furthest)
-            if d1 is None or d2 is None:
-                continue
-            if d1 > d2:
-                furthest = location2
-        return furthest
+    def break_glass(self, glass_location):
+        if self.is_one_away(self.location, glass_location):
+            if self.can_break_glass():
+                # the person breaks the glass and hurts themselves doing it
+                self.simulation.building.text[glass_location[0]][glass_location[1]][glass_location[2]] = 'b'
+                self.memory.add("broken_glasses", glass_location)
+                self.health -= 25
+            else:
+                # too weak to break the glass, but they still hurt themselves trying
+                self.health -= 5
+            return True
+        return False
 
-    @staticmethod
-    def get_distance(location1, location2):
-        if location2 is None:
-            return None
-        if location1[0] != location2[0]:
-            return None
-        x1 = location1[1]
-        y1 = location1[2]
-        x2 = location2[1]
-        y2 = location2[2]
-        return (((x1 - x2) ** 2) + ((y1 - y2) ** 2)) ** 0.5
+    def can_break_glass(self):
+        return self.strength > 5
 
     def combat(self, other):
         wanted_location = other.location
@@ -426,7 +235,7 @@ class Person:
         return count
 
     def is_near(self, location1, location2, distance=5):
-        d1 = self.get_distance(location1, location2)
+        d1 = self.movement.get_distance(location1, location2)
         if d1 < distance:
             return True
 
@@ -461,19 +270,19 @@ class Person:
         return self.room_type == "hallway"
 
     def is_trapped_by_fire(self):
-        farthest_empty = self.get_furthest(self.location, self.memory.empties)
-        grid_with_blocked = self.get_grid(0)
-        path_with_blocked = self.get_path(farthest_empty, grid_with_blocked)
-        grid_with_unblocked = self.get_grid(2)
-        path_with_unblocked = self.get_path(farthest_empty, grid_with_unblocked)
+        farthest_empty = self.movement.get_furthest(self.location, self.memory.empties)
+        grid_with_blocked = self.movement.get_grid(0)
+        path_with_blocked = self.movement.get_path(farthest_empty, grid_with_blocked)
+        grid_with_unblocked = self.movement.get_grid(2)
+        path_with_unblocked = self.movement.get_path(farthest_empty, grid_with_unblocked)
         return self.__is_trapped(path_with_blocked, path_with_unblocked)
 
     def is_trapped_by_people(self):
-        farthest_empty = self.get_furthest(self.location, self.memory.empties)
-        grid_with_blocked = self.get_grid(0)
-        path_with_blocked = self.get_path(farthest_empty, grid_with_blocked)
-        grid_with_unblocked = self.get_grid(1)
-        path_with_unblocked = self.get_path(farthest_empty, grid_with_unblocked)
+        farthest_empty = self.movement.get_furthest(self.location, self.memory.empties)
+        grid_with_blocked = self.movement.get_grid(0)
+        path_with_blocked = self.movement.get_path(farthest_empty, grid_with_blocked)
+        grid_with_unblocked = self.movement.get_grid(1)
+        path_with_unblocked = self.movement.get_path(farthest_empty, grid_with_unblocked)
         return self.__is_trapped(path_with_blocked, path_with_unblocked)
 
     @staticmethod
@@ -503,20 +312,20 @@ class Person:
         return False
 
     def can_get_to_broken_glass(self):
-        closest_broken_glass = self.get_closest(self.location, self.memory.broken_glasses)
+        closest_broken_glass = self.movement.get_closest(self.location, self.memory.broken_glasses)
         if closest_broken_glass:
             return self.can_get_to_location(closest_broken_glass)
         return False
 
     def can_get_to_window(self):
-        closest_glass = self.get_closest(self.location, self.memory.glasses)
+        closest_glass = self.movement.get_closest(self.location, self.memory.glasses)
         if closest_glass:
             return self.can_get_to_location(closest_glass)
         return False
 
     def can_get_to_location(self, location):
-        grid = self.get_grid(0)
-        path = self.get_path(location, grid)
+        grid = self.movement.get_grid(0)
+        path = self.movement.get_path(location, grid)
         if path:
             return True
         return False

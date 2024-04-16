@@ -2,8 +2,7 @@ from .memory import Memory
 
 
 class Vision:
-    def __init__(self, simulation, person):
-        self.simulation = simulation
+    def __init__(self, person):
         self.person = person
 
     def look_around(self):
@@ -19,72 +18,73 @@ class Vision:
             return
         x = location[0]
         y = location[1]
+        blocked.append((x, y))
         for i in range(-1, 2):
             for j in range(-1, 2):
-                if self.__is_out_of_bounds(x + i, y + j) or self.__is_blocked(blocked, x, y):
+                a = x + j
+                b = y + i
+                if self.__is_out_of_bounds(a, b) or self.__is_blocked(blocked, a, b):
                     continue
-                self.__add_to_memory(blocked, i, j, what_is_around, x, y)
-                self.__search((x + i, y + j), visibility - 1, what_is_around, blocked)
+                self.__add_to_memory(what_is_around, blocked, i, j, a, b)
+                self.__search((a, b), visibility - 1, what_is_around, blocked)
 
-    def __is_out_of_bounds(self, x, y):
-        return 0 > x >= self.simulation.building.x_size or 0 > y >= self.simulation.building.y_size
-
-    def __add_to_memory(self, blocked, i, j, what_is_around, x, y):
-        location = (self.person.location[0], x + i, y + j)
-        self.simulation.is_in_building(location)
-        if self.simulation.is_wall(location):
+    def __add_to_memory(self, what_is_around, blocked, i, j, a, b):
+        location = (self.person.location[0], a, b)
+        self.person.simulation.is_in_building(location)
+        if self.person.simulation.is_wall(location):
             what_is_around.add("walls", location)
-            self.__block(blocked, i, j, x, y)
-        elif self.simulation.is_door(location):
+            self.__block(blocked, i, j, a, b)
+        elif self.person.simulation.is_door(location):
             what_is_around.add("doors", location)
-        elif self.simulation.is_exit(location):
+        elif self.person.simulation.is_exit(location):
             what_is_around.add("exits", location)
-        elif self.simulation.is_stair(location):
+        elif self.person.simulation.is_stair(location):
             what_is_around.add("stairs", location)
-        elif self.simulation.is_glass(location):
+        elif self.person.simulation.is_glass(location):
             what_is_around.add("glasses", location)
-        elif self.simulation.is_mini_obstacle(location):
+        elif self.person.simulation.is_mini_obstacle(location):
             what_is_around.add("obstacles", location)
-        elif self.simulation.is_normal_obstacle(location):
+        elif self.person.simulation.is_normal_obstacle(location):
             what_is_around.add("obstacles", location)
-        elif self.simulation.is_large_obstacle(location):
-            self.__block(blocked, i, j, x, y)
+        elif self.person.simulation.is_large_obstacle(location):
+            self.__block(blocked, i, j, a, b)
             what_is_around.add("broken_glasses", location)
-        elif self.simulation.is_empty(location):
+        elif self.person.simulation.is_empty(location):
             what_is_around.add("empties", location)
-        elif location in self.simulation.fire_locations:
+        elif location in self.person.simulation.fire_locations:
             what_is_around.add("fires", location)
-        elif self.simulation.is_person(location):
+        elif self.person.simulation.is_person(location):
             what_is_around.add("people", location)
-        elif self.simulation.is_broken_glass(location):
+        elif self.person.simulation.is_broken_glass(location):
             what_is_around.add("broken_glasses", location)
-        elif self.simulation.is_room(location):
+        elif self.person.simulation.is_room(location):
             self.room_type = "room"
-        elif self.simulation.is_hallway(location):
+        elif self.person.simulation.is_hallway(location):
             self.room_type = "hall"
-        elif self.simulation.is_exit_plan(location):
+        elif self.person.simulation.is_exit_plan(location):
             what_is_around.add("exit_plans", location)
         else:
-            raise Exception(f"I see a char you didn't tell me about: {self.simulation.building.text[self.person.location[0]][x + i][y + j]}")
+            raise Exception(f"I see a char you didn't tell me about: {self.person.simulation.building.text[self.person.location[0]][a][b]}")
 
-    def __block(self, blocked, i, j, x, y):
-        x = x + i
-        y = y + j
+    def __is_out_of_bounds(self, x, y):
+        return 0 > x >= self.person.simulation.building.x_size or 0 > y >= self.person.simulation.building.y_size
+
+    def __block(self, blocked, i, j, a, b):
+        blocked.append((a, b))
         if not self.__is_diagonal(i, j):
-            blocked.append((x, y))
             direction = self.__get_direction(i, j)
             if direction == 'l':
-                for k in range(x, 0, -1):
-                    blocked.append((x + k, y))
+                for k in range(a, 0, -1):
+                    blocked.append((a + k, b))
             elif direction == 'r':
-                for k in range(x, self.simulation.building.x_size):
-                    blocked.append((x + k, y))
+                for k in range(a, self.person.simulation.building.x_size):
+                    blocked.append((a + k, b))
             elif direction == 'd':
-                for k in range(y, self.simulation.building.y_size):
-                    blocked.append((x, y + k))
+                for k in range(b, self.person.simulation.building.y_size):
+                    blocked.append((a, b + k))
             elif direction == 'u':
-                for k in range(y, 0, -1):
-                    blocked.append((x, y + k))
+                for k in range(b, 0, -1):
+                    blocked.append((a, b + k))
 
     @staticmethod
     def __is_blocked(blocked, x, y):
@@ -97,12 +97,12 @@ class Vision:
     @staticmethod
     def __get_direction(i, j):
         if i == 0 and j == 1:
-            return 'u'
-        if i == 0 and j == -1:
-            return 'd'
-        if i == 1 and j == 0:
             return 'r'
-        if i == -1 and j == 0:
+        if i == 0 and j == -1:
             return 'l'
+        if i == 1 and j == 0:
+            return 'u'
+        if i == -1 and j == 0:
+            return 'd'
         else:
             raise Exception('invalid coordinates')

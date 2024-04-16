@@ -341,7 +341,7 @@ class Simulation:
                 self.number_of_deaths_by_fire += 1
                 continue
 
-            other_person = person.move()
+            other_person = person.movement.run()
 
             # Die by moving
             if self.__is_dead(person):

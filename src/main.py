@@ -88,7 +88,7 @@ def get_args():
     # Add arguments
     parser.add_argument('--number_of_people', type=int, help='Number of people', default=1)
     parser.add_argument('--verbose', type=bool, help='Verbosity', default=False)
-    parser.add_argument('--choice_mode', type=int, help='How do people make choices? 0: Random, 1: AI, 2: Logic, 3: You Choose!', default=0)
+    parser.add_argument('--choice_mode', type=int, help='How do people make choices? 0: Random, 1: AI, 2: Logic, 3: You Choose!', default=3)
     parser.add_argument('--time_for_firefighters', type=int, help='Time for firefighters', default=1000)
     parser.add_argument('--fire_spread_rate', type=int, help='Fire spread rate', default=0.1)
     parser.add_argument('--max_visibility', type=int, help='Maximum visibility', default=5)
