@@ -86,7 +86,7 @@ def main(args):
 def get_args():
     parser = argparse.ArgumentParser(description='Evacuation Simulation')
     # Add arguments
-    parser.add_argument('--number_of_people', type=int, help='Number of people', default=50)
+    parser.add_argument('--number_of_people', type=int, help='Number of people', default=1)
     parser.add_argument('--verbose', type=bool, help='Verbosity', default=False)
     parser.add_argument('--choice_mode', type=int, help='How do people make choices? 0: Random, 1: AI, 2: Logic, 3: You Choose!', default=0)
     parser.add_argument('--time_for_firefighters', type=int, help='Time for firefighters', default=1000)

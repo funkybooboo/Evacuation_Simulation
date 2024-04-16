@@ -192,9 +192,9 @@ class Simulation:
 
     def __start_fire(self):
         while True:
-            floor = randint(0, len(self.building.text_building) - 1)
-            x = randint(0, len(self.building.text_building[0]) - 1)
-            y = randint(0, len(self.building.text_building[0][0]) - 1)
+            floor = randint(0, len(self.building.text) - 1)
+            x = randint(0, len(self.building.text[0]) - 1)
+            y = randint(0, len(self.building.text[0][0]) - 1)
             location = (floor, x, y)
             if self.__set_fire(location):
                 break
@@ -202,9 +202,9 @@ class Simulation:
     def __generate_people(self):
         pk = 0
         while pk < self.number_of_people:
-            floor = randint(0, len(self.building.text_building) - 1)
-            location = (floor, randint(0, len(self.building.text_building[0]) - 1),
-                        randint(0, len(self.building.text_building[0][0]) - 1))
+            floor = randint(0, len(self.building.text) - 1)
+            location = (floor, randint(0, len(self.building.text[0]) - 1),
+                        randint(0, len(self.building.text[0][0]) - 1))
             if (self.is_obstacle(location) or self.is_fire(location) or self.is_person(location) or
                     self.is_wall(location) or self.is_stair(location) or self.is_glass(location) or
                     self.is_door(location) or self.is_exit(location)):
@@ -310,8 +310,7 @@ class Simulation:
             self.time += 1
             self.logger.info(f"Time: {self.time}")
             self.building.refresh()
-            if self.verbose:
-                self.building.print_building()
+            self.building.print_building()
             self.__move_people()
             self.logger.info("People have moved")
             self.__spread_fire()
@@ -420,7 +419,7 @@ class Simulation:
         self.is_in_building(location)
         if not self.is_fire(location):
             # remove what was there
-            self.building.text_building[location[0]][location[1]][location[2]] = 'f'
+            self.building.text[location[0]][location[1]][location[2]] = 'f'
             self.fire_locations.append(location)
             self.logger.info(f"Fire has started at location {location}")
             return True
@@ -432,26 +431,26 @@ class Simulation:
 
     def is_exit(self, location):
         self.is_in_building(location)
-        return self.building.text_building[location[0]][location[1]][location[2]] == 'e'
+        return self.building.text[location[0]][location[1]][location[2]] == 'e'
 
     def is_obstacle(self, location):
         self.is_in_building(location)
-        c = self.building.text_building[location[0]][location[1]][location[2]]
+        c = self.building.text[location[0]][location[1]][location[2]]
         return c == 'm' or c == 'n' or c == 'l'
 
     def is_mini_obstacle(self, location):
         self.is_in_building(location)
-        c = self.building.text_building[location[0]][location[1]][location[2]]
+        c = self.building.text[location[0]][location[1]][location[2]]
         return c == 'm'
 
     def is_normal_obstacle(self, location):
         self.is_in_building(location)
-        c = self.building.text_building[location[0]][location[1]][location[2]]
+        c = self.building.text[location[0]][location[1]][location[2]]
         return c == 'n'
 
     def is_large_obstacle(self, location):
         self.is_in_building(location)
-        c = self.building.text_building[location[0]][location[1]][location[2]]
+        c = self.building.text[location[0]][location[1]][location[2]]
         return c == 'l'
 
     def is_fire(self, location):
@@ -466,12 +465,12 @@ class Simulation:
 
     def is_wall(self, location):
         self.is_in_building(location)
-        c = self.building.text_building[location[0]][location[1]][location[2]]
+        c = self.building.text[location[0]][location[1]][location[2]]
         return c == 'w' or c == 'h'
 
     def is_half_wall(self, location):
         self.is_in_building(location)
-        c = self.building.text_building[location[0]][location[1]][location[2]]
+        c = self.building.text[location[0]][location[1]][location[2]]
         return c == 'h'
 
     def is_in_building(self, location):
@@ -481,35 +480,35 @@ class Simulation:
 
     def is_stair(self, location):
         self.is_in_building(location)
-        return self.building.text_building[location[0]][location[1]][location[2]] == 's'
+        return self.building.text[location[0]][location[1]][location[2]] == 's'
 
     def is_glass(self, location):
         self.is_in_building(location)
-        return self.building.text_building[location[0]][location[1]][location[2]] == 'g'
+        return self.building.text[location[0]][location[1]][location[2]] == 'g'
 
     def is_empty(self, location):
         self.is_in_building(location)
-        return self.building.text_building[location[0]][location[1]][location[2]] == ' '
+        return self.building.text[location[0]][location[1]][location[2]] == ' '
 
     def is_door(self, location):
         self.is_in_building(location)
-        return self.building.text_building[location[0]][location[1]][location[2]] == 'd'
+        return self.building.text[location[0]][location[1]][location[2]] == 'd'
 
     def is_broken_glass(self, location):
         self.is_in_building(location)
-        return self.building.text_building[location[0]][location[1]][location[2]] == 'b'
+        return self.building.text[location[0]][location[1]][location[2]] == 'b'
 
     def is_room(self, location):
         self.is_in_building(location)
-        return self.building.text_building[location[0]][location[1]][location[2]] == '1'
+        return self.building.text[location[0]][location[1]][location[2]] == '1'
 
     def is_hallway(self, location):
         self.is_in_building(location)
-        return self.building.text_building[location[0]][location[1]][location[2]] == '2'
+        return self.building.text[location[0]][location[1]][location[2]] == '2'
 
     def is_exit_plan(self, location):
         self.is_in_building(location)
-        return self.building.text_building[location[0]][location[1]][location[2]] == 'p'
+        return self.building.text[location[0]][location[1]][location[2]] == 'p'
 
     def is_valid_location_for_person(self, location):
         return not self.is_large_obstacle(location) and not self.is_wall(location) and not self.is_glass(location)

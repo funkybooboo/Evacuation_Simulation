@@ -1,102 +1,55 @@
-# Black : Wall
-# White : Empty
-# Light Brown : Window
-# Brown : Door
-# Dark Brown : Exit
-# Stair Blue : Stair
+# \x1b[40m 	Black
+# \x1b[41m 	Red
+# \x1b[42m 	Green
+# \x1b[43m 	Yellow
+# \x1b[44m 	Blue
+# \x1b[45m 	Magenta
+# \x1b[46m 	Cyan
+# \x1b[47m 	White
+# \x1b[49m 	Default(background color at startup)
+# \x1b[100m 	Light Gray
+# \x1b[101m 	Light Red
+# \x1b[102m 	Light Green
+# \x1b[103m 	Light Yellow
+# \x1b[104m 	Light Blue
+# \x1b[105m 	Light Magenta
+# \x1b[106m 	Light Cyan
+# \x1b[107m 	Light White
 
-# Light Grey : Small Obstacle
-# Grey : Normal Obstacle
-# Dark Grey : Large Obstacle
+black = "\x1b[40m"
+red = "\x1b[41m"
+green = "\x1b[42m"
+yellow = "\x1b[43m"
+blue = "\x1b[44m"
+magenta = "\x1b[45m"
+cyan = "\x1b[46m"
+white = "\x1b[47m"
+default = "\x1b[49m"
+light_grey = "\x1b[100m"
+light_red = "\x1b[101m"
+light_green = "\x1b[102m"
+light_yellow = "\x1b[103m"
+light_blue = "\x1b[104m"
+light_magenta = "\x1b[105m"
+light_cyan = "\x1b[106m"
+light_white = "\x1b[107m"
 
-# Red : Fire
-# Light Red : Shooter
-
-# Yellow : Follower Person
-# Blue : Non-Follower Person
-
-# \u001b[<code>m
-
-black = '\u001b[232m'
-white = '\u001b[15m'
-light_brown = '\u001b[221m'
-brown = '\u001b[94m'
-dark_brown = '\u001b[2m'
-light_grey = '\u001b[255m'
-grey = '\u001b[246m'
-dark_grey = '\u001b[238m'
-red = '\u001b[124m'
-light_red = '\u001b[196m'
-light_blue = '\u001b[14m'
-blue = '\u001b[26m'
-dark_blue = '\u001b[17m'
-stair_blue = '\u001b[31m'
-
-light_pink = '\u001b[218m'
-pink = '\u001b[164m'
-dark_pink = '\u001b[162m'
-
-light_yellow = '\u001b[228m'
-yellow = '\u001b[226m'
-dark_yellow = '\u001b[3m'
-
-light_orange = '\u001b[209m'
-orange = '\u001b[208m'
-dark_orange = '\u001b[130m'
-
-light_green = '\u001b[10m'
-green = '\u001b[2m'
-dark_green = '\u001b[22m'
-
-light_purple = '\u001b[177m'
-purple = '\u001b[55m'
-dark_purple = '\u001b[54m'
-
-light_teal = '\u001b[156m'
-teal = '\u001b[157m'
-dark_teal = '\u001b[158m'
-
-light_tan = '\u001b[100m'
-tan = '\u001b[101m'
-dark_tan = '\u001b[102m'
-
-object_colors = {
-    "Black": black,
-    "White": white,
-    "Light Brown": light_brown,
-    "Brown": brown,
-    "Dark Brown": dark_brown,
-    "Light Grey": light_grey,
-    "Grey": grey,
-    "Dark Grey": dark_grey,
-    "Red": red,
-    "Light Red": light_red,
-    "Teal": teal,
-    "Light Pink": light_pink,
-    "Stair Blue": stair_blue,
-}
-
-person_colors = {
-    "Light Blue": light_blue,
-    "Blue": blue,
-    "Dark Blue": dark_blue,
-    "Pink": pink,
-    "Dark Pink": dark_pink,
-    "Light Yellow": light_yellow,
-    "Yellow": yellow,
-    "Dark Yellow": dark_yellow,
-    "Light Orange": light_orange,
-    "Orange": orange,
-    "Dark Orange": dark_orange,
-    "Light Green": light_green,
-    "Green": green,
-    "Dark Green": dark_green,
-    "Light Purple": light_purple,
-    "Purple": purple,
-    "Dark Purple": dark_purple,
-    "Light Teal": light_teal,
-    "Dark Teal": dark_teal,
-    "Light Tan": light_tan,
-    "Tan": tan,
-    "Dark Tan": dark_tan
+colors = {
+    "black": black,
+    "fire": red,
+    "exit": green,
+    "follower": yellow,
+    "glass": blue,
+    "stair": magenta,
+    "wall": cyan,
+    "empty": white,
+    "reset": default,
+    "object": light_grey,
+    "light_red": light_red,
+    "door": light_green,
+    "nonfollower": light_yellow,
+    "broken_glass": light_blue,
+    "light_magenta": light_magenta,
+    "exit_plan": light_cyan,
+    "light_white": light_white
 }

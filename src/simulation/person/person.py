@@ -1,5 +1,5 @@
 from random import randint
-from src.simulation.colors import person_colors
+from src.simulation.colors import colors
 from .memory import Memory
 from pathfinding.core.diagonal_movement import DiagonalMovement
 from pathfinding.core.grid import Grid
@@ -65,10 +65,10 @@ class Person:
 
         if self.is_follower:
             self.color_title = "Yellow"
-            self.color = person_colors["Yellow"]
+            self.color = colors["follower"]
         else:
-            self.color_title = "Blue"
-            self.color = person_colors["Blue"]
+            self.color_title = "Light Yellow"
+            self.color = colors["nonfollower"]
 
         self.memory = memory
 
@@ -232,7 +232,7 @@ class Person:
 
     def get_grid(self, i):
         floor = self.location[0]
-        matrix = deepcopy(self.simulation.building.grid[floor])
+        matrix = deepcopy(self.simulation.building.matrix[floor])
         if i == 0:
             self.switcher(matrix, -3, -3)
         elif i == 1:
@@ -259,7 +259,7 @@ class Person:
         if self.is_one_away(self.location, glass_location):
             if self.can_break_glass():
                 # the person breaks the glass and hurts themselves doing it
-                self.simulation.building.text_building[glass_location[0]][glass_location[1]][glass_location[2]] = 'b'
+                self.simulation.building.text[glass_location[0]][glass_location[1]][glass_location[2]] = 'b'
                 self.memory.add("broken_glasses", glass_location)
                 self.health -= 25
             else:
@@ -276,7 +276,7 @@ class Person:
         if not self.is_one_away(self.location, location):
             raise Exception(f"location is not one away: {location}")
         if not self.simulation.is_valid_location_for_person(location):
-            raise Exception(f"location is not valid: {location} {self.simulation.building.text_building[location[0]][location[1]][location[2]]}")
+            raise Exception(f"location is not valid: {location} {self.simulation.building.text[location[0]][location[1]][location[2]]}")
         other = self.simulation.is_person(location)
         if other is not None:
             return other
@@ -404,7 +404,7 @@ class Person:
         elif self.simulation.is_exit_plan(location):
             what_is_around.add("exit_plans", location)
         else:
-            raise Exception(f"I see a char you didn't tell me about: {self.simulation.building.text_building[floor][x + i][y + j]}")
+            raise Exception(f"I see a char you didn't tell me about: {self.simulation.building.text[floor][x + i][y + j]}")
 
     def is_blocked(self, blocked, x, y, i, j):
         left = 0

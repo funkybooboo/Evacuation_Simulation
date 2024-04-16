@@ -1,4 +1,4 @@
-from .colors import object_colors
+from .colors import colors
 from copy import deepcopy
 from .logger import setup_logger
 
@@ -8,17 +8,18 @@ class Building:
         logger = setup_logger("building_logger", f'../logs/run{simulation.simulation_count}/simulation/building.log', simulation.verbose)
         self.logger = logger
         self.simulation = simulation
-        self.text_building = self.generate_building()
+        self.text = self.generate_building()
         self.object_locations = {}
-        self.color_building = []
+        self.color = []
         self.convert_text_to_colors()
-        self.grid = []
-        self.convert_text_to_pathfinding_grid()
-        self.floor_size = len(self.text_building)
-        self.x_size = len(self.text_building[0])
-        self.y_size = len(self.text_building[0][0])
+        self.matrix = []
+        self.convert_text_to_matrix()
+        self.floor_size = len(self.text)
+        self.x_size = len(self.text[0])
+        self.y_size = len(self.text[0][0])
 
-    def generate_building(self):
+    @staticmethod
+    def generate_building():
         # w is wall
         # h is half-wall
         # o is obstacle
@@ -146,85 +147,98 @@ class Building:
             "broken_glasses": [],
             "exit_plans": [],
         }
-        self.color_building = deepcopy(self.text_building)
-        floors = len(self.color_building)
-        for floor in range(floors):
-            for i in range(len(self.color_building[floor])):
-                row = self.color_building[floor][i]
-                for col in range(len(row)):
-                    if row[col] == 'w' or row[col] == 'h':
-                        self.object_locations["walls"].append((floor, i, col))
-                        row[col] = object_colors["Black"]
-                    elif row[col] == 'e':
-                        self.object_locations["exits"].append((floor, i, col))
-                        row[col] = object_colors["Dark Brown"]
-                    elif row[col] == 'm' or row[col] == 'n' or row[col] == 'l':
-                        self.object_locations["obstacles"].append((floor, i, col))
-                        row[col] = object_colors["Grey"]
-                    elif row[col] == 's':
-                        self.object_locations["stairs"].append((floor, i, col))
-                        row[col] = object_colors["Stair Blue"]
-                    elif row[col] == 'g':
-                        self.object_locations["glasses"].append((floor, i, col))
-                        row[col] = object_colors["Light Brown"]
-                    elif row[col] == 'd':
-                        self.object_locations["doors"].append((floor, i, col))
-                        row[col] = object_colors["Brown"]
-                    elif row[col] == ' ' or row[col] == '1' or row[col] == '2':
-                        self.object_locations["empties"].append((floor, i, col))
-                        row[col] = object_colors["White"]
-                    elif row[col] == 'f':
-                        self.object_locations["fires"].append((floor, i, col))
-                        row[col] = object_colors["Red"]
-                    elif row[col] == 'b':
-                        self.object_locations["broken_glasses"].append((floor, i, col))
-                        row[col] = object_colors["Teal"]
-                    elif row[col] == 'p':
-                        self.object_locations["exit_plans"].append((floor, i, col))
-                        row[col] = object_colors["Light Pink"]
+        self.color = deepcopy(self.text)
+        for floor in range(len(self.color)):
+            for row in range(len(self.color[floor])):
+                for col in range(len(self.color[floor][row])):
+                    cell = self.color[floor][row][col]
+                    if cell == 'w' or cell == 'h':
+                        self.object_locations["walls"].append((floor, row, col))
+                        cell = colors["wall"]
+                    elif cell == 'e':
+                        self.object_locations["exits"].append((floor, row, col))
+                        cell = colors["exit"]
+                    elif cell == 'm' or cell == 'n' or cell == 'l':
+                        self.object_locations["obstacles"].append((floor, row, col))
+                        cell = colors["object"]
+                    elif cell == 's':
+                        self.object_locations["stairs"].append((floor, row, col))
+                        cell = colors["stair"]
+                    elif cell == 'g':
+                        self.object_locations["glasses"].append((floor, row, col))
+                        cell = colors["glass"]
+                    elif cell == 'd':
+                        self.object_locations["doors"].append((floor, row, col))
+                        cell = colors["door"]
+                    elif cell == ' ' or cell == '1' or cell == '2':
+                        self.object_locations["empties"].append((floor, row, col))
+                        cell = colors["empty"]
+                    elif cell == 'f':
+                        self.object_locations["fires"].append((floor, row, col))
+                        cell = colors["fire"]
+                    elif cell == 'b':
+                        self.object_locations["broken_glasses"].append((floor, row, col))
+                        cell = colors["broken_glass"]
+                    elif cell == 'p':
+                        self.object_locations["exit_plans"].append((floor, row, col))
+                        cell = colors["exit_plan"]
+                    self.color[floor][row][col] = cell
 
-    def convert_text_to_pathfinding_grid(self):
+    def convert_text_to_matrix(self):
         # 0 is impassable
         # 1 is easily passable
         # 2 is passable
         # 3 is difficultly passable
         self.logger.info("Converting text to pathfinding grid")
-        self.grid = deepcopy(self.text_building)
-        floors = len(self.grid)
-        for floor in range(floors):
-            for row in self.grid[floor]:
-                for col in range(len(row)):
+        self.matrix = deepcopy(self.text)
+        for floor in range(len(self.matrix)):
+            for row in range(len(self.matrix[floor])):
+                for col in range(len(self.matrix[floor][row])):
                     person = self.simulation.is_person((floor, row, col))
+                    cell = self.matrix[floor][row][col]
                     if person:
-                        row[col] = -1
-                    elif row[col] == 'f':
-                        row[col] = -2
-                    elif row[col] == 'w' or row[col] == 'g' or row[col] == 'l':
-                        row[col] = -3
-                    elif row[col] == ' ' or row[col] == 'd' or row[col] == 'e' or row[col] == 's' or row[col] == 'p' or row[col] == '1' or row[col] == '2' or row[col] == 'b':
-                        row[col] = 1
-                    elif row[col] == 'm':
-                        row[col] = 2
-                    elif row[col] == 'h' or row[col] == 'n':
-                        row[col] = 3
+                        cell = -1
+                    elif cell == 'f':
+                        cell = -2
+                    elif cell == 'w' or cell == 'g' or cell == 'l':
+                        cell = -4
+                    elif cell == ' ' or cell == 'd' or cell == 'e' or cell == 's' or cell == 'p' or cell == '1' or cell == '2' or cell == 'b':
+                        cell = 1
+                    elif cell == 'm':
+                        cell = 2
+                    elif cell == 'h' or cell == 'n':
+                        cell = 3
+                    self.matrix[floor][row][col] = cell
 
     def print_building(self):
+        space = "  "
         self.logger.info("Printing building")
-        for floor in range(len(self.color_building)):
-            for row in range(self.color_building[floor]):
-                for col in range(self.color_building[floor][row]):
+        categories = [
+            "wall", "exit", "object", "stair", "glass",
+            "door", "empty", "fire", "broken_glass",
+            "exit_plan", "follower", "nonfollower"
+        ]
+        for category in categories:
+            color = colors[category] + space
+            print(f"{category}: {color}", end="")
+            print(colors["reset"])
+        for floor in range(len(self.color)):
+            print(f"Floor {floor}")
+            for row in range(len(self.color[floor])):
+                for col in range(len(self.color[floor][row])):
                     person = self.simulation.is_person((floor, row, col))
                     if person:
-                        print(person.color)
+                        print(person.color + space, end="")
                     else:
-                        print(self.color_building[floor][row][col])
+                        print(self.color[floor][row][col] + space, end="")
+                print("" + colors["reset"])
 
     def refresh(self):
         self.logger.info("Refreshing building")
         self.convert_text_to_colors()
-        self.convert_text_to_pathfinding_grid()
-        self.logger.info(self.color_building)
-        self.logger.info(self.grid)
+        self.convert_text_to_matrix()
+        self.logger.info(self.color)
+        self.logger.info(self.matrix)
         self.logger.info(self.object_locations)
-        self.logger.info(self.text_building)
+        self.logger.info(self.text)
 
