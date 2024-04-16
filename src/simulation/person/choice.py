@@ -87,8 +87,8 @@ class Choice:
             closest_door = self.person.get_closest(self.person.location, self.person.memory.doors)
             return self.person.move_towards(closest_door)
         elif choice == 'J':
-            broken_glass = self.person.get_closest(self.person.location, self.person.memory.broken_glass)
-            return self.person.move_to(broken_glass)
+            broken_glasses = self.person.get_closest(self.person.location, self.person.memory.broken_glass)
+            return self.person.move_to(broken_glasses)
         elif choice == 'K':
             return self.person.follow_evacuation_plan()
         elif choice == 'L':
