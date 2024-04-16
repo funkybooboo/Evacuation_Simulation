@@ -44,7 +44,7 @@ class Simulation:
                 "Random": 0.125
             }
 
-        self.logger = setup_logger("simulation_logger", f'../logs/run{simulation_count}/simulation.log', verbose)
+        self.logger = setup_logger("simulation_logger", f'../logs/run{simulation_count}/simulation/simulation.log', verbose)
         self.logger.info('This log is for INFO purposes from simulation')
 
         self.personalities = personalities
@@ -116,6 +116,34 @@ class Simulation:
         self.get_averages()
         self.__start_fire()
 
+        self.logger.info("Simulation has been initialized")
+        self.logger.info(f"Number of people: {number_of_people}")
+        self.logger.info(f"Time for firefighters: {time_for_firefighters}")
+        self.logger.info(f"Fire spread rate: {fire_spread_rate}")
+        self.logger.info(f"Max visibility: {max_visibility}")
+        self.logger.info(f"Min visibility: {min_visibility}")
+        self.logger.info(f"Max strength: {max_strength}")
+        self.logger.info(f"Min strength: {min_strength}")
+        self.logger.info(f"Max speed: {max_speed}")
+        self.logger.info(f"Min speed: {min_speed}")
+        self.logger.info(f"Max fear: {max_fear}")
+        self.logger.info(f"Min fear: {min_fear}")
+        self.logger.info(f"Max age: {max_age}")
+        self.logger.info(f"Min age: {min_age}")
+        self.logger.info(f"Max health: {max_health}")
+        self.logger.info(f"Min health: {min_health}")
+        self.logger.info(f"Follower probability: {follower_probability}")
+        self.logger.info(f"Familiarity: {familiarity}")
+        self.logger.info(f"Number of personalities: {personalities}")
+        self.logger.info(f"Number of copycat: {self.max_number_of_copycat}")
+        self.logger.info(f"Number of cooperator: {self.max_number_of_cooperator}")
+        self.logger.info(f"Number of detective: {self.max_number_of_detective}")
+        self.logger.info(f"Number of simpleton: {self.max_number_of_simpleton}")
+        self.logger.info(f"Number of cheater: {self.max_number_of_cheater}")
+        self.logger.info(f"Number of grudger: {self.max_number_of_grudger}")
+        self.logger.info(f"Number of copykitten: {self.max_number_of_copykitten}")
+        self.logger.info(f"Number of random: {self.max_number_of_random}")
+
     def fix_numbers(self, number_of_people):
         current_number = self.max_number_of_copycat + self.max_number_of_cooperator + self.max_number_of_detective + self.max_number_of_simpleton + self.max_number_of_cheater + self.max_number_of_grudger + self.max_number_of_copykitten + self.max_number_of_random
         maxes = [self.max_number_of_copycat, self.max_number_of_cooperator, self.max_number_of_detective,
@@ -164,9 +192,9 @@ class Simulation:
 
     def __start_fire(self):
         while True:
-            floor = randint(0, len(self.building.text_building) - 1)
-            x = randint(0, len(self.building.text_building[0]) - 1)
-            y = randint(0, len(self.building.text_building[0][0]) - 1)
+            floor = randint(0, len(self.building.text) - 1)
+            x = randint(0, len(self.building.text[0]) - 1)
+            y = randint(0, len(self.building.text[0][0]) - 1)
             location = (floor, x, y)
             if self.__set_fire(location):
                 break
@@ -174,10 +202,10 @@ class Simulation:
     def __generate_people(self):
         pk = 0
         while pk < self.number_of_people:
-            floor = randint(0, len(self.building.text_building) - 1)
-            location = (floor, randint(0, len(self.building.text_building[0]) - 1),
-                        randint(0, len(self.building.text_building[0][0]) - 1))
-            if (self.is_obstacle(location) or self.is_fire(location) or self.is_person(location) or
+            floor = randint(0, len(self.building.text) - 1)
+            location = (floor, randint(0, len(self.building.text[0]) - 1),
+                        randint(0, len(self.building.text[0][0]) - 1))
+            if (self.is_mini_obstacle(location) or self.is_normal_obstacle(location) or self.is_large_obstacle(location) or self.is_fire(location) or self.is_person(location) or
                     self.is_wall(location) or self.is_stair(location) or self.is_glass(location) or
                     self.is_door(location) or self.is_exit(location)):
                 continue
@@ -201,8 +229,6 @@ class Simulation:
                         pk,
                         location,
                         memory,
-                        self.simulation_count,
-                        self.verbose,
                         age,
                         strength,
                         speed,
@@ -256,26 +282,40 @@ class Simulation:
         return None
 
     def statistics(self):
+        self.get_averages()
         self.logger.info(f"Number of people: {self.number_of_people}")
         self.logger.info(f"Number of dead people: {len(self.dead_people)}")
         self.logger.info(f"Number of live people: {len(self.live_people)}")
         self.logger.info(f"Number of fire locations: {len(self.fire_locations)}")
+        self.logger.info(f"Number of people that got out: {self.number_of_people_that_got_out}")
+        self.logger.info(f"Number of fights: {self.number_of_fights}")
+        self.logger.info(f"Number of injuries: {self.number_of_injuries}")
+        self.logger.info(f"Number of deaths: {self.number_of_deaths}")
+        self.logger.info(f"Number of deaths by fire: {self.number_of_deaths_by_fire}")
+        self.logger.info(f"Number of deaths by fighting: {self.number_of_deaths_by_fighting}")
+        self.logger.info(f"Number of deaths by moving: {self.number_of_deaths_by_moving}")
+        self.logger.info(f"Number of max fear: {self.number_of_max_fear}")
+        self.logger.info(f"Number of followers: {self.number_of_followers}")
+        self.logger.info(f"Average fear: {self.average_fear}")
+        self.logger.info(f"Average health: {self.average_health}")
+        self.logger.info(f"Average age: {self.average_age}")
+        self.logger.info(f"Average familiarity: {self.average_familiarity}")
+        self.logger.info(f"Average speed: {self.average_speed}")
+        self.logger.info(f"Average strength: {self.average_strength}")
+        self.logger.info(f"Average visibility: {self.average_visibility}")
 
     def evacuate(self):
-        if self.verbose:
-            print("Evacuating...")
         self.logger.info("Evacuating...")
         while len(self.live_people) > 0 and self.time < self.time_for_firefighters:
             self.time += 1
-            self.logger.info(f"Anew turn has started-------")
+            self.logger.info(f"Time: {self.time}")
             self.building.refresh()
-            if self.verbose:
-                self.building.print_building()
-            self.logger.info(f"{self.number_of_people} people remaining")
+            self.building.print()
             self.__move_people()
+            self.logger.info("People have moved")
             self.__spread_fire()
-        if self.verbose:
-            print("Evacuation complete")
+            self.logger.info("Fire has spread")
+            self.statistics()
         self.logger.info("Evacuation complete")
 
     def __move_people(self):
@@ -325,20 +365,36 @@ class Simulation:
             if self.is_exit(person.location):
                 self.number_of_people_that_got_out += 1
                 self.logger.info(f"{person.name} has escaped by exiting")
-                if self.verbose:
-                    print(f"{person.name} has escaped by exiting")
                 continue
 
             if self.is_broken_glass(person.location):
+                self.get_hurt_from_jumping_out_of_window(person)
+                if self.__is_dead(person):
+                    self.logger.info(f"{person.name} has died by broken glass")
+                    continue
                 self.number_of_people_that_got_out += 1
                 self.logger.info(f"{person.name} has escaped by jumping out of window")
-                if self.verbose:
-                    print(f"{person.name} has escaped by jumping out of window")
                 continue
             self.number_of_max_fear += 1 if person.fear == self.max_fear else 0
             temp_live_people.append(person)
+            self.logger.info(f"{person.name} has moved to location {person.location}")
 
         self.live_people = temp_live_people
+
+    @staticmethod
+    def get_hurt_from_jumping_out_of_window(person):
+        floor = person.location[0]
+        # hurt self on broken glass
+        person.health -= randint(0, 10)
+        if floor == 2:
+            # hurt self on the way down
+            person.health -= randint(10, 30)
+        elif floor == 3:
+            # hurt self on the way down
+            person.health -= randint(30, 50)
+        elif floor > 3:
+            # hurt self on the way down
+            person.health -= randint(50, 100)
 
     def __is_dead(self, person):
         if person.is_dead():
@@ -363,8 +419,9 @@ class Simulation:
         self.is_in_building(location)
         if not self.is_fire(location):
             # remove what was there
-            self.building.text_building[location[0]][location[1]][location[2]] = 'f'
+            self.building.text[location[0]][location[1]][location[2]] = 'f'
             self.fire_locations.append(location)
+            self.logger.info(f"Fire has started at location {location}")
             return True
         return False
 
@@ -374,26 +431,21 @@ class Simulation:
 
     def is_exit(self, location):
         self.is_in_building(location)
-        return self.building.text_building[location[0]][location[1]][location[2]] == 'e'
-
-    def is_obstacle(self, location):
-        self.is_in_building(location)
-        c = self.building.text_building[location[0]][location[1]][location[2]]
-        return c == 'm' or c == 'n' or c == 'l'
+        return self.building.text[location[0]][location[1]][location[2]] == 'e'
 
     def is_mini_obstacle(self, location):
         self.is_in_building(location)
-        c = self.building.text_building[location[0]][location[1]][location[2]]
+        c = self.building.text[location[0]][location[1]][location[2]]
         return c == 'm'
 
     def is_normal_obstacle(self, location):
         self.is_in_building(location)
-        c = self.building.text_building[location[0]][location[1]][location[2]]
+        c = self.building.text[location[0]][location[1]][location[2]]
         return c == 'n'
 
     def is_large_obstacle(self, location):
         self.is_in_building(location)
-        c = self.building.text_building[location[0]][location[1]][location[2]]
+        c = self.building.text[location[0]][location[1]][location[2]]
         return c == 'l'
 
     def is_fire(self, location):
@@ -408,50 +460,50 @@ class Simulation:
 
     def is_wall(self, location):
         self.is_in_building(location)
-        c = self.building.text_building[location[0]][location[1]][location[2]]
+        c = self.building.text[location[0]][location[1]][location[2]]
         return c == 'w' or c == 'h'
 
     def is_half_wall(self, location):
         self.is_in_building(location)
-        c = self.building.text_building[location[0]][location[1]][location[2]]
+        c = self.building.text[location[0]][location[1]][location[2]]
         return c == 'h'
 
     def is_in_building(self, location):
-        if 0 <= location[0] < self.building.floor_count and 0 <= location[1] < self.building.row_count and 0 <= location[2] < self.building.col_count:
+        if 0 <= location[0] < self.building.floor_size and 0 <= location[1] < self.building.x_size and 0 <= location[2] < self.building.y_size:
             return True
-        raise Exception(f"Location is not in building: {location} \ncaller name: {inspect.currentframe().f_back.f_code.co_name}")
+        raise Exception(f"Location is not in building: {location} Caller name: {inspect.currentframe().f_back.f_code.co_name}")
 
     def is_stair(self, location):
         self.is_in_building(location)
-        return self.building.text_building[location[0]][location[1]][location[2]] == 's'
+        return self.building.text[location[0]][location[1]][location[2]] == 's'
 
     def is_glass(self, location):
         self.is_in_building(location)
-        return self.building.text_building[location[0]][location[1]][location[2]] == 'g'
+        return self.building.text[location[0]][location[1]][location[2]] == 'g'
 
     def is_empty(self, location):
         self.is_in_building(location)
-        return self.building.text_building[location[0]][location[1]][location[2]] == ' '
+        return self.building.text[location[0]][location[1]][location[2]] == ' '
 
     def is_door(self, location):
         self.is_in_building(location)
-        return self.building.text_building[location[0]][location[1]][location[2]] == 'd'
+        return self.building.text[location[0]][location[1]][location[2]] == 'd'
 
     def is_broken_glass(self, location):
         self.is_in_building(location)
-        return self.building.text_building[location[0]][location[1]][location[2]] == 'b'
+        return self.building.text[location[0]][location[1]][location[2]] == 'b'
 
     def is_room(self, location):
         self.is_in_building(location)
-        return self.building.text_building[location[0]][location[1]][location[2]] == '1'
+        return self.building.text[location[0]][location[1]][location[2]] == '1'
 
     def is_hallway(self, location):
         self.is_in_building(location)
-        return self.building.text_building[location[0]][location[1]][location[2]] == '2'
+        return self.building.text[location[0]][location[1]][location[2]] == '2'
 
     def is_exit_plan(self, location):
         self.is_in_building(location)
-        return self.building.text_building[location[0]][location[1]][location[2]] == 'p'
+        return self.building.text[location[0]][location[1]][location[2]] == 'p'
 
     def is_valid_location_for_person(self, location):
         return not self.is_large_obstacle(location) and not self.is_wall(location) and not self.is_glass(location)

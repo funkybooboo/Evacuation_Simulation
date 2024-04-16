@@ -1,22 +1,24 @@
-from .colors import object_colors
+from .colors import colors
 from copy import deepcopy
+from .logger import setup_logger
 
 
 class Building:
     def __init__(self, simulation):
+        logger = setup_logger("building_logger", f'../logs/run{simulation.simulation_count}/simulation/building.log', simulation.verbose)
+        self.logger = logger
         self.simulation = simulation
-        self.text_building = self.generate_building()
+        self.text = self.__generate_text()
         self.object_locations = {}
-        self.color_building = []
-        self.convert_text_to_colors()
-        self.grid = []
-        self.convert_text_to_pathfinding_grid()
-        self.floor_count = len(self.text_building)
-        self.row_count = len(self.text_building[0])
-        self.col_count = len(self.text_building[0][0])
+        self.color = []
+        self.matrix = []
+        self.refresh()
+        self.floor_size = len(self.text)
+        self.x_size = len(self.text[0])
+        self.y_size = len(self.text[0][0])
 
     @staticmethod
-    def generate_building():
+    def __generate_text():
         # w is wall
         # h is half-wall
         # o is obstacle
@@ -35,7 +37,7 @@ class Building:
         # b is broken glass
 
         building = [
-            [   #21 by 31
+            [   # 21 by 31
                 ['w','w','g','g','g','g','g','w','w','w','w','w','g','w','w','w','g','w','w','w','g','g','g','g','g','g','g','w','w','w','w'],
                 ['w','l','l','l','l','l',' ',' ','h',' ','w','m','n','m','w',' ','m',' ','w','p',' ',' ',' ',' ',' ',' ',' ','p','d','1','e'],
                 ['g','l',' ',' ',' ',' ',' ',' ','h',' ','w',' ',' ',' ','w',' ','n','n','w',' ',' ',' ',' ',' ',' ',' ',' ','2','w',' ','w'],
@@ -58,52 +60,52 @@ class Building:
                 ['w',' ',' ',' ',' ',' ','w',' ',' ',' ',' ',' ','w','p','d','2','d','p',' ','w','p',' ',' ',' ',' ',' ',' ','p','d','1','e'],
                 ['w','w','g','g','g','w','w','w','g','g','g','w','w','w','w','e','w','w','w','w','w','g','g','g','g','g','g','w','w','w','w'],
             ],
-            [
-                ['w','w','g','g','g','g','g','g','w','w','w','g','g','w','w','w','g','g','w','w','w','g','g','g','g','g','g','w','w','w','w'],
-                ['w',' ',' ',' ',' ',' ','m','n','m','w','m','n','m',' ','w','l','l','l',' ','w','p',' ',' ',' ',' ',' ',' ','p','d','1','w'],
-                ['g','m',' ',' ','w','1',' ',' ',' ','w',' ',' ',' ','1','w','l',' ',' ',' ','w',' ',' ',' ',' ',' ',' ',' ','2','w',' ','w'],
-                ['g','l',' ',' ','w','p','m','n','m','w','m','n','m','p','w','l',' ',' ',' ','w',' ',' ',' ','2',' ',' ',' ',' ','w','s','w'],
-                ['g','l',' ',' ','w','d','w','w','w','w','w','w','w','d','w',' ',' ',' ','l','w',' ',' ','w','d','w','w','w','w','w','w','w'],
-                ['w','l',' ','1','w','2',' ',' ',' ',' ',' ',' ',' ','2','w','1',' ',' ','l','w',' ','2','d','p',' ',' ',' ',' ',' ',' ','w'],
-                ['w','l','l','p','w',' ',' ',' ',' ','p',' ',' ',' ',' ','w','p','l','l','l','w',' ',' ','w','1','m',' ','m',' ','m',' ','g'],
-                ['w','w','w','d','w',' ','w','w','w','w','w','w','w',' ','w','d','w','w','w','w',' ',' ','w',' ','l','l','l','l','l',' ','g'],
-                ['w','m','w','2',' ',' ','w',' ',' ',' ',' ',' ','w',' ',' ','2',' ',' ',' ',' ',' ',' ','w',' ','l','l','l','l','l',' ','g'],
-                ['g',' ','w',' ',' ',' ','w','2','m','n','m',' ','w','2',' ',' ',' ',' ',' ',' ',' ',' ','w',' ','m',' ','m',' ','m',' ','g'],
-                ['g','p','d','2',' ','2','d','p',' ','n',' ','p','d','p',' ',' ',' ',' ',' ',' ','p',' ','w',' ',' ',' ',' ',' ',' ',' ','g'],
-                ['w',' ','w',' ',' ',' ','w',' ','m','n','m','1','w',' ',' ',' ',' ',' ',' ',' ',' ',' ','w',' ','m',' ','m',' ','m',' ','g'],
-                ['w','m','w','2',' ',' ','w',' ',' ',' ',' ',' ','w',' ',' ','2',' ',' ',' ',' ',' ',' ','w',' ','l','l','l','l','l',' ','g'],
-                ['w','w','w','d','w',' ','w','w','w','w','w','w','w',' ','w','d','w','w','w','w',' ',' ','w',' ','l','l','l','l','l',' ','g'],
-                ['w','m','1','p','w',' ',' ',' ',' ','p',' ',' ',' ',' ','w','p','l','l','l','w',' ',' ','w','1','m',' ','m',' ','m',' ','g'],
-                ['w','n',' ',' ','w','2',' ',' ',' ',' ',' ',' ',' ','2','w','1',' ',' ','l','w',' ','2','d','p',' ',' ',' ',' ',' ',' ','w'],
-                ['g','m',' ',' ','w','d','w','w','w','w','w','w','w','d','w',' ',' ',' ','l','w',' ',' ','w','d','w','w','w','w','w','w','w'],
-                ['g',' ',' ',' ','w','p','m','n','m','w','m','n','m','p','w','l',' ',' ','l','w',' ',' ',' ','2',' ',' ',' ',' ','w','s','w'],
-                ['g',' ',' ',' ','w','1',' ',' ',' ','w',' ',' ',' ','1','w','l',' ',' ',' ','w',' ',' ',' ',' ',' ',' ',' ','2','w',' ','w'],
-                ['w','m','n','m','w',' ','m','n','m','w','m','n','m',' ','w','l','l','l',' ','w','p',' ',' ',' ',' ',' ',' ','p','d','1','w'],
-                ['w','w','g','w','w','w','g','g','w','w','w','g','g','w','w','w','w','g','w','w','w','g','g','g','g','g','g','w','w','w','w'],
-            ],
-            [
-                ['w','w','w','w','w','g','w','w','w','g','w','w','w','w','w','w','w','w','w','g','w','w','w','g','w','w','w','w','w','w','w'],
-                ['w','l','l','w',' ','n',' ','w',' ','n',' ','w',' ','m','w','m',' ','w',' ','n',' ','w',' ','n',' ','w',' ','p','d','1','w'],
-                ['g','l',' ','w',' ','n','m','w',' ','n','m','w',' ','n','w','n',' ','w','m','n',' ','w','m','n',' ','w',' ',' ','w',' ','w'],
-                ['g','l',' ','w','p','1',' ','w','p','1',' ','w','p','1','w','1','p','w',' ','1','p','w',' ','1','p','w',' ',' ','w','s','w'],
-                ['g','l','1','w','d','w','w','w','d','w','w','w','d','w','w','w','d','w','w','w','d','w','w','w','d','w',' ',' ','w','w','w'],
-                ['w','l','p','d','2',' ',' ',' ','2',' ',' ',' ','2',' ',' ',' ','2',' ',' ',' ','2',' ',' ',' ','2',' ',' ',' ',' ',' ','w'],
-                ['w','w','w','w',' ','p',' ',' ',' ','2',' ','2',' ',' ','p',' ',' ','p',' ',' ','2',' ','2',' ',' ',' ','p',' ',' ','2','w'],
-                ['w','m','p','d','2',' ','w','w','w','d','w','d','w','w','w',' ',' ','w','w','w','d','w','d','w','w','w',' ','w','w','d','w'],
-                ['g','n','1','w',' ',' ','w',' ','1','p','w','p','1',' ','w',' ',' ','w',' ','1','p','w','p','1',' ','w',' ','w','1','p','w'],
-                ['g','m',' ','w',' ',' ','w','1',' ',' ','w',' ',' ','1','w',' ',' ','w','1',' ',' ','w',' ',' ','1','w',' ','w','1','m','g'],
-                ['g',' ',' ','w',' ','2','d','p',' ',' ','w',' ',' ','p','d','2','2','d','p',' ',' ','w',' ',' ','p','d','2','d','p','n','g'],
-                ['g','m',' ','w',' ',' ','w',' ',' ',' ','w',' ',' ',' ','w',' ',' ','w',' ',' ',' ','w',' ',' ',' ','w',' ','w',' ','m','g'],
-                ['g','n','1','w',' ',' ','w',' ','1','p','w','p','1',' ','w',' ',' ','w',' ','1','p','w','p','1',' ','w',' ','w','1','p','w'],
-                ['w','m','p','d','2',' ','w','w','w','d','w','d','w','w','w',' ',' ','w','w','w','d','w','d','w','w','w',' ','w','w','d','w'],
-                ['w','w','w','w',' ','p',' ',' ',' ','2',' ','2',' ',' ','p',' ',' ','p',' ',' ','2',' ','2',' ',' ',' ','p',' ',' ','2','w'],
-                ['w','l','p','d','2',' ',' ',' ','2',' ',' ',' ','2',' ',' ',' ','2',' ',' ',' ','2',' ',' ',' ','2',' ',' ',' ',' ',' ','w'],
-                ['g','l','1','w','d','w','w','w','d','w','w','w','d','w','w','w','d','w','w','w','d','w','w','w','d','w',' ',' ','w','w','w'],
-                ['g','l',' ','w','p','1',' ','w','p','1',' ','w','p','1','w',' ','p','w',' ','1','p','w',' ','1','p','w',' ',' ','w','s','w'],
-                ['g','l',' ','w',' ','n','m','w',' ','n','m','w',' ','n','w','n','1','w','m','n',' ','w','m','n',' ','w',' ','2','w',' ','w'],
-                ['w','l','l','w',' ','n',' ','w',' ','n',' ','w',' ','m','w','m',' ','w',' ','n',' ','w',' ','n',' ','w',' ','p','d','1','w'],
-                ['w','w','w','w','w','g','w','w','w','g','w','w','w','w','w','w','w','w','w','g','w','w','w','g','w','w','w','w','w','w','w'],
-            ],
+            # [
+            #     ['w','w','g','g','g','g','g','g','w','w','w','g','g','w','w','w','g','g','w','w','w','g','g','g','g','g','g','w','w','w','w'],
+            #     ['w',' ',' ',' ',' ',' ','m','n','m','w','m','n','m',' ','w','l','l','l',' ','w','p',' ',' ',' ',' ',' ',' ','p','d','1','w'],
+            #     ['g','m',' ',' ','w','1',' ',' ',' ','w',' ',' ',' ','1','w','l',' ',' ',' ','w',' ',' ',' ',' ',' ',' ',' ','2','w',' ','w'],
+            #     ['g','l',' ',' ','w','p','m','n','m','w','m','n','m','p','w','l',' ',' ',' ','w',' ',' ',' ','2',' ',' ',' ',' ','w','s','w'],
+            #     ['g','l',' ',' ','w','d','w','w','w','w','w','w','w','d','w',' ',' ',' ','l','w',' ',' ','w','d','w','w','w','w','w','w','w'],
+            #     ['w','l',' ','1','w','2',' ',' ',' ',' ',' ',' ',' ','2','w','1',' ',' ','l','w',' ','2','d','p',' ',' ',' ',' ',' ',' ','w'],
+            #     ['w','l','l','p','w',' ',' ',' ',' ','p',' ',' ',' ',' ','w','p','l','l','l','w',' ',' ','w','1','m',' ','m',' ','m',' ','g'],
+            #     ['w','w','w','d','w',' ','w','w','w','w','w','w','w',' ','w','d','w','w','w','w',' ',' ','w',' ','l','l','l','l','l',' ','g'],
+            #     ['w','m','w','2',' ',' ','w',' ',' ',' ',' ',' ','w',' ',' ','2',' ',' ',' ',' ',' ',' ','w',' ','l','l','l','l','l',' ','g'],
+            #     ['g',' ','w',' ',' ',' ','w','2','m','n','m',' ','w','2',' ',' ',' ',' ',' ',' ',' ',' ','w',' ','m',' ','m',' ','m',' ','g'],
+            #     ['g','p','d','2',' ','2','d','p',' ','n',' ','p','d','p',' ',' ',' ',' ',' ',' ','p',' ','w',' ',' ',' ',' ',' ',' ',' ','g'],
+            #     ['w',' ','w',' ',' ',' ','w',' ','m','n','m','1','w',' ',' ',' ',' ',' ',' ',' ',' ',' ','w',' ','m',' ','m',' ','m',' ','g'],
+            #     ['w','m','w','2',' ',' ','w',' ',' ',' ',' ',' ','w',' ',' ','2',' ',' ',' ',' ',' ',' ','w',' ','l','l','l','l','l',' ','g'],
+            #     ['w','w','w','d','w',' ','w','w','w','w','w','w','w',' ','w','d','w','w','w','w',' ',' ','w',' ','l','l','l','l','l',' ','g'],
+            #     ['w','m','1','p','w',' ',' ',' ',' ','p',' ',' ',' ',' ','w','p','l','l','l','w',' ',' ','w','1','m',' ','m',' ','m',' ','g'],
+            #     ['w','n',' ',' ','w','2',' ',' ',' ',' ',' ',' ',' ','2','w','1',' ',' ','l','w',' ','2','d','p',' ',' ',' ',' ',' ',' ','w'],
+            #     ['g','m',' ',' ','w','d','w','w','w','w','w','w','w','d','w',' ',' ',' ','l','w',' ',' ','w','d','w','w','w','w','w','w','w'],
+            #     ['g',' ',' ',' ','w','p','m','n','m','w','m','n','m','p','w','l',' ',' ','l','w',' ',' ',' ','2',' ',' ',' ',' ','w','s','w'],
+            #     ['g',' ',' ',' ','w','1',' ',' ',' ','w',' ',' ',' ','1','w','l',' ',' ',' ','w',' ',' ',' ',' ',' ',' ',' ','2','w',' ','w'],
+            #     ['w','m','n','m','w',' ','m','n','m','w','m','n','m',' ','w','l','l','l',' ','w','p',' ',' ',' ',' ',' ',' ','p','d','1','w'],
+            #     ['w','w','g','w','w','w','g','g','w','w','w','g','g','w','w','w','w','g','w','w','w','g','g','g','g','g','g','w','w','w','w'],
+            # ],
+            # [
+            #     ['w','w','w','w','w','g','w','w','w','g','w','w','w','w','w','w','w','w','w','g','w','w','w','g','w','w','w','w','w','w','w'],
+            #     ['w','l','l','w',' ','n',' ','w',' ','n',' ','w',' ','m','w','m',' ','w',' ','n',' ','w',' ','n',' ','w',' ','p','d','1','w'],
+            #     ['g','l',' ','w',' ','n','m','w',' ','n','m','w',' ','n','w','n',' ','w','m','n',' ','w','m','n',' ','w',' ',' ','w',' ','w'],
+            #     ['g','l',' ','w','p','1',' ','w','p','1',' ','w','p','1','w','1','p','w',' ','1','p','w',' ','1','p','w',' ',' ','w','s','w'],
+            #     ['g','l','1','w','d','w','w','w','d','w','w','w','d','w','w','w','d','w','w','w','d','w','w','w','d','w',' ',' ','w','w','w'],
+            #     ['w','l','p','d','2',' ',' ',' ','2',' ',' ',' ','2',' ',' ',' ','2',' ',' ',' ','2',' ',' ',' ','2',' ',' ',' ',' ',' ','w'],
+            #     ['w','w','w','w',' ','p',' ',' ',' ','2',' ','2',' ',' ','p',' ',' ','p',' ',' ','2',' ','2',' ',' ',' ','p',' ',' ','2','w'],
+            #     ['w','m','p','d','2',' ','w','w','w','d','w','d','w','w','w',' ',' ','w','w','w','d','w','d','w','w','w',' ','w','w','d','w'],
+            #     ['g','n','1','w',' ',' ','w',' ','1','p','w','p','1',' ','w',' ',' ','w',' ','1','p','w','p','1',' ','w',' ','w','1','p','w'],
+            #     ['g','m',' ','w',' ',' ','w','1',' ',' ','w',' ',' ','1','w',' ',' ','w','1',' ',' ','w',' ',' ','1','w',' ','w','1','m','g'],
+            #     ['g',' ',' ','w',' ','2','d','p',' ',' ','w',' ',' ','p','d','2','2','d','p',' ',' ','w',' ',' ','p','d','2','d','p','n','g'],
+            #     ['g','m',' ','w',' ',' ','w',' ',' ',' ','w',' ',' ',' ','w',' ',' ','w',' ',' ',' ','w',' ',' ',' ','w',' ','w',' ','m','g'],
+            #     ['g','n','1','w',' ',' ','w',' ','1','p','w','p','1',' ','w',' ',' ','w',' ','1','p','w','p','1',' ','w',' ','w','1','p','w'],
+            #     ['w','m','p','d','2',' ','w','w','w','d','w','d','w','w','w',' ',' ','w','w','w','d','w','d','w','w','w',' ','w','w','d','w'],
+            #     ['w','w','w','w',' ','p',' ',' ',' ','2',' ','2',' ',' ','p',' ',' ','p',' ',' ','2',' ','2',' ',' ',' ','p',' ',' ','2','w'],
+            #     ['w','l','p','d','2',' ',' ',' ','2',' ',' ',' ','2',' ',' ',' ','2',' ',' ',' ','2',' ',' ',' ','2',' ',' ',' ',' ',' ','w'],
+            #     ['g','l','1','w','d','w','w','w','d','w','w','w','d','w','w','w','d','w','w','w','d','w','w','w','d','w',' ',' ','w','w','w'],
+            #     ['g','l',' ','w','p','1',' ','w','p','1',' ','w','p','1','w',' ','p','w',' ','1','p','w',' ','1','p','w',' ',' ','w','s','w'],
+            #     ['g','l',' ','w',' ','n','m','w',' ','n','m','w',' ','n','w','n','1','w','m','n',' ','w','m','n',' ','w',' ','2','w',' ','w'],
+            #     ['w','l','l','w',' ','n',' ','w',' ','n',' ','w',' ','m','w','m',' ','w',' ','n',' ','w',' ','n',' ','w',' ','p','d','1','w'],
+            #     ['w','w','w','w','w','g','w','w','w','g','w','w','w','w','w','w','w','w','w','g','w','w','w','g','w','w','w','w','w','w','w'],
+            # ],
             # [
             #     ['w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w'],
             #     ['w',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','d',' ','w'],
@@ -130,7 +132,8 @@ class Building:
         ]
         return building
 
-    def convert_text_to_colors(self):
+    def __convert_text_to_colors(self):
+        self.logger.info("Converting text to colors")
         self.object_locations = {
             "doors": [],
             "exits": [],
@@ -143,78 +146,117 @@ class Building:
             "broken_glasses": [],
             "exit_plans": [],
         }
-        self.color_building = deepcopy(self.text_building)
-        floors = len(self.color_building)
-        for floor in range(floors):
-            for i in range(len(self.color_building[floor])):
-                row = self.color_building[floor][i]
-                for col in range(len(row)):
-                    if row[col] == 'w' or row[col] == 'h':
-                        self.object_locations["walls"].append((floor, i, col))
-                        row[col] = object_colors["Black"]
-                    elif row[col] == 'e':
-                        self.object_locations["exits"].append((floor, i, col))
-                        row[col] = object_colors["Dark Brown"]
-                    elif row[col] == 'm' or row[col] == 'n' or row[col] == 'l':
-                        self.object_locations["obstacles"].append((floor, i, col))
-                        row[col] = object_colors["Grey"]
-                    elif row[col] == 's':
-                        self.object_locations["stairs"].append((floor, i, col))
-                        row[col] = object_colors["Stair Blue"]
-                    elif row[col] == 'g':
-                        self.object_locations["glasses"].append((floor, i, col))
-                        row[col] = object_colors["Light Brown"]
-                    elif row[col] == 'd':
-                        self.object_locations["doors"].append((floor, i, col))
-                        row[col] = object_colors["Brown"]
-                    elif row[col] == ' ' or row[col] == '1' or row[col] == '2':
-                        self.object_locations["empties"].append((floor, i, col))
-                        row[col] = object_colors["White"]
-                    elif row[col] == 'f':
-                        self.object_locations["fires"].append((floor, i, col))
-                        row[col] = object_colors["Red"]
-                    elif row[col] == 'b':
-                        self.object_locations["broken_glasses"].append((floor, i, col))
-                        row[col] = object_colors["Teal"]
-                    elif row[col] == 'p':
-                        self.object_locations["exit_plans"].append((floor, i, col))
-                        row[col] = object_colors["Light Pink"]
+        self.color = deepcopy(self.text)
+        for floor in range(len(self.color)):
+            for row in range(len(self.color[floor])):
+                for col in range(len(self.color[floor][row])):
+                    cell = self.color[floor][row][col]
+                    if cell == 'w' or cell == 'h':
+                        self.object_locations["walls"].append((floor, row, col))
+                        cell = colors["wall"]
+                    elif cell == 'e':
+                        self.object_locations["exits"].append((floor, row, col))
+                        cell = colors["exit"]
+                    elif cell == 'm' or cell == 'n' or cell == 'l':
+                        self.object_locations["obstacles"].append((floor, row, col))
+                        cell = colors["object"]
+                    elif cell == 's':
+                        self.object_locations["stairs"].append((floor, row, col))
+                        cell = colors["stair"]
+                    elif cell == 'g':
+                        self.object_locations["glasses"].append((floor, row, col))
+                        cell = colors["glass"]
+                    elif cell == 'd':
+                        self.object_locations["doors"].append((floor, row, col))
+                        cell = colors["door"]
+                    elif cell == ' ' or cell == '1' or cell == '2':
+                        self.object_locations["empties"].append((floor, row, col))
+                        cell = colors["empty"]
+                    elif cell == 'f':
+                        self.object_locations["fires"].append((floor, row, col))
+                        cell = colors["fire"]
+                    elif cell == 'b':
+                        self.object_locations["broken_glasses"].append((floor, row, col))
+                        cell = colors["broken_glass"]
+                    elif cell == 'p':
+                        self.object_locations["exit_plans"].append((floor, row, col))
+                        cell = colors["exit_plan"]
+                    self.color[floor][row][col] = cell
 
-    def convert_text_to_pathfinding_grid(self):
+    def __convert_text_to_matrix(self):
         # 0 is impassable
         # 1 is easily passable
         # 2 is passable
         # 3 is difficultly passable
-        self.grid = deepcopy(self.text_building)
-        floors = len(self.grid)
-        for floor in range(floors):
-            for row in self.grid[floor]:
-                for col in range(len(row)):
+        self.logger.info("Converting text to pathfinding grid")
+        self.matrix = deepcopy(self.text)
+        for floor in range(len(self.matrix)):
+            for row in range(len(self.matrix[floor])):
+                for col in range(len(self.matrix[floor][row])):
                     person = self.simulation.is_person((floor, row, col))
+                    cell = self.matrix[floor][row][col]
                     if person:
-                        row[col] = -1
-                    elif row[col] == 'f':
-                        row[col] = -2
-                    elif row[col] == 'w' or row[col] == 'g' or row[col] == 'l':
-                        row[col] = -3
-                    elif row[col] == ' ' or row[col] == 'd' or row[col] == 'e' or row[col] == 's' or row[col] == 'p' or row[col] == '1' or row[col] == '2' or row[col] == 'b':
-                        row[col] = 1
-                    elif row[col] == 'm':
-                        row[col] = 2
-                    elif row[col] == 'h' or row[col] == 'n':
-                        row[col] = 3
-            print(self.grid[floor])
+                        cell = -1
+                    elif cell == 'f':
+                        cell = -2
+                    elif cell == 'w' or cell == 'g' or cell == 'l':
+                        cell = -4
+                    elif cell == ' ' or cell == 'd' or cell == 'e' or cell == 's' or cell == 'p' or cell == '1' or cell == '2' or cell == 'b':
+                        cell = 1
+                    elif cell == 'm':
+                        cell = 2
+                    elif cell == 'h' or cell == 'n':
+                        cell = 3
+                    self.matrix[floor][row][col] = cell
 
-    def print_building(self):
-        for floor in range(len(self.color_building)):
-            for row in range(self.color_building[floor]):
-                for col in range(self.color_building[floor][row]):
-                    person = self.simulation.is_person((floor, row, col))
-                    if person:
-                        print(person.color)
+    def print(self):
+        space = "   "
+        self.logger.info("Printing building")
+        categories = [
+            "wall", "exit", "object", "stair", "glass",
+            "door", "empty", "fire", "broken_glass",
+            "exit_plan", "follower", "nonfollower"
+        ]
+        for category in categories:
+            color = colors[category] + space
+            print(f"{category}: {color}", end="")
+            print(colors["reset"])
+        for floor in range(len(self.color)):
+            print(f"Floor {floor}")
+            print("   ", end="")
+            for col in range(len(self.color[floor][0])):
+                if col > 9:
+                    token = str(col) + " "
+                else:
+                    token = str(col) + "  "
+                print(token, end="")
+            print()
+            for row in range(len(self.color[floor])):
+                for col in range(len(self.color[floor][row])):
+                    if col == 0:
+                        if row > 9:
+                            token = " " + str(row)
+                        else:
+                            token = "  " + str(row)
+                        print(token, end="")
+                    cost = self.matrix[floor][row][col]
+                    if cost < 0:
+                        cost = " " + str(cost)
                     else:
-                        print(self.color_building[floor][row][col])
+                        cost = "  " + str(cost)
+                    person = self.simulation.is_person((floor, row, col))
+                    token = self.color[floor][row][col]
+                    if person:
+                        token = person.color
+                    print(token + cost, end="")
+                print("" + colors["reset"])
 
     def refresh(self):
-        self.convert_text_to_colors()
-        self.convert_text_to_pathfinding_grid()
+        self.logger.info("Refreshing building")
+        self.__convert_text_to_colors()
+        self.__convert_text_to_matrix()
+        self.logger.info(self.color)
+        self.logger.info(self.matrix)
+        self.logger.info(self.object_locations)
+        self.logger.info(self.text)
+

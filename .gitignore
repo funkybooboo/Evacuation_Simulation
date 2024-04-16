@@ -3,3 +3,4 @@
 data/APIKEY.txt
 src/__pycache__/
 /logs
+src/simulation/run
