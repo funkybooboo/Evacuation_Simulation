@@ -94,26 +94,17 @@ class Person:
         self.logger.info(f"color_title: {self.color_title}")
 
     def statistics(self):
-        stats = [
-            f"{self.name} has won {self.number_of_fights_won} fights",
-            f"{self.name} has lost {self.number_of_fights_lost} fights",
-            f"{self.name} has tied {self.number_of_fights_tied} fights",
-            f"{self.name} has touched fire {self.number_of_fire_touches} times",
-            f"{self.name} has reached max fear {self.number_of_max_fear} times",
-            f"{self.name} is a {self.color_title} person with {self.health} health and {self.strength} strength at {self.location}.",
-        ]
-
-        for stat in stats:
-            self.logger.info(stat)
+        self.logger.info(f"{self.name} has won {self.number_of_fights_won} fights.")
+        self.logger.info(f"{self.name} has lost {self.number_of_fights_lost} fights.")
+        self.logger.info(f"{self.name} has tied {self.number_of_fights_tied} fights.")
+        self.logger.info(f"{self.name} has touched fire {self.number_of_fire_touches} times.")
+        self.logger.info(f"{self.name} has reached max fear {self.number_of_max_fear} times.")
 
     def __str__(self):
         return f"{self.name} {self.personality_title} {self.color_title} {self.health} {self.location}."
 
     def is_dead(self):
-        is_dead = False
-        if self.health <= 0:
-            is_dead = True
-        return is_dead
+        return self.health <= 0
 
     def move(self):
         self.logger.info(f"{self.name} is moving")
@@ -121,11 +112,10 @@ class Person:
         if self.fear == self.simulation.max_fear:
             self.number_of_max_fear += 1
         other = None
-        for i in range(self.speed):
+        for _ in range(self.speed):
             if self.is_dead():
                 break
-            what_is_around = self.look_around()
-            self.memory.combine(what_is_around)
+            self.memory.combine(self.look_around())
             other = self.move_one_block()
             # hit person
             if other:
@@ -144,11 +134,7 @@ class Person:
         return other
 
     def move_one_block(self):
-        choice, other = self.choice.make()
-        if choice is None:
-            raise Exception("did not give a valid choice")
-        self.logger.info(f"{self.name} made choice {choice}")
-        return other
+        return self.choice.make()
 
     def get_time_to_get_out(self):
         long_time = -1
@@ -187,7 +173,8 @@ class Person:
             x = randint(-1, 1)
             y = randint(-1, 1)
             new_location = (self.location[0], self.location[1] + x, self.location[2] + y)
-            return self.move_to(new_location)
+            if self.simulation.is_valid_location_for_person(new_location):
+                return self.move_to(new_location)
         return None
 
     def move_towards(self, location):
@@ -239,33 +226,34 @@ class Person:
         finder = AStarFinder(diagonal_movement=DiagonalMovement.always)
         path, runs = finder.find_path(start, end, grid)
         self.logger.info(f'operations:', runs, 'path length:', len(path))
+        self.logger.info(f'path:', path)
         self.logger.info(grid.grid_str(path=path, start=start, end=end))
         return path
 
     def get_grid(self, i):
         floor = self.location[0]
-        temp_grid = deepcopy(self.simulation.building.grid[floor])
+        matrix = deepcopy(self.simulation.building.grid[floor])
         if i == 0:
-            self.switcher(temp_grid, -3, -3)
+            self.switcher(matrix, -3, -3)
         elif i == 1:
-            self.switcher(temp_grid, 3, -3)
+            self.switcher(matrix, 3, -3)
         elif i == 2:
-            self.switcher(temp_grid, -3, 3)
+            self.switcher(matrix, -3, 3)
         elif i == 3:
-            self.switcher(temp_grid, 3, 3)
+            self.switcher(matrix, 3, 3)
         else:
             raise Exception("invalid i")
-        grid = Grid(matrix=temp_grid)
+        grid = Grid(matrix=matrix)
         return grid
 
     @staticmethod
-    def switcher(temp_grid, p, f):
-        for row in range(len(temp_grid)):
-            for col in range(len(temp_grid[row])):
-                if temp_grid[row][col] == -1:
-                    temp_grid[row][col] = p
-                elif temp_grid[row][col] == -2:
-                    temp_grid[row][col] = f
+    def switcher(matrix, p, f):
+        for row in range(len(matrix)):
+            for col in range(len(matrix[row])):
+                if matrix[row][col] == -1:
+                    matrix[row][col] = p
+                elif matrix[row][col] == -2:
+                    matrix[row][col] = f
 
     def break_glass(self, glass_location):
         if self.is_one_away(self.location, glass_location):
@@ -280,27 +268,8 @@ class Person:
             return True
         return False
 
-    def jump_out_of_window(self, broken_glass_location):
-        if self.is_one_away(self.location, broken_glass_location):
-            floor = self.location[0]
-            # hurt self on broken glass
-            self.health -= randint(0, 10)
-            if floor == 2:
-                # hurt self on the way down
-                self.health -= randint(10, 30)
-            elif floor == 3:
-                # hurt self on the way down
-                self.health -= randint(30, 50)
-            elif floor > 3:
-                # hurt self on the way down
-                self.health -= randint(50, 100)
-            return self.move_to(broken_glass_location)
-        return None
-
     def can_break_glass(self):
-        if self.strength > 2:
-            return True
-        return False
+        return self.strength > 5
 
     def move_to(self, location):
         self.simulation.is_in_building(location)
@@ -318,9 +287,9 @@ class Person:
     def is_one_away(location1, location2):
         if location1[0] != location2[0]:
             return False
-        x = abs(location1[1] - location2[1])
-        y = abs(location1[2] - location2[2])
-        if x > 1 or y > 1:
+        a = abs(location1[1] - location2[1])
+        b = abs(location1[2] - location2[2])
+        if a > 1 or b > 1:
             return False
         return True
 
@@ -332,6 +301,8 @@ class Person:
             return None
         closest = next(iter(lst))
         for location2 in lst:
+            if location1[0] != location2[0]:
+                continue
             d1 = self.get_distance(location1, location2)
             d2 = self.get_distance(location1, closest)
             if d1 is None or d2 is None:

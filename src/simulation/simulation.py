@@ -116,6 +116,34 @@ class Simulation:
         self.get_averages()
         self.__start_fire()
 
+        self.logger.info("Simulation has been initialized")
+        self.logger.info(f"Number of people: {number_of_people}")
+        self.logger.info(f"Time for firefighters: {time_for_firefighters}")
+        self.logger.info(f"Fire spread rate: {fire_spread_rate}")
+        self.logger.info(f"Max visibility: {max_visibility}")
+        self.logger.info(f"Min visibility: {min_visibility}")
+        self.logger.info(f"Max strength: {max_strength}")
+        self.logger.info(f"Min strength: {min_strength}")
+        self.logger.info(f"Max speed: {max_speed}")
+        self.logger.info(f"Min speed: {min_speed}")
+        self.logger.info(f"Max fear: {max_fear}")
+        self.logger.info(f"Min fear: {min_fear}")
+        self.logger.info(f"Max age: {max_age}")
+        self.logger.info(f"Min age: {min_age}")
+        self.logger.info(f"Max health: {max_health}")
+        self.logger.info(f"Min health: {min_health}")
+        self.logger.info(f"Follower probability: {follower_probability}")
+        self.logger.info(f"Familiarity: {familiarity}")
+        self.logger.info(f"Number of personalities: {personalities}")
+        self.logger.info(f"Number of copycat: {self.max_number_of_copycat}")
+        self.logger.info(f"Number of cooperator: {self.max_number_of_cooperator}")
+        self.logger.info(f"Number of detective: {self.max_number_of_detective}")
+        self.logger.info(f"Number of simpleton: {self.max_number_of_simpleton}")
+        self.logger.info(f"Number of cheater: {self.max_number_of_cheater}")
+        self.logger.info(f"Number of grudger: {self.max_number_of_grudger}")
+        self.logger.info(f"Number of copykitten: {self.max_number_of_copykitten}")
+        self.logger.info(f"Number of random: {self.max_number_of_random}")
+
     def fix_numbers(self, number_of_people):
         current_number = self.max_number_of_copycat + self.max_number_of_cooperator + self.max_number_of_detective + self.max_number_of_simpleton + self.max_number_of_cheater + self.max_number_of_grudger + self.max_number_of_copykitten + self.max_number_of_random
         maxes = [self.max_number_of_copycat, self.max_number_of_cooperator, self.max_number_of_detective,
@@ -254,26 +282,41 @@ class Simulation:
         return None
 
     def statistics(self):
+        self.get_averages()
         self.logger.info(f"Number of people: {self.number_of_people}")
         self.logger.info(f"Number of dead people: {len(self.dead_people)}")
         self.logger.info(f"Number of live people: {len(self.live_people)}")
         self.logger.info(f"Number of fire locations: {len(self.fire_locations)}")
+        self.logger.info(f"Number of people that got out: {self.number_of_people_that_got_out}")
+        self.logger.info(f"Number of fights: {self.number_of_fights}")
+        self.logger.info(f"Number of injuries: {self.number_of_injuries}")
+        self.logger.info(f"Number of deaths: {self.number_of_deaths}")
+        self.logger.info(f"Number of deaths by fire: {self.number_of_deaths_by_fire}")
+        self.logger.info(f"Number of deaths by fighting: {self.number_of_deaths_by_fighting}")
+        self.logger.info(f"Number of deaths by moving: {self.number_of_deaths_by_moving}")
+        self.logger.info(f"Number of max fear: {self.number_of_max_fear}")
+        self.logger.info(f"Number of followers: {self.number_of_followers}")
+        self.logger.info(f"Average fear: {self.average_fear}")
+        self.logger.info(f"Average health: {self.average_health}")
+        self.logger.info(f"Average age: {self.average_age}")
+        self.logger.info(f"Average familiarity: {self.average_familiarity}")
+        self.logger.info(f"Average speed: {self.average_speed}")
+        self.logger.info(f"Average strength: {self.average_strength}")
+        self.logger.info(f"Average visibility: {self.average_visibility}")
 
     def evacuate(self):
-        if self.verbose:
-            print("Evacuating...")
         self.logger.info("Evacuating...")
         while len(self.live_people) > 0 and self.time < self.time_for_firefighters:
             self.time += 1
-            self.logger.info(f"Anew turn has started-------")
+            self.logger.info(f"Time: {self.time}")
             self.building.refresh()
             if self.verbose:
                 self.building.print_building()
-            self.logger.info(f"{self.number_of_people} people remaining")
             self.__move_people()
+            self.logger.info("People have moved")
             self.__spread_fire()
-        if self.verbose:
-            print("Evacuation complete")
+            self.logger.info("Fire has spread")
+            self.statistics()
         self.logger.info("Evacuation complete")
 
     def __move_people(self):
@@ -323,20 +366,36 @@ class Simulation:
             if self.is_exit(person.location):
                 self.number_of_people_that_got_out += 1
                 self.logger.info(f"{person.name} has escaped by exiting")
-                if self.verbose:
-                    print(f"{person.name} has escaped by exiting")
                 continue
 
             if self.is_broken_glass(person.location):
+                self.get_hurt_from_jumping_out_of_window(person)
+                if self.__is_dead(person):
+                    self.logger.info(f"{person.name} has died by broken glass")
+                    continue
                 self.number_of_people_that_got_out += 1
                 self.logger.info(f"{person.name} has escaped by jumping out of window")
-                if self.verbose:
-                    print(f"{person.name} has escaped by jumping out of window")
                 continue
             self.number_of_max_fear += 1 if person.fear == self.max_fear else 0
             temp_live_people.append(person)
+            self.logger.info(f"{person.name} has moved to location {person.location}")
 
         self.live_people = temp_live_people
+
+    @staticmethod
+    def get_hurt_from_jumping_out_of_window(person):
+        floor = person.location[0]
+        # hurt self on broken glass
+        person.health -= randint(0, 10)
+        if floor == 2:
+            # hurt self on the way down
+            person.health -= randint(10, 30)
+        elif floor == 3:
+            # hurt self on the way down
+            person.health -= randint(30, 50)
+        elif floor > 3:
+            # hurt self on the way down
+            person.health -= randint(50, 100)
 
     def __is_dead(self, person):
         if person.is_dead():
@@ -363,6 +422,7 @@ class Simulation:
             # remove what was there
             self.building.text_building[location[0]][location[1]][location[2]] = 'f'
             self.fire_locations.append(location)
+            self.logger.info(f"Fire has started at location {location}")
             return True
         return False
 

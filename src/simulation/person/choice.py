@@ -32,17 +32,17 @@ class Choice:
         self.options_with_text = ""
         self.person = person
 
-    def get_info(self):
+    def refresh_info(self):
         self.situation = self.get_situation_string()
         self.options = self.get_options()
         self.temperature = self.get_temperature()
         self.options_with_text = self.get_options_with_text()
-
-    def make(self):
-        self.get_info()
         self.logger.info(f"Situation: {self.situation}")
         self.logger.info(f"Options: {self.options}")
         self.logger.info(f"Temperature: {self.temperature}")
+
+    def make(self):
+        self.refresh_info()
         if self.person.simulation.choice_mode == 0:
             choice = self.get_random_choice()
         elif self.person.simulation.choice_mode == 1:
@@ -54,7 +54,7 @@ class Choice:
         else:
             raise Exception("Invalid choice mode")
         self.logger.info(f"Choice: {choice}")
-        return choice, self.make_choice(choice)
+        return self.make_choice(choice)
 
     def make_choice(self, choice):
         if choice is None:
@@ -87,8 +87,8 @@ class Choice:
             closest_door = self.person.get_closest(self.person.location, self.person.memory.doors)
             return self.person.move_towards(closest_door)
         elif choice == 'J':
-            closest_glass = self.person.get_closest(self.person.location, self.person.memory.broken_glass)
-            return self.person.jump_out_of_window(closest_glass)
+            broken_glass = self.person.get_closest(self.person.location, self.person.memory.broken_glass)
+            return self.person.move_to(broken_glass)
         elif choice == 'K':
             return self.person.follow_evacuation_plan()
         elif choice == 'L':
