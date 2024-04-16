@@ -7,7 +7,7 @@ from src.simulation.logger import setup_logger
 
 class Choice:
     def __init__(self, person):
-        self.logger = setup_logger("choice_logger", f'../logs/run{person.simulation.sisimulation_count}/people/person{person.pk}/choice.log', person.verbose)
+        self.logger = setup_logger("choice_logger", f'../logs/run{person.simulation.simulation_count}/people/person{person.pk}/choice.log', person.simulation.verbose)
 
         self.text = {
             "A": "Explore",
