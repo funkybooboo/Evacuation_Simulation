@@ -33,7 +33,7 @@ class Thinker:
         self.person = person
 
     def think(self):
-        self.__refresh_info()
+        self.__refresh()
         if self.person.simulation.choice_mode == 0:
             choice = self.__get_random_choice()
         elif self.person.simulation.choice_mode == 1:
@@ -47,7 +47,7 @@ class Thinker:
         self.logger.info(f"Choice: {choice}")
         return self.__make(choice)
 
-    def __refresh_info(self):
+    def __refresh(self):
         self.situation = self.__get_situation_string()
         self.options = self.__get_options()
         self.temperature = self.__get_temperature()
