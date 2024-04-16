@@ -8,18 +8,17 @@ class Building:
         logger = setup_logger("building_logger", f'../logs/run{simulation.simulation_count}/simulation/building.log', simulation.verbose)
         self.logger = logger
         self.simulation = simulation
-        self.text = self.generate_building()
+        self.text = self.__generate_text()
         self.object_locations = {}
         self.color = []
-        self.convert_text_to_colors()
         self.matrix = []
-        self.convert_text_to_matrix()
+        self.refresh()
         self.floor_size = len(self.text)
         self.x_size = len(self.text[0])
         self.y_size = len(self.text[0][0])
 
     @staticmethod
-    def generate_building():
+    def __generate_text():
         # w is wall
         # h is half-wall
         # o is obstacle
@@ -133,7 +132,7 @@ class Building:
         ]
         return building
 
-    def convert_text_to_colors(self):
+    def __convert_text_to_colors(self):
         self.logger.info("Converting text to colors")
         self.object_locations = {
             "doors": [],
@@ -184,7 +183,7 @@ class Building:
                         cell = colors["exit_plan"]
                     self.color[floor][row][col] = cell
 
-    def convert_text_to_matrix(self):
+    def __convert_text_to_matrix(self):
         # 0 is impassable
         # 1 is easily passable
         # 2 is passable
@@ -210,7 +209,7 @@ class Building:
                         cell = 3
                     self.matrix[floor][row][col] = cell
 
-    def print_building(self):
+    def print(self):
         space = "  "
         self.logger.info("Printing building")
         categories = [
@@ -226,17 +225,22 @@ class Building:
             print(f"Floor {floor}")
             for row in range(len(self.color[floor])):
                 for col in range(len(self.color[floor][row])):
-                    person = self.simulation.is_person((floor, row, col))
-                    if person:
-                        print(person.color + space, end="")
+                    cost = self.matrix[floor][row][col]
+                    if cost < 0:
+                        cost = str(cost)
                     else:
-                        print(self.color[floor][row][col] + space, end="")
+                        cost = " " + str(cost)
+                    person = self.simulation.is_person((floor, row, col))
+                    token = self.color[floor][row][col]
+                    if person:
+                        token = person.color
+                    print(token + cost, end="")
                 print("" + colors["reset"])
 
     def refresh(self):
         self.logger.info("Refreshing building")
-        self.convert_text_to_colors()
-        self.convert_text_to_matrix()
+        self.__convert_text_to_colors()
+        self.__convert_text_to_matrix()
         self.logger.info(self.color)
         self.logger.info(self.matrix)
         self.logger.info(self.object_locations)

@@ -1,6 +1,5 @@
 from random import randint
 from src.simulation.colors import colors
-from .memory import Memory
 from pathfinding.core.diagonal_movement import DiagonalMovement
 from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
@@ -9,6 +8,7 @@ from copy import deepcopy
 from .strategy import Strategy
 from .fight_entry import FightEntry
 from .choice import Choice
+from .vision import Vision
 from os import mkdir
 
 
@@ -81,6 +81,8 @@ class Person:
 
         self.choice = Choice(self)
 
+        self.vision = Vision(self.simulation, self)
+
         self.logger.info(f"name: {self.name}")
         self.logger.info(f"age: {self.age}")
         self.logger.info(f"age: {self.age}")
@@ -115,7 +117,7 @@ class Person:
         for _ in range(self.speed):
             if self.is_dead():
                 break
-            self.memory.combine(self.look_around())
+            self.memory.combine(self.vision.look_around())
             other = self.move_one_block()
             # hit person
             if other:
@@ -339,118 +341,6 @@ class Person:
         y2 = location2[2]
         return (((x1 - x2) ** 2) + ((y1 - y2) ** 2)) ** 0.5
 
-    def look_around(self):
-        what_is_around = Memory()
-        blocked = []
-        floor = self.location[0]
-        x = self.location[1]
-        y = self.location[2]
-        # -1 from vision because the search function will look at the current location
-        for i in range(-(self.visibility - 1), self.visibility):
-            for j in range(-(self.visibility - 1), self.visibility):
-                if self.is_continue(i, j, x, y, blocked):
-                    continue
-                self.search((floor, x + i, y + j), what_is_around, blocked)
-        return what_is_around
-
-    def is_continue(self, i, j, x, y, blocked):
-        a = x + i
-        b = y + j
-        if 0 > a > self.simulation.building.x_size - 1 or 0 > b > self.simulation.building.y_size - 1:
-            return True
-        if self.is_blocked(blocked, x, y, i, j):
-            return True
-        return False
-
-    def search(self, start_location, what_is_around, blocked):
-        floor = start_location[0]
-        x = start_location[1]
-        y = start_location[2]
-        for i in range(-1, 2):
-            for j in range(-1, 2):
-                if self.is_continue(i, j, x, y, blocked):
-                    continue
-                self.add_to_memory(blocked, floor, i, j, what_is_around, x, y)
-
-    def add_to_memory(self, blocked, floor, i, j, what_is_around, x, y):
-        location = (floor, x + i, y + j)
-        self.simulation.is_in_building(location)
-        if self.simulation.is_wall(location):
-            what_is_around.add("walls", location)
-            if not self.is_diagonal(i, j):
-                blocked.append((x + i, y + j, self.get_letter(i, j)))
-        elif self.simulation.is_door(location):
-            what_is_around.add("doors", location)
-        elif self.simulation.is_exit(location):
-            what_is_around.add("exits", location)
-        elif self.simulation.is_stair(location):
-            what_is_around.add("stairs", location)
-        elif self.simulation.is_glass(location):
-            what_is_around.add("glasses", location)
-        elif self.simulation.is_obstacle(location):
-            what_is_around.add("obstacles", location)
-        elif self.simulation.is_empty(location):
-            what_is_around.add("empties", location)
-        elif location in self.simulation.fire_locations:
-            what_is_around.add("fires", location)
-        elif self.simulation.is_person(location):
-            what_is_around.add("people", location)
-        elif self.simulation.is_broken_glass(location):
-            what_is_around.add("broken_glasses", location)
-        elif self.simulation.is_room(location):
-            self.room_type = "room"
-        elif self.simulation.is_hallway(location):
-            self.room_type = "hall"
-        elif self.simulation.is_exit_plan(location):
-            what_is_around.add("exit_plans", location)
-        else:
-            raise Exception(f"I see a char you didn't tell me about: {self.simulation.building.text[floor][x + i][y + j]}")
-
-    def is_blocked(self, blocked, x, y, i, j):
-        left = 0
-        top = 0
-        right = self.simulation.building.x_size
-        bottom = self.simulation.building.y_size
-        for block in blocked:
-            b_x = block[0]
-            b_y = block[1]
-            letter = block[2]
-            if y + j == b_y or x + i == b_x:
-                if letter == 'l':
-                    for k in range(left, b_x):
-                        if x + i == k:
-                            return True
-                elif letter == 'r':
-                    for k in range(b_x, right):
-                        if x + i == k:
-                            return True
-                elif letter == 'd':
-                    for k in range(b_y, bottom):
-                        if y + j == k:
-                            return True
-                elif letter == 'u':
-                    for k in range(top, b_y):
-                        if y + j == k:
-                            return True
-        return False
-
-    @staticmethod
-    def is_diagonal(i, j):
-        return i < 0 < j or j < 0 < i or (i < 0 and j < 0) or (i > 0 and j > 0)
-
-    @staticmethod
-    def get_letter(i, j):
-        if i == 0 and j == 1:
-            return 'u'
-        if i == 0 and j == -1:
-            return 'd'
-        if i == 1 and j == 0:
-            return 'r'
-        if i == -1 and j == 0:
-            return 'l'
-        else:
-            raise Exception('invalid coordinates')
-
     def combat(self, other):
         wanted_location = other.location
         not_wanted_location = self.location
@@ -604,7 +494,7 @@ class Person:
         return self.health > 50
 
     def has_low_health(self):
-        return self.health < 25
+        return self.health <= 50
 
     def fire_nearby(self):
         for location in self.memory.fires:

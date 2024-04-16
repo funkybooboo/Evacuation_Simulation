@@ -32,31 +32,31 @@ class Choice:
         self.options_with_text = ""
         self.person = person
 
-    def refresh_info(self):
-        self.situation = self.get_situation_string()
-        self.options = self.get_options()
-        self.temperature = self.get_temperature()
-        self.options_with_text = self.get_options_with_text()
+    def make(self):
+        self.__refresh_info()
+        if self.person.simulation.choice_mode == 0:
+            choice = self.__get_random_choice()
+        elif self.person.simulation.choice_mode == 1:
+            choice = self.__get_choice_from_AI()
+        elif self.person.simulation.choice_mode == 2:
+            choice = self.__get_choice_from_logic()
+        elif self.person.simulation.choice_mode == 3:
+            choice = self.__get_choice_from_user()
+        else:
+            raise Exception("Invalid choice mode")
+        self.logger.info(f"Choice: {choice}")
+        return self.__make_choice(choice)
+
+    def __refresh_info(self):
+        self.situation = self.__get_situation_string()
+        self.options = self.__get_options()
+        self.temperature = self.__get_temperature()
+        self.options_with_text = self.__get_options_with_text()
         self.logger.info(f"Situation: {self.situation}")
         self.logger.info(f"Options: {self.options}")
         self.logger.info(f"Temperature: {self.temperature}")
 
-    def make(self):
-        self.refresh_info()
-        if self.person.simulation.choice_mode == 0:
-            choice = self.get_random_choice()
-        elif self.person.simulation.choice_mode == 1:
-            choice = self.get_choice_from_AI()
-        elif self.person.simulation.choice_mode == 2:
-            choice = self.get_choice_from_logic()
-        elif self.person.simulation.choice_mode == 3:
-            choice = self.get_choice_from_user()
-        else:
-            raise Exception("Invalid choice mode")
-        self.logger.info(f"Choice: {choice}")
-        return self.make_choice(choice)
-
-    def make_choice(self, choice):
+    def __make_choice(self, choice):
         if choice is None:
             raise Exception("AI did not give a valid choice")
         if choice == 'A':
@@ -102,16 +102,16 @@ class Choice:
         else:
             raise Exception("Invalid choice")
 
-    def get_temperature(self):
+    def __get_temperature(self):
         if self.person.fear >= 5:
             return 0.7
         else:
             return 0.3
 
-    def is_irrational(self):
+    def __is_irrational(self):
         return self.temperature < 0.5 and self.person.fear > 8
 
-    def get_situation_string(self):
+    def __get_situation_string(self):
         situation = \
             f"""
             Do you like people: {self.person.is_follower}
@@ -133,7 +133,7 @@ class Choice:
             """
         return situation
 
-    def get_options(self):
+    def __get_options(self):
         options = ["A", "B", "N"]
         if self.person.memory.exits:
             options.append("L")
@@ -160,7 +160,7 @@ class Choice:
         options.sort()
         return options
 
-    def get_response_from_AI(self):
+    def __get_response_from_AI(self):
         context = ""
         with open("../../../data/context.txt", "r") as file:
             for line in file.readlines():
@@ -195,11 +195,11 @@ class Choice:
         )
         return response
 
-    def get_choice_from_AI(self):
-        response = self.get_response_from_AI()
+    def __get_choice_from_AI(self):
+        response = self.__get_response_from_AI()
         if response is None:
             raise Exception("AI did not respond")
-        choice = self.get_choice_from_response(response)
+        choice = self.__get_choice_from_response(response)
         if choice is None:
             raise Exception("AI did not give a valid choice")
         if choice in self.options:
@@ -207,16 +207,16 @@ class Choice:
         raise Exception("AI did not give a valid choice")
 
     @staticmethod
-    def get_choice_from_response(response):
+    def __get_choice_from_response(response):
         for message in response["choices"]:
             if message["role"] == "assistant":
                 return message["content"]
         return None
 
-    def get_random_choice(self):
+    def __get_random_choice(self):
         return self.options[randint(0, len(self.options) - 1)]
 
-    def get_options_with_text(self):
+    def __get_options_with_text(self):
         options_with_text = ""
         for option in self.options:
             options_with_text += option
@@ -225,8 +225,8 @@ class Choice:
             options_with_text += "\n"
         return options_with_text
 
-    def get_choice_from_user(self):
-        options_with_text = self.get_options_with_text()
+    def __get_choice_from_user(self):
+        options_with_text = self.__get_options_with_text()
         print(f"situation: \n{self.situation}")
         print(f"temperature (0-1 how rational the choice should be): \n{self.temperature}")
         print(f"options_with_text: \n{options_with_text}")
@@ -236,19 +236,19 @@ class Choice:
                 return choice
             print("That's not a valid option")
 
-    def get_choice_from_logic(self):
-        if self.is_irrational():
-            return self.get_irrational_choice()
+    def __get_choice_from_logic(self):
+        if self.__is_irrational():
+            return self.__get_irrational_choice()
         else:
-            return self.get_rational_choice()
+            return self.__get_rational_choice()
 
-    def get_rational_choice(self):
+    def __get_rational_choice(self):
         if self.person.is_trapped():
-            return self.get_rational_trapped_choice()
+            return self.__get_rational_trapped_choice()
         else:
-            return self.get_rational_untrapped_choice()
+            return self.__get_rational_untrapped_choice()
 
-    def get_rational_trapped_choice(self):
+    def __get_rational_trapped_choice(self):
         if self.person.is_trapped_by_people():
             if self.person.fire_nearby():
                 if self.person.can_get_to_window() and self.person.can_break_glass():
@@ -265,7 +265,7 @@ class Choice:
                 return "I"
         return "N"
 
-    def get_rational_untrapped_choice(self):
+    def __get_rational_untrapped_choice(self):
         if self.person.know_about_important_location():
             if self.person.get_closest(self.person.location, self.person.memory.exits):
                 return "L"
@@ -280,13 +280,13 @@ class Choice:
                 return "C"
         return "A"
 
-    def get_irrational_choice(self):
+    def __get_irrational_choice(self):
         if self.person.is_trapped():
-            return self.get_irrational_trapped_choice()
+            return self.__get_irrational_trapped_choice()
         else:
-            return self.get_irrational_untrapped_choice()
+            return self.__get_irrational_untrapped_choice()
 
-    def get_irrational_trapped_choice(self):
+    def __get_irrational_trapped_choice(self):
         if self.person.is_trapped_by_people():
             if self.person.fire_nearby():
                 if self.person.can_get_to_window():
@@ -302,5 +302,5 @@ class Choice:
                 return "I"
         return "N"
 
-    def get_irrational_untrapped_choice(self):
-        return self.get_random_choice()
+    def __get_irrational_untrapped_choice(self):
+        return self.__get_random_choice()

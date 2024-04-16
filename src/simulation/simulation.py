@@ -205,7 +205,7 @@ class Simulation:
             floor = randint(0, len(self.building.text) - 1)
             location = (floor, randint(0, len(self.building.text[0]) - 1),
                         randint(0, len(self.building.text[0][0]) - 1))
-            if (self.is_obstacle(location) or self.is_fire(location) or self.is_person(location) or
+            if (self.is_mini_obstacle(location) or self.is_normal_obstacle(location) or self.is_large_obstacle(location) or self.is_fire(location) or self.is_person(location) or
                     self.is_wall(location) or self.is_stair(location) or self.is_glass(location) or
                     self.is_door(location) or self.is_exit(location)):
                 continue
@@ -310,7 +310,7 @@ class Simulation:
             self.time += 1
             self.logger.info(f"Time: {self.time}")
             self.building.refresh()
-            self.building.print_building()
+            self.building.print()
             self.__move_people()
             self.logger.info("People have moved")
             self.__spread_fire()
@@ -432,11 +432,6 @@ class Simulation:
     def is_exit(self, location):
         self.is_in_building(location)
         return self.building.text[location[0]][location[1]][location[2]] == 'e'
-
-    def is_obstacle(self, location):
-        self.is_in_building(location)
-        c = self.building.text[location[0]][location[1]][location[2]]
-        return c == 'm' or c == 'n' or c == 'l'
 
     def is_mini_obstacle(self, location):
         self.is_in_building(location)
