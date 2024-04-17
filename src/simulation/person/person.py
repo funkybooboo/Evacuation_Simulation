@@ -179,9 +179,9 @@ class Person:
             other.number_of_fights_tied += 1
             self.health -= 5
             other.health -= 5
-            if self.fear < 10:
+            if self.fear < self.simulation.max_fear:
                 self.fear += 1
-            if other.fear < 10:
+            if other.fear < self.simulation.max_fear:
                 other.fear += 1
 
     def get_age_group(self):

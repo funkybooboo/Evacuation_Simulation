@@ -267,16 +267,16 @@ class Thinker:
 
     def __get_rational_untrapped_choice(self):
         if self.person.know_about_important_location():
-            if self.person.get_closest(self.person.location, self.person.memory.exits):
+            if self.person.movement.get_closest(self.person.location, self.person.memory.exits):
                 return "L"
-            if self.person.get_closest(self.person.location, self.person.memory.stairs):
+            if self.person.movement.get_closest(self.person.location, self.person.memory.stairs):
                 return "M"
-            if self.person.get_closest(self.person.location, self.person.memory.exit_plans):
+            if self.person.movement.get_closest(self.person.location, self.person.memory.exit_plans):
                 return "K"
         if self.person.is_in_room():
             return "D"
         if self.person.is_in_hall():
-            if self.person.get_closest(self.person.location, self.person.memory.people):
+            if self.person.movement.get_closest(self.person.location, self.person.memory.people):
                 return "C"
         return "A"
 
