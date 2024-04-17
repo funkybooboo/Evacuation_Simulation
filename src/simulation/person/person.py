@@ -107,7 +107,7 @@ class Person:
         return self.health <= 0
 
     def place(self, location):
-        self.simulation.is_in_building(location)
+        self.simulation.is_not_in_building(location)
         if not self.is_one_away(self.location, location):
             raise Exception(f"location is not one away: {location}")
         if not self.simulation.is_valid_location_for_person(location):

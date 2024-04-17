@@ -21,8 +21,8 @@ class Vision:
         blocked.append((x, y))
         for i in range(-1, 2):
             for j in range(-1, 2):
-                a = x + j
-                b = y + i
+                a = x + i
+                b = y + j
                 if self.__is_out_of_bounds(a, b) or self.__is_blocked(blocked, a, b):
                     continue
                 self.__add_to_memory(what_is_around, blocked, i, j, a, b)
@@ -30,7 +30,7 @@ class Vision:
 
     def __add_to_memory(self, what_is_around, blocked, i, j, a, b):
         location = (self.person.location[0], a, b)
-        self.person.simulation.is_in_building(location)
+        self.person.simulation.is_not_in_building(location)
         if self.person.simulation.is_wall(location):
             what_is_around.add("walls", location)
             self.__block(blocked, i, j, a, b)
@@ -67,7 +67,7 @@ class Vision:
             raise Exception(f"I see a char you didn't tell me about: {self.person.simulation.building.text[self.person.location[0]][a][b]}")
 
     def __is_out_of_bounds(self, x, y):
-        return 0 > x >= self.person.simulation.building.x_size or 0 > y >= self.person.simulation.building.y_size
+        return x < 0 or y < 0 or x >= self.person.simulation.building.x_size or y >= self.person.simulation.building.y_size
 
     def __block(self, blocked, i, j, a, b):
         blocked.append((a, b))

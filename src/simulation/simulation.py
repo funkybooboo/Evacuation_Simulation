@@ -416,7 +416,7 @@ class Simulation:
                         self.__set_fire(new_location)
 
     def __set_fire(self, location):
-        self.is_in_building(location)
+        self.is_not_in_building(location)
         if not self.is_fire(location):
             # remove what was there
             self.building.text[location[0]][location[1]][location[2]] = 'f'
@@ -430,26 +430,26 @@ class Simulation:
         return randint(0, 100) < chance
 
     def is_exit(self, location):
-        self.is_in_building(location)
+        self.is_not_in_building(location)
         return self.building.text[location[0]][location[1]][location[2]] == 'e'
 
     def is_mini_obstacle(self, location):
-        self.is_in_building(location)
+        self.is_not_in_building(location)
         c = self.building.text[location[0]][location[1]][location[2]]
         return c == 'm'
 
     def is_normal_obstacle(self, location):
-        self.is_in_building(location)
+        self.is_not_in_building(location)
         c = self.building.text[location[0]][location[1]][location[2]]
         return c == 'n'
 
     def is_large_obstacle(self, location):
-        self.is_in_building(location)
+        self.is_not_in_building(location)
         c = self.building.text[location[0]][location[1]][location[2]]
         return c == 'l'
 
     def is_fire(self, location):
-        self.is_in_building(location)
+        self.is_not_in_building(location)
         return location in self.fire_locations
 
     def is_person(self, location):
@@ -459,50 +459,52 @@ class Simulation:
         return None
 
     def is_wall(self, location):
-        self.is_in_building(location)
+        self.is_not_in_building(location)
         c = self.building.text[location[0]][location[1]][location[2]]
         return c == 'w' or c == 'h'
 
     def is_half_wall(self, location):
-        self.is_in_building(location)
+        self.is_not_in_building(location)
         c = self.building.text[location[0]][location[1]][location[2]]
         return c == 'h'
 
-    def is_in_building(self, location):
-        if 0 <= location[0] < self.building.floor_size and 0 <= location[1] < self.building.x_size and 0 <= location[2] < self.building.y_size:
-            return True
-        raise Exception(f"Location is not in building: {location} Caller name: {inspect.currentframe().f_back.f_code.co_name}")
+    def is_not_in_building(self, location):
+        floor = location[0]
+        x = location[1]
+        y = location[2]
+        if floor < 0 or floor >= self.building.floor_size or x < 0 or x >= self.building.x_size or y < 0 or y >= self.building.y_size:
+            raise Exception("Location is not in the building")
 
     def is_stair(self, location):
-        self.is_in_building(location)
+        self.is_not_in_building(location)
         return self.building.text[location[0]][location[1]][location[2]] == 's'
 
     def is_glass(self, location):
-        self.is_in_building(location)
+        self.is_not_in_building(location)
         return self.building.text[location[0]][location[1]][location[2]] == 'g'
 
     def is_empty(self, location):
-        self.is_in_building(location)
+        self.is_not_in_building(location)
         return self.building.text[location[0]][location[1]][location[2]] == ' '
 
     def is_door(self, location):
-        self.is_in_building(location)
+        self.is_not_in_building(location)
         return self.building.text[location[0]][location[1]][location[2]] == 'd'
 
     def is_broken_glass(self, location):
-        self.is_in_building(location)
+        self.is_not_in_building(location)
         return self.building.text[location[0]][location[1]][location[2]] == 'b'
 
     def is_room(self, location):
-        self.is_in_building(location)
+        self.is_not_in_building(location)
         return self.building.text[location[0]][location[1]][location[2]] == '1'
 
     def is_hallway(self, location):
-        self.is_in_building(location)
+        self.is_not_in_building(location)
         return self.building.text[location[0]][location[1]][location[2]] == '2'
 
     def is_exit_plan(self, location):
-        self.is_in_building(location)
+        self.is_not_in_building(location)
         return self.building.text[location[0]][location[1]][location[2]] == 'p'
 
     def is_valid_location_for_person(self, location):

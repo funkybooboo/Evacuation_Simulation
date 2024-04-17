@@ -34,6 +34,11 @@ class Movement:
             # at a stair
             if self.person.simulation.is_stair(self.person.location):
                 self.person.location = (self.person.location[0] - 1, self.person.location[1], self.person.location[2])
+            # at an exit
+            if self.person.simulation.is_exit(self.person.location):
+                break
+            if self.person.simulation.is_broken_glass(self.person.location):
+                break
         self.logger.info(f"{self.person.name} is at {self.person.location}")
         return other
 
@@ -78,7 +83,7 @@ class Movement:
     def towards(self, location):
         if location is None:
             return None
-        self.person.simulation.is_in_building(location)
+        self.person.simulation.is_not_in_building(location)
         floor1 = self.person.location[0]
         floor2 = location[0]
         if floor1 != floor2:
@@ -90,8 +95,8 @@ class Movement:
             path = self.get_path(location, grid)
             if path and len(path) >= 2:
                 node = path[1]
-                n_x = node.x
-                n_y = node.y
+                n_x = node.y
+                n_y = node.x
                 break
         if not n_x or not n_y:
             return None
@@ -103,10 +108,8 @@ class Movement:
             raise Exception("location is None")
         if grid is None:
             raise Exception("grid is None")
-        if not self.person.simulation.is_in_building(self.person.location):
-            raise Exception(f"location is not in building: {self.person.location}")
-        if not self.person.simulation.is_in_building(location):
-            raise Exception(f"location is not in building: {location}")
+        self.person.simulation.is_not_in_building(self.person.location)
+        self.person.simulation.is_not_in_building(location)
         x1 = self.person.location[1]
         y1 = self.person.location[2]
         start = grid.node(y1, x1)
