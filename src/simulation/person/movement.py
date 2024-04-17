@@ -90,8 +90,8 @@ class Movement:
             path = self.get_path(location, grid)
             if path and len(path) >= 2:
                 node = path[1]
-                n_x = node.x
-                n_y = node.y
+                n_x = node.y
+                n_y = node.x
                 break
         if not n_x or not n_y:
             return None
