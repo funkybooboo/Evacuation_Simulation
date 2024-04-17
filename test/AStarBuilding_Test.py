@@ -1,7 +1,3 @@
-from pathfinding.core.diagonal_movement import DiagonalMovement
-from pathfinding.core.grid import Grid
-from pathfinding.finder.a_star import AStarFinder
-
 from copy import deepcopy
 from pathfinding.core.diagonal_movement import DiagonalMovement
 from pathfinding.core.grid import Grid
@@ -169,13 +165,6 @@ def convert_text_to_pathfinding_grid(text_building):
                 elif row[col] == 'n':
                     row[col] = 3
     return grid
-
-
-
-# if __name__ == '__main__':
-  #  main()
-
-
 
 def main():
 

@@ -5,7 +5,7 @@ import os
 from src.simulation.logger import setup_logger
 
 
-class Choice:
+class Thinker:
     def __init__(self, person):
         self.logger = setup_logger("choice_logger", f'../logs/run{person.simulation.simulation_count}/people/person{person.pk}/choice.log', person.simulation.verbose)
 
@@ -32,8 +32,8 @@ class Choice:
         self.options_with_text = ""
         self.person = person
 
-    def make(self):
-        self.__refresh_info()
+    def think(self):
+        self.__refresh()
         if self.person.simulation.choice_mode == 0:
             choice = self.__get_random_choice()
         elif self.person.simulation.choice_mode == 1:
@@ -45,9 +45,9 @@ class Choice:
         else:
             raise Exception("Invalid choice mode")
         self.logger.info(f"Choice: {choice}")
-        return self.__make_choice(choice)
+        return self.__make(choice)
 
-    def __refresh_info(self):
+    def __refresh(self):
         self.situation = self.__get_situation_string()
         self.options = self.__get_options()
         self.temperature = self.__get_temperature()
@@ -56,47 +56,47 @@ class Choice:
         self.logger.info(f"Options: {self.options}")
         self.logger.info(f"Temperature: {self.temperature}")
 
-    def __make_choice(self, choice):
+    def __make(self, choice):
         if choice is None:
             raise Exception("AI did not give a valid choice")
         if choice == 'A':
-            return self.person.explore()
+            return self.person.movement.explore()
         elif choice == 'B':
-            return self.person.move_randomly()
+            return self.person.movement.randomly()
         elif choice == 'C':
-            closest_person = self.person.get_closest(self.person.location, self.person.memory.people)
-            return self.person.move_towards(closest_person)
+            closest_person = self.person.movement.get_closest(self.person.location, self.person.memory.people)
+            return self.person.movement.towards(closest_person)
         elif choice == 'D':
-            closest_door = self.person.get_closest(self.person.location, self.person.memory.doors)
-            return self.person.move_towards(closest_door)
+            closest_door = self.person.movement.get_closest(self.person.location, self.person.memory.doors)
+            return self.person.movement.towards(closest_door)
         elif choice == 'E':
-            closest_glass = self.person.get_closest(self.person.location, self.person.memory.glasses)
-            return self.person.move_towards(closest_glass)
+            closest_glass = self.person.movement.get_closest(self.person.location, self.person.memory.glasses)
+            return self.person.movement.towards(closest_glass)
         elif choice == 'F':
-            closest_fire = self.person.get_closest(self.person.location, self.person.memory.fires)
-            return self.person.move_towards(closest_fire)
+            closest_fire = self.person.movement.get_closest(self.person.location, self.person.memory.fires)
+            return self.person.movement.towards(closest_fire)
         elif choice == 'G':
-            closest_glass = self.person.get_closest(self.person.location, self.person.memory.glasses)
-            if not self.person.break_glass(closest_glass):
+            closest_glass = self.person.movement.get_closest(self.person.location, self.person.memory.glasses)
+            if not self.person.movement.break_glass(closest_glass):
                 raise Exception("Cant break glass unless you are near it")
             return None
         elif choice == 'H':
-            closest_person = self.person.get_closest(self.person.location, self.person.memory.people)
-            return self.person.move_towards(closest_person)
+            closest_person = self.person.movement.get_closest(self.person.location, self.person.memory.people)
+            return self.person.movement.towards(closest_person)
         elif choice == 'I':
-            closest_door = self.person.get_closest(self.person.location, self.person.memory.doors)
-            return self.person.move_towards(closest_door)
+            closest_door = self.person.movement.get_closest(self.person.location, self.person.memory.doors)
+            return self.person.movement.towards(closest_door)
         elif choice == 'J':
-            broken_glasses = self.person.get_closest(self.person.location, self.person.memory.broken_glass)
-            return self.person.move_to(broken_glasses)
+            broken_glass = self.person.movement.get_closest(self.person.location, self.person.memory.broken_glass)
+            return self.person.movement.place(broken_glass)
         elif choice == 'K':
-            return self.person.follow_evacuation_plan()
+            return self.person.movement.follow_evacuation_plan()
         elif choice == 'L':
-            closest_exit = self.person.get_closest(self.person.location, self.person.memory.exits)
-            return self.person.move_towards(closest_exit)
+            closest_exit = self.person.movement.get_closest(self.person.location, self.person.memory.exits)
+            return self.person.movement.towards(closest_exit)
         elif choice == 'M':
-            closest_stair = self.person.get_closest(self.person.location, self.person.memory.stairs)
-            return self.person.move_towards(closest_stair)
+            closest_stair = self.person.movement.get_closest(self.person.location, self.person.memory.stairs)
+            return self.person.movement.towards(closest_stair)
         elif choice == 'N':
             return None
         else:
@@ -120,15 +120,15 @@ class Choice:
             Health: {self.person.health}
             Age: {self.person.age}
             Fear: {self.person.fear}
-            Nearest Exit: {self.person.get_closest(self.person.location, self.person.memory.exits)}
-            Nearest Stairs: {self.person.get_closest(self.person.location, self.person.memory.stairs)}
-            Nearest Person: {self.person.get_closest(self.person.location, self.person.memory.people)}
-            Nearest Window: {self.person.get_closest(self.person.location, self.person.memory.glasses)}
-            Nearest Door: {self.person.get_closest(self.person.location, self.person.memory.doors)}
-            Nearest Fire: {self.person.get_closest(self.person.location, self.person.memory.fires)}
+            Nearest Exit: {self.person.movement.get_closest(self.person.location, self.person.memory.exits)}
+            Nearest Stairs: {self.person.movement.get_closest(self.person.location, self.person.memory.stairs)}
+            Nearest Person: {self.person.movement.get_closest(self.person.location, self.person.memory.people)}
+            Nearest Window: {self.person.movement.get_closest(self.person.location, self.person.memory.glasses)}
+            Nearest Door: {self.person.movement.get_closest(self.person.location, self.person.memory.doors)}
+            Nearest Fire: {self.person.movement.get_closest(self.person.location, self.person.memory.fires)}
             People Near: {self.person.get_number_of_people_near()}
             Know Evacuation Plan: {self.person.memory.exit_plans}
-            Time to Get Out: {self.person.get_time_to_get_out()}
+            Time to Get Out: {self.person.movement.get_time_to_get_out()}
             Room Type: {self.person.room_type}
             """
         return situation
@@ -227,7 +227,7 @@ class Choice:
 
     def __get_choice_from_user(self):
         options_with_text = self.__get_options_with_text()
-        print(f"situation: \n{self.situation}")
+        print(f"situation: {self.situation}")
         print(f"temperature (0-1 how rational the choice should be): \n{self.temperature}")
         print(f"options_with_text: \n{options_with_text}")
         while True:
