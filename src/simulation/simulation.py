@@ -192,13 +192,13 @@ class Simulation:
             self.average_visibility /= len(self.live_people)
 
     def __start_fire(self):
-        while True:
-            floor = randint(0, len(self.building.text) - 1)
-            x = randint(0, len(self.building.text[0]) - 1)
-            y = randint(0, len(self.building.text[0][0]) - 1)
-            location = (floor, x, y)
-            if self.__set_fire(location):
-                break
+        for floor in range(self.number_of_floors):
+            while True:
+                x = randint(0, len(self.building.text[0]) - 1)
+                y = randint(0, len(self.building.text[0][0]) - 1)
+                location = (floor, x, y)
+                if self.__set_fire(location):
+                    break
 
     def __generate_people(self):
         pk = 0
