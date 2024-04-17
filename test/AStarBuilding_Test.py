@@ -1,13 +1,9 @@
-from pathfinding.core.diagonal_movement import DiagonalMovement
-from pathfinding.core.grid import Grid
-from pathfinding.finder.a_star import AStarFinder
-
 from copy import deepcopy
 from pathfinding.core.diagonal_movement import DiagonalMovement
 from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
 
-
+"""
 def main():
     building = generate_building()
     grid = convert_text_to_pathfinding_grid(building)
@@ -15,9 +11,9 @@ def main():
         print()
         for row in floor:
             print(row)
+"""
 
-
-def generate_building():
+#def generate_building():
     # w is wall
     # h is half-wall
     # o is obstacle
@@ -33,6 +29,7 @@ def generate_building():
     # 1 is room indicator
     # 2 is hall indicator
 
+"""
     building = [
         [
             [' ','w','w','w','w'],
@@ -45,6 +42,7 @@ def generate_building():
             ['w', 'w', 'w', ' ', ' '],
         ]
     ]
+
 
 
     building1 = [
@@ -144,7 +142,7 @@ def generate_building():
         # ],
         ]
     return building
-
+"""
 
 def convert_text_to_pathfinding_grid(text_building):
     # 0 is impassable
@@ -170,17 +168,33 @@ def convert_text_to_pathfinding_grid(text_building):
 
 def main():
 
-    matrix = [[
-        [1,0,0,0,0],
-        [1,1,3,1,1],
-        [0,0,2,0,0],
-        ],
+    matrix = [#[
+        #[1,0,0,0,0],
+       # [1,1,3,1,1],
+       #[0,0,2,0,0],
+       # ],
         [
-        [1, 0, 0, 0, 0],
-        [1, 1, 1, 1, 0],
-        [0, 0, 0, 0, 1],
+        [' ', 'w', 'w', 'w', 'w'],
+        [' ', ' ', ' ', ' ', 'w'],
+        ['w', 'w', 'w', ' ', ' '],
         ]
     ]
+    grid = deepcopy(matrix)
+    floors = len(grid)
+    for floor in range(floors):
+        for row in grid[floor]:
+            for col in range(len(row)):
+                if row[col] == 'f':
+                    row[col] = -2
+                elif row[col] == 'w' or row[col] == 'g' or row[col] == 'l':
+                    row[col] = 0
+                elif row[col] == ' ' or row[col] == 'd' or row[col] == 'e' or row[col] == 's' or row[col] == 'p' or row[col] == '1' or row[col] == '2':
+                    row[col] = 1
+                elif row[col] == 'h' or row[col] == 'm':
+                    row[col] = 2
+                elif row[col] == 'n':
+                    row[col] = 3
+    return grid
     print(" ")
     print(matrix)
     grid = Grid(matrix=matrix[0])
