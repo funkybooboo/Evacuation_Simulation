@@ -462,12 +462,7 @@ class Simulation:
     def is_wall(self, location):
         self.is_not_in_building(location)
         c = self.building.text[location[0]][location[1]][location[2]]
-        return c == 'w' or c == 'h'
-
-    def is_half_wall(self, location):
-        self.is_not_in_building(location)
-        c = self.building.text[location[0]][location[1]][location[2]]
-        return c == 'h'
+        return c == 'w'
 
     def is_not_in_building(self, location):
         floor = location[0]
