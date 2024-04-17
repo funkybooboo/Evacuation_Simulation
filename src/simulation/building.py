@@ -22,7 +22,6 @@ class Building:
 
     def __generate_text(self):
         # w is wall
-        # w is walf-wall
         # o is obstacle
         # m is mini-object
         # n is normal-object
