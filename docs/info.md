@@ -78,6 +78,7 @@ The simulation can be expanded in various ways:
 - Enriching environmental details with additional objects, diverse terrain types, and weather effects to simulate realistic evacuation scenarios. 
 - Implementing dynamic environmental changes, such as complex fire spread patterns and extinguishing efforts by individuals or emergency responders. 
 - Facilitating information sharing among individuals about the environment, emergency procedures, and safe evacuation routes to promote collaboration and collective decision-making.
+- Exit knowledge based on path of entry to a current location; people should know the path they took to get in and be able to use it to get out.
 
 ### Significance of the Output
 
