@@ -5,12 +5,12 @@ from random import randint
 from .building import Building
 from .logger import setup_logger
 import logging
-import inspect
 
 
 class Simulation:
     def __init__(self,
                  number_of_people=50,
+                 number_of_floors=3,
                  simulation_count=0,
                  time_for_firefighters=1000,
                  fire_spread_rate=0.2,
@@ -101,6 +101,7 @@ class Simulation:
 
         self.fire_spread_rate = fire_spread_rate
         self.number_of_people = number_of_people
+        self.number_of_floors = number_of_floors
         self.simulation_count = simulation_count
         self.time_for_firefighters = time_for_firefighters
         self.verbose = verbose
@@ -111,7 +112,7 @@ class Simulation:
 
         self.time = 0
 
-        self.building = Building(self)
+        self.building = Building(self, number_of_floors)
         self.__generate_people()
         self.get_averages()
         self.__start_fire()

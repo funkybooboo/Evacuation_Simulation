@@ -31,6 +31,7 @@ def main(args):
 
     # log arguments
     logger.info(f"Number of people: {args.number_of_people}")
+    logger.info(f"Number of floors: {args.number_of_floors}")
     logger.info(f"Verbose: {args.verbose}")
     logger.info(f"Choice Mode: {args.choice_mode}")
     logger.info(f"Time for firefighters: {args.time_for_firefighters}")
@@ -54,6 +55,7 @@ def main(args):
     # create simulation
     simulation = Simulation(
         args.number_of_people,
+        args.number_of_floors,
         simulation_count,
         args.time_for_firefighters,
         args.fire_spread_rate,
@@ -86,11 +88,12 @@ def main(args):
 def get_args():
     parser = argparse.ArgumentParser(description='Evacuation Simulation')
     # Add arguments
-    parser.add_argument('--number_of_people', type=int, help='Number of people', default=1)
+    parser.add_argument('--number_of_people', type=int, help='Number of people', default=20)
+    parser.add_argument('--number_of_floors', type=int, help='Number of floors. 1-3', default=1)
     parser.add_argument('--verbose', type=bool, help='Verbosity', default=False)
-    parser.add_argument('--choice_mode', type=int, help='How do people make choices? 0: Random, 1: AI, 2: Logic, 3: You Choose!', default=3)
+    parser.add_argument('--choice_mode', type=int, help='How do people make choices? 0: Random, 1: AI, 2: Logic, 3: You Choose!', default=2)
     parser.add_argument('--time_for_firefighters', type=int, help='Time for firefighters', default=100)
-    parser.add_argument('--fire_spread_rate', type=int, help='Fire spread rate', default=0.2)
+    parser.add_argument('--fire_spread_rate', type=int, help='Fire spread rate', default=0.1)
     parser.add_argument('--max_visibility', type=int, help='Maximum visibility', default=20)
     parser.add_argument('--min_visibility', type=int, help='Minimum visibility', default=15)
     parser.add_argument('--max_strength', type=int, help='Maximum strength', default=10)
@@ -142,6 +145,8 @@ def validate_args(args):
         raise ValueError("Sum of all personalities must be 1")
     if args.choice_mode < 0 or args.choice_mode > 3:
         raise ValueError("Choice mode must be 0, 1, 2, or 3")
+    if args.number_of_floors < 1 or args.number_of_floors > 3:
+        raise ValueError("Number of floors must be between 1 and 3")
 
 
 if __name__ == "__main__":
