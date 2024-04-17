@@ -1,7 +1,7 @@
 from random import randint
 from pathfinding.core.diagonal_movement import DiagonalMovement
 from pathfinding.core.grid import Grid
-from pathfinding.finder.a_star import AStarFinder
+from pathfinding.finder.dijkstra import DijkstraFinder
 from copy import deepcopy
 from src.simulation.logger import setup_logger
 
@@ -113,7 +113,7 @@ class Movement:
         x2 = location[1]
         y2 = location[2]
         end = grid.node(y2, x2)
-        finder = AStarFinder(diagonal_movement=DiagonalMovement.always)
+        finder = DijkstraFinder(diagonal_movement=DiagonalMovement.always)
         path, runs = finder.find_path(start, end, grid)
         self.logger.info(f'operations:', runs, 'path length:', len(path))
         self.logger.info(grid.grid_str(path=path, start=start, end=end))
