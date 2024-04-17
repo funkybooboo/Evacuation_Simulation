@@ -5,8 +5,10 @@ from .logger import setup_logger
 
 class Building:
     def __init__(self, simulation, number_of_floors=1):
-        logger = setup_logger("building_logger", f'../logs/run{simulation.simulation_count}/simulation/building.log', simulation.verbose)
-        self.logger = logger
+        building_logger = setup_logger("building_logger", f'../logs/run{simulation.simulation_count}/simulation/building.log', simulation.verbose)
+        grid_image_logger = setup_logger("grid_image_logger", f'../logs/run{simulation.simulation_count}/simulation/grid_image.log', simulation.verbose)
+        self.building_logger = building_logger
+        self.grid_image_logger = grid_image_logger
         self.simulation = simulation
         self.number_of_floors = number_of_floors
         self.text = self.__generate_text()
@@ -136,7 +138,7 @@ class Building:
         return building
 
     def __convert_text_to_colors(self):
-        self.logger.info("Converting text to colors")
+        self.building_logger.info("Converting text to colors")
         self.object_locations = {
             "doors": [],
             "exits": [],
@@ -191,7 +193,7 @@ class Building:
         # 1 is easily passable
         # 2 is passable
         # 3 is difficultly passable
-        self.logger.info("Converting text to pathfinding grid")
+        self.building_logger.info("Converting text to pathfinding grid")
         self.matrix = deepcopy(self.text)
         for floor in range(len(self.matrix)):
             for row in range(len(self.matrix[floor])):
@@ -214,26 +216,28 @@ class Building:
 
     def print(self):
         space = "   "
-        self.logger.info("Printing building")
+        self.building_logger.info("Printing building")
+        self.grid_image_logger.info("Printing grid image")
         categories = [
             "wall", "exit", "object", "stair", "glass",
             "door", "empty", "fire", "broken_glass",
             "exit_plan", "follower", "nonfollower"
         ]
+        grid_image = ""
         for category in categories:
             color = colors[category] + space
-            print(f"{category}: {color}", end="")
-            print(colors["reset"])
+            grid_image += f"{category}: {color}"
+            grid_image += colors["reset"] + '\n'
         for floor in range(len(self.color)):
-            print(f"Floor {floor}")
-            print("   ", end="")
+            grid_image += f"Floor {floor}\n"
+            grid_image += "   "
             for col in range(len(self.color[floor][0])):
                 if col > 9:
                     token = str(col) + " "
                 else:
                     token = str(col) + "  "
-                print(token, end="")
-            print()
+                grid_image += token
+            grid_image += '\n'
             for row in range(len(self.color[floor])):
                 for col in range(len(self.color[floor][row])):
                     if col == 0:
@@ -241,7 +245,7 @@ class Building:
                             token = " " + str(row)
                         else:
                             token = "  " + str(row)
-                        print(token, end="")
+                        grid_image += token
                     cost = self.matrix[floor][row][col]
                     if cost < 0:
                         cost = " " + str(cost)
@@ -251,15 +255,18 @@ class Building:
                     token = self.color[floor][row][col]
                     if person:
                         token = person.color
-                    print(token + cost, end="")
-                print("" + colors["reset"])
+                    grid_image += token + cost
+                grid_image += "" + colors["reset"] + '\n'
+        grid_image += '\n'
+        self.grid_image_logger.info(grid_image)
+        print(grid_image)
 
     def refresh(self):
-        self.logger.info("Refreshing building")
+        self.building_logger.info("Refreshing building")
         self.__convert_text_to_colors()
         self.__convert_text_to_matrix()
-        self.logger.info(self.color)
-        self.logger.info(self.matrix)
-        self.logger.info(self.object_locations)
-        self.logger.info(self.text)
+        self.building_logger.info(self.color)
+        self.building_logger.info(self.matrix)
+        self.building_logger.info(self.object_locations)
+        self.building_logger.info(self.text)
 
