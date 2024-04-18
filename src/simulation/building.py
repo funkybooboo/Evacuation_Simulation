@@ -15,7 +15,9 @@ class Building:
         self.object_locations = {}
         self.color = []
         self.matrix = []
-        self.refresh()
+        self.markdown = ''
+        self.grid_image = ''
+        self.print()
         self.floor_size = len(self.text)
         self.x_size = len(self.text[0])
         self.y_size = len(self.text[0][0])
@@ -136,7 +138,7 @@ class Building:
             building.append(temp_building[floor])
         return building
 
-    def __convert_text_to_colors(self):
+    def __text_to_colors(self):
         self.building_logger.info("Converting text to colors")
         self.object_locations = {
             "doors": [],
@@ -187,7 +189,7 @@ class Building:
                         cell = colors["exit_plan"]
                     self.color[floor][row][col] = cell
 
-    def __convert_text_to_matrix(self):
+    def __text_to_matrix(self):
         # 0 is impassable
         # 1 is easily passable
         # 2 is passable
@@ -213,7 +215,7 @@ class Building:
                         cell = 3
                     self.matrix[floor][row][col] = cell
 
-    def print(self):
+    def __test_to_grid_image(self):
         space = "   "
         self.building_logger.info("Printing building")
         self.grid_image_logger.info("Printing grid image")
@@ -257,15 +259,52 @@ class Building:
                     grid_image += token + cost
                 grid_image += "" + colors["reset"] + '\n'
         grid_image += '\n'
-        self.grid_image_logger.info(grid_image)
-        print(grid_image)
+        self.grid_image = grid_image
 
-    def refresh(self):
+    def print(self):
         self.building_logger.info("Refreshing building")
-        self.__convert_text_to_colors()
-        self.__convert_text_to_matrix()
+        self.__text_to_colors()
+        self.__text_to_matrix()
+        self.__text_to_markdown()
+        self.__test_to_grid_image()
         self.building_logger.info(self.color)
         self.building_logger.info(self.matrix)
         self.building_logger.info(self.object_locations)
         self.building_logger.info(self.text)
+        self.grid_image_logger.info(self.markdown)
+        print(self.grid_image)
 
+    def __text_to_markdown(self):
+        # Define color codes for HTML
+        color_codes_html = {
+            'w': '#0000ff',  # Blue
+            'e': '#00ff00',  # Green
+            'l': '#a9a9a9',  # Dark Gray
+            'n': '#a9a9a9',  # Dark Gray
+            'm': '#a9a9a9',  # Dark Gray
+            's': '#ff69b4',  # Pink
+            'g': '#0000cd',  # Medium Blue
+            'd': '#32cd32',  # Lime Green
+            ' ': '#ffffff',  # White
+            '1': '#ffffff',  # White
+            '2': '#ffffff',  # White
+            'f': '#ff0000',  # Red
+            'b': '#4682b4',  # Steel Blue
+            'p': '#ffd700',  # Gold
+            'fo': '#ffa500',  # Orange
+            'nf': '#ffff00'  # Yellow
+        }
+        self.markdown = '\n'
+        for floor in range(self.number_of_floors):
+            for x in range(len(self.text[floor])):
+                for y in range(len(self.text[floor][x])):
+                    location = (floor, x, y)
+                    person = self.simulation.is_person(location)
+                    if person:
+                        c = 'fo' if person.is_follower else 'nf'
+                    else:
+                        c = self.text[floor][x][y]
+                    color_code = color_codes_html[c]
+                    self.markdown += f'<span style="color:{color_code};">   </span>'
+                self.markdown += '\n'
+        self.markdown += '\n'

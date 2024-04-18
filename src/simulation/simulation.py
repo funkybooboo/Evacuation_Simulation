@@ -310,7 +310,6 @@ class Simulation:
         while len(self.live_people) > 0 and self.time < self.time_for_firefighters:
             self.time += 1
             self.logger.info(f"Time: {self.time}")
-            self.building.refresh()
             self.building.print()
             self.__move_people()
             self.logger.info("People have moved")
@@ -408,12 +407,19 @@ class Simulation:
 
     def __spread_fire(self):
         for fire_location in self.fire_locations:
+            floor = fire_location[0]
+            x = fire_location[1]
+            y = fire_location[2]
             for i in range(-1, 2):
                 for j in range(-1, 2):
                     if i == 0 and j == 0:
                         continue
+                    a = x + i
+                    b = y + j
+                    if a < 0 or a >= len(self.building.text[0]) or b < 0 or b >= len(self.building.text[0][0]):
+                        continue
                     if self.__is_fire_spread():
-                        new_location = (fire_location[0], fire_location[1] + i, fire_location[2] + j)
+                        new_location = (floor, a, b)
                         self.__set_fire(new_location)
 
     def __set_fire(self, location):
