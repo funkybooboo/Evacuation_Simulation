@@ -34,6 +34,7 @@ class Movement:
             # at a stair
             if self.person.simulation.is_stair(self.person.location):
                 if self.person.location[0] > 0:
+                    self.person.simulation.number_of_stairs += 1
                     self.person.location = (self.person.location[0] - 1, self.person.location[1], self.person.location[2])
             # at an exit
             if self.person.simulation.is_exit(self.person.location):
@@ -185,7 +186,7 @@ class Movement:
 
     @staticmethod
     def get_distance(location1, location2):
-        if location2 is None:
+        if not location1 or not location2:
             return None
         if location1[0] != location2[0]:
             return None

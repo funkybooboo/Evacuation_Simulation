@@ -30,6 +30,7 @@ def main(args):
     }
 
     # log arguments
+    logger.info(f"Time to view images: {args.time_to_view_images}")
     logger.info(f"Number of people: {args.number_of_people}")
     logger.info(f"Number of floors: {args.number_of_floors}")
     logger.info(f"Verbose: {args.verbose}")
@@ -54,6 +55,7 @@ def main(args):
 
     # create simulation
     simulation = Simulation(
+        args.time_to_view_images,
         args.number_of_people,
         args.number_of_floors,
         simulation_count,
@@ -88,12 +90,13 @@ def main(args):
 def get_args():
     parser = argparse.ArgumentParser(description='Evacuation Simulation')
     # Add arguments
-    parser.add_argument('--number_of_people', type=int, help='Number of people', default=50)
-    parser.add_argument('--number_of_floors', type=int, help='Number of floors. 1-3', default=1)
+    parser.add_argument("--time_to_view_images", type=int, help="Time to view images", default=0)
+    parser.add_argument('--number_of_people', type=int, help='Number of people', default=500)
+    parser.add_argument('--number_of_floors', type=int, help='Number of floors. 1-3', default=3)
     parser.add_argument('--verbose', type=bool, help='Verbosity', default=False)
-    parser.add_argument('--choice_mode', type=int, help='How do people make choices? 0: Random, 1: AI, 2: Logic, 3: You Choose!', default=0)
-    parser.add_argument('--time_for_firefighters', type=int, help='Time for firefighters', default=50)
-    parser.add_argument('--fire_spread_rate', type=int, help='Fire spread rate', default=0.01)
+    parser.add_argument('--choice_mode', type=int, help='How do people make choices? 0: Random, 1: AI, 2: Logic, 3: You Choose!', default=2)
+    parser.add_argument('--time_for_firefighters', type=int, help='Time for firefighters', default=100)
+    parser.add_argument('--fire_spread_rate', type=int, help='Fire spread rate', default=0.05)
     parser.add_argument('--max_visibility', type=int, help='Maximum visibility', default=10)
     parser.add_argument('--min_visibility', type=int, help='Minimum visibility', default=5)
     parser.add_argument('--max_strength', type=int, help='Maximum strength', default=10)
@@ -125,6 +128,8 @@ def get_args():
 def validate_args(args):
     if not args:
         raise ValueError("No arguments provided")
+    if args.time_to_view_images < 0:
+        raise ValueError("Time to view images must be greater than 0")
     if args.max_visibility < args.min_visibility:
         raise ValueError("Max visibility must be greater than min visibility")
     if args.max_strength < args.min_strength:
