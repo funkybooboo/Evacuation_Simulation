@@ -1,3 +1,4 @@
+from simulation.building import Building
 from simulation.simulation import Simulation
 from os import mkdir
 from src.simulation.logger import setup_logger

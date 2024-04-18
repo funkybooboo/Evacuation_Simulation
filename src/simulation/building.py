@@ -14,6 +14,22 @@ class Building:
         self.text = self.__generate_text()
         self.object_locations = {}
         self.color = []
+        self.color_codes_html = {  # Example structure
+            'w': '808080',  # gray for walls
+            'm': 'ff0000',  # red for mini-object
+            'n': 'ffa500',  # orange for normal-object
+            'l': 'ffff00',  # yellow for large-object
+            'd': '008000',  # green for doors
+            's': '0000ff',  # blue for stairs
+            'g': '00ffff',  # cyan for glass
+            ' ': 'ffffff',  # white for empty space
+            'e': '800080',  # purple for exit
+            'p': '000000',  # black for evacuation plan marker
+            '1': 'ffffff',  # white for room indicator (same as empty space)
+            '2': '808080',  # gray for wall indicator (same as walls)
+            'f': 'ff4500',  # orange-red for fire
+            'b': 'a52a2a'   # brown for broken glass
+            }
         self.matrix = []
         self.html = ''
         self.grid_image = ''
@@ -273,9 +289,48 @@ class Building:
         print(self.grid_image)
 
     def __text_to_html(self):
-        self.html = ''
+        self.html = '<!DOCTYPE html>\n<html>\n<head>\n<title>Evacuation Simulation</title>\n<style>\n'
+        self.html += 'span { display: inline-block; width: 20px; height: 20px; }\n'
+        self.html += '</style>\n</head>\n<body>\n'
         for floor in range(self.number_of_floors):
-            self.html += '<div>\n'
+            self.html += f"<h1>Floor {floor}</h1>\n"
+            for row in range(len(self.text[floor])):
+                for col in range(len(self.text[floor][row])):
+                    char = self.text[floor][row][col]
+                    color_code = self.color_codes_html.get(char, 'ffffff')  # Default to white if not found
+                    self.html += f"<span style='background-color:#{color_code};'>&nbsp;</span>"
+                self.html += '<br>\n'
+        self.html += '</body>\n</html>\n'
+    """
+    def __text_to_html(self):
+        # Begin constructing the HTML document
+        self.html = '<!DOCTYPE html>\n<html>\n<head>\n<title>Evacuation Simulation</title>\n<style>\n'
+        self.html += 'span { display: inline-block; width: 20px; height: 20px; }\n'  # Ensure spans appear as blocks
+        self.html += '</style>\n</head>\n<body>\n'
+        for floor in range(self.number_of_floors):
+            self.html += f"<h1>Floor {floor}</h1>\n"
+            for row in range(len(self.text[floor])):
+                for col in range(len(self.text[floor][row])):
+                    location = (floor, row, col)
+                    person = self.simulation.is_person(location)
+                    # Use character from self.text to lookup in a color dictionary
+                    c = self.text[floor][row][col]
+                    if person:
+                        color_code = 'pink' if person.is_follower else 'orange'  # Example colors for followers/non-followers
+                    else:
+                        # Safely get color codes from dictionary, default to 'ffffff' (white)
+                        color_code = self.color_codes_html.get(c, 'ffffff')
+                    self.html += f"<span style='background-color:#{color_code};'>&nbsp;</span>"
+                self.html += '<br>\n'
+        self.html += '</body>\n</html>\n'
+
+
+
+    def __text_to_html(self):
+        self.html = '<!DOCTYPE html>\n<html>\n<head>\n<title>Evacuation Simulation</title>\n<style>\n'
+        self.html += 'span { font-size: 12px; }\n'
+        self.html += '</style>\n</head>\n<body>\n'
+        for floor in range(self.number_of_floors):
             self.html += f"<h1>Floor {floor}</h1>\n"
             for x in range(len(self.text[floor])):
                 for y in range(len(self.text[floor][x])):
@@ -286,7 +341,16 @@ class Building:
                     else:
                         c = self.text[floor][x][y]
                     color_code = color_codes_html[c]
-                    self.html += f"<span style='color:{color_code};'>   </span>"
-                self.html += '\n'
-            self.html += '</div>\n'
-        self.html += '\n'
+                    self.html += f"<span style='background-color:{color_code};'>&nbsp;&nbsp;&nbsp;</span>"
+                self.html += '<br>\n'
+        self.html += '</body>\n</html>\n'
+
+
+    def save_html(self, filename):
+        # Construct the full path to the file
+        file_path = f"../../html/{filename}"  # Adjust the path as needed
+
+        with open(file_path, 'w') as f:
+            f.write(self.html)
+
+"""
