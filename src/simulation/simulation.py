@@ -475,7 +475,7 @@ class Simulation:
         x = location[1]
         y = location[2]
         if floor < 0 or floor >= self.building.floor_size or x < 0 or x >= self.building.x_size or y < 0 or y >= self.building.y_size:
-            raise Exception("Location is not in the building")
+            raise Exception(f"Location is not in the building {location}")
 
     def is_stair(self, location):
         self.is_not_in_building(location)

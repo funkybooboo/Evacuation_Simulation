@@ -77,7 +77,7 @@ class Thinker:
             return self.person.movement.towards(closest_fire)
         elif choice == 'G':
             closest_glass = self.person.movement.get_closest(self.person.location, self.person.memory.glasses)
-            if not self.person.movement.break_glass(closest_glass):
+            if not self.person.break_glass(closest_glass):
                 raise Exception("Cant break glass unless you are near it")
             return None
         elif choice == 'H':
@@ -87,8 +87,8 @@ class Thinker:
             closest_door = self.person.movement.get_closest(self.person.location, self.person.memory.doors)
             return self.person.movement.towards(closest_door)
         elif choice == 'J':
-            broken_glass = self.person.movement.get_closest(self.person.location, self.person.memory.broken_glass)
-            return self.person.movement.place(broken_glass)
+            broken_glass = self.person.movement.get_closest(self.person.location, self.person.memory.broken_glasses)
+            return self.person.movement.towards(broken_glass)
         elif choice == 'K':
             return self.person.movement.follow_evacuation_plan()
         elif choice == 'L':
@@ -137,7 +137,7 @@ class Thinker:
         options = ["A", "B", "N"]
         if self.person.memory.exits:
             options.append("L")
-        if self.person.memory.stairs:
+        if self.person.memory.stairs and self.person.location[0] > 0:
             options.append("M")
         if self.person.memory.people:
             options.append("C")

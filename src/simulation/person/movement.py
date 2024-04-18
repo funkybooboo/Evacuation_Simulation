@@ -33,10 +33,12 @@ class Movement:
                 self.person.end_turn_in_fire = False
             # at a stair
             if self.person.simulation.is_stair(self.person.location):
-                self.person.location = (self.person.location[0] - 1, self.person.location[1], self.person.location[2])
+                if self.person.location[0] > 0:
+                    self.person.location = (self.person.location[0] - 1, self.person.location[1], self.person.location[2])
             # at an exit
             if self.person.simulation.is_exit(self.person.location):
                 break
+            # at broken glass
             if self.person.simulation.is_broken_glass(self.person.location):
                 break
         self.logger.info(f"{self.person.name} is at {self.person.location}")
@@ -118,7 +120,7 @@ class Movement:
         end = grid.node(y2, x2)
         finder = DijkstraFinder(diagonal_movement=DiagonalMovement.always)
         path, runs = finder.find_path(start, end, grid)
-        self.logger.info(f'operations:', runs, 'path length:', len(path))
+        self.logger.info(f'operations: {runs} path length: {len(path)}')
         self.logger.info(grid.grid_str(path=path, start=start, end=end))
         return path
 
