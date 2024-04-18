@@ -53,3 +53,22 @@ colors = {
     "exit_plan": light_cyan,
     "light_white": light_white
 }
+
+color_codes_html = {
+    'w': '#0000ff',  # Blue
+    'e': '#00ff00',  # Green
+    'l': '#a9a9a9',  # Dark Gray
+    'n': '#a9a9a9',  # Dark Gray
+    'm': '#a9a9a9',  # Dark Gray
+    's': '#ff69b4',  # Pink
+    'g': '#0000cd',  # Medium Blue
+    'd': '#32cd32',  # Lime Green
+    ' ': '#ffffff',  # White
+    '1': '#ffffff',  # White
+    '2': '#ffffff',  # White
+    'f': '#ff0000',  # Red
+    'b': '#4682b4',  # Steel Blue
+    'p': '#ffd700',  # Gold
+    'fo': '#ffa500',  # Orange
+    'nf': '#ffff00'  # Yellow
+}

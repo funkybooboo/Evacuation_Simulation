@@ -1,4 +1,4 @@
-from .colors import colors
+from .colors import colors, color_codes_html
 from copy import deepcopy
 from .logger import setup_logger
 
@@ -6,7 +6,7 @@ from .logger import setup_logger
 class Building:
     def __init__(self, simulation, number_of_floors=1):
         building_logger = setup_logger("building_logger", f'../logs/run{simulation.simulation_count}/simulation/building.log', simulation.verbose)
-        grid_image_logger = setup_logger("grid_image_logger", f'../logs/run{simulation.simulation_count}/simulation/grid_image.log', simulation.verbose)
+        grid_image_logger = setup_logger("grid_image_logger", f'../logs/run{simulation.simulation_count}/simulation/grid_image.html', simulation.verbose)
         self.building_logger = building_logger
         self.grid_image_logger = grid_image_logger
         self.simulation = simulation
@@ -15,7 +15,7 @@ class Building:
         self.object_locations = {}
         self.color = []
         self.matrix = []
-        self.markdown = ''
+        self.html = ''
         self.grid_image = ''
         self.print()
         self.floor_size = len(self.text)
@@ -217,8 +217,6 @@ class Building:
 
     def __test_to_grid_image(self):
         space = "   "
-        self.building_logger.info("Printing building")
-        self.grid_image_logger.info("Printing grid image")
         categories = [
             "wall", "exit", "object", "stair", "glass",
             "door", "empty", "fire", "broken_glass",
@@ -265,37 +263,20 @@ class Building:
         self.building_logger.info("Refreshing building")
         self.__text_to_colors()
         self.__text_to_matrix()
-        self.__text_to_markdown()
+        self.__text_to_html()
         self.__test_to_grid_image()
         self.building_logger.info(self.color)
         self.building_logger.info(self.matrix)
         self.building_logger.info(self.object_locations)
         self.building_logger.info(self.text)
-        self.grid_image_logger.info(self.markdown)
+        self.grid_image_logger.info(self.html)
         print(self.grid_image)
 
-    def __text_to_markdown(self):
-        # Define color codes for HTML
-        color_codes_html = {
-            'w': '#0000ff',  # Blue
-            'e': '#00ff00',  # Green
-            'l': '#a9a9a9',  # Dark Gray
-            'n': '#a9a9a9',  # Dark Gray
-            'm': '#a9a9a9',  # Dark Gray
-            's': '#ff69b4',  # Pink
-            'g': '#0000cd',  # Medium Blue
-            'd': '#32cd32',  # Lime Green
-            ' ': '#ffffff',  # White
-            '1': '#ffffff',  # White
-            '2': '#ffffff',  # White
-            'f': '#ff0000',  # Red
-            'b': '#4682b4',  # Steel Blue
-            'p': '#ffd700',  # Gold
-            'fo': '#ffa500',  # Orange
-            'nf': '#ffff00'  # Yellow
-        }
-        self.markdown = '\n'
+    def __text_to_html(self):
+        self.html = ''
         for floor in range(self.number_of_floors):
+            self.html += '<div>\n'
+            self.html += f"<h1>Floor {floor}</h1>\n"
             for x in range(len(self.text[floor])):
                 for y in range(len(self.text[floor][x])):
                     location = (floor, x, y)
@@ -305,6 +286,7 @@ class Building:
                     else:
                         c = self.text[floor][x][y]
                     color_code = color_codes_html[c]
-                    self.markdown += f'<span style="color:{color_code};">   </span>'
-                self.markdown += '\n'
-        self.markdown += '\n'
+                    self.html += f"<span style='color:{color_code};'>   </span>"
+                self.html += '\n'
+            self.html += '</div>\n'
+        self.html += '\n'

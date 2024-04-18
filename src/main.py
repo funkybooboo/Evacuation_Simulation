@@ -88,14 +88,14 @@ def main(args):
 def get_args():
     parser = argparse.ArgumentParser(description='Evacuation Simulation')
     # Add arguments
-    parser.add_argument('--number_of_people', type=int, help='Number of people', default=100)
+    parser.add_argument('--number_of_people', type=int, help='Number of people', default=50)
     parser.add_argument('--number_of_floors', type=int, help='Number of floors. 1-3', default=1)
     parser.add_argument('--verbose', type=bool, help='Verbosity', default=False)
-    parser.add_argument('--choice_mode', type=int, help='How do people make choices? 0: Random, 1: AI, 2: Logic, 3: You Choose!', default=2)
+    parser.add_argument('--choice_mode', type=int, help='How do people make choices? 0: Random, 1: AI, 2: Logic, 3: You Choose!', default=0)
     parser.add_argument('--time_for_firefighters', type=int, help='Time for firefighters', default=50)
     parser.add_argument('--fire_spread_rate', type=int, help='Fire spread rate', default=0.01)
-    parser.add_argument('--max_visibility', type=int, help='Maximum visibility', default=20)
-    parser.add_argument('--min_visibility', type=int, help='Minimum visibility', default=15)
+    parser.add_argument('--max_visibility', type=int, help='Maximum visibility', default=10)
+    parser.add_argument('--min_visibility', type=int, help='Minimum visibility', default=5)
     parser.add_argument('--max_strength', type=int, help='Maximum strength', default=10)
     parser.add_argument('--min_strength', type=int, help='Minimum strength', default=1)
     parser.add_argument('--max_speed', type=int, help='Maximum speed', default=5)
