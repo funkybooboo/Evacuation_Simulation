@@ -5,10 +5,12 @@ from random import randint
 from .building import Building
 from .logger import setup_logger
 import logging
+from time import sleep
 
 
 class Simulation:
     def __init__(self,
+                 time_to_view_images=3,
                  number_of_people=50,
                  number_of_floors=3,
                  simulation_count=0,
@@ -46,6 +48,8 @@ class Simulation:
 
         self.logger = setup_logger("simulation_logger", f'../logs/run{simulation_count}/simulation/simulation.log', verbose)
         self.logger.info('This log is for INFO purposes from simulation')
+
+        self.time_to_view_images = time_to_view_images
 
         self.personalities = personalities
         self.max_number_of_copycat = int(personalities["Copycat"] * number_of_people)
@@ -98,6 +102,9 @@ class Simulation:
         self.average_speed = 0
         self.average_strength = 0
         self.average_visibility = 0
+        self.number_of_stairs = 0
+        self.number_of_exits = 0
+        self.number_of_windows = 0
 
         self.fire_spread_rate = fire_spread_rate
         self.number_of_people = number_of_people
@@ -304,6 +311,9 @@ class Simulation:
         self.logger.info(f"Average speed: {self.average_speed}")
         self.logger.info(f"Average strength: {self.average_strength}")
         self.logger.info(f"Average visibility: {self.average_visibility}")
+        self.logger.info(f"Number of stairs: {self.number_of_stairs}")
+        self.logger.info(f"Number of exits: {self.number_of_exits}")
+        self.logger.info(f"Number of windows: {self.number_of_windows}")
 
     def evacuate(self):
         self.logger.info("Evacuating...")
@@ -311,6 +321,7 @@ class Simulation:
             self.time += 1
             self.logger.info(f"Time: {self.time}")
             self.building.print()
+            sleep(self.time_to_view_images)
             self.__move_people()
             self.logger.info("People have moved")
             self.__spread_fire()
@@ -363,6 +374,7 @@ class Simulation:
 
             # the person is still alive and made it to an exit
             if self.is_exit(person.location):
+                self.number_of_exits += 1
                 self.number_of_people_that_got_out += 1
                 self.logger.info(f"{person.name} has escaped by exiting")
                 continue
@@ -372,6 +384,7 @@ class Simulation:
                 if self.__is_dead(person):
                     self.logger.info(f"{person.name} has died by broken glass")
                     continue
+                self.number_of_windows += 1
                 self.number_of_people_that_got_out += 1
                 self.logger.info(f"{person.name} has escaped by jumping out of window")
                 continue

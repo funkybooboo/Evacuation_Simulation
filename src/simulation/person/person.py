@@ -230,14 +230,20 @@ class Person:
     def get_number_of_people_near(self, distance=5):
         count = 0
         for location in self.memory.people:
-            if self.is_near(self.location, location, distance):
+            if location and self.is_near(self.location, location, distance):
                 count += 1
         return count
 
     def is_near(self, location1, location2, distance=5):
+        if not location1 or not location2:
+            return False
+        if location1[0] != location2[0]:
+            return False
         d1 = self.movement.get_distance(location1, location2)
-        if d1 < distance:
-            return True
+        if d1:
+            if d1 < distance:
+                return True
+        return False
 
     def dont_know_where_anything_is(self):
         if (self.get_on_my_floor(self.memory.doors) or
@@ -321,6 +327,12 @@ class Person:
         closest_glass = self.movement.get_closest(self.location, self.memory.glasses)
         if closest_glass:
             return self.can_get_to_location(closest_glass)
+        return False
+
+    def can_get_to_door(self):
+        closest_door = self.movement.get_closest(self.location, self.memory.doors)
+        if closest_door:
+            return self.can_get_to_location(closest_door)
         return False
 
     def can_get_to_location(self, location):
