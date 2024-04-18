@@ -4,3 +4,7 @@ data/APIKEY.txt
 src/__pycache__/
 /logs
 src/simulation/run
+*.pyc
+*.pyo
+*.pyd
+*/__pycache__/*
