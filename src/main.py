@@ -49,10 +49,11 @@ def main(args):
     logger.info(f"Min age: {args.min_age}")
     logger.info(f"Max health: {args.max_health}")
     logger.info(f"Min health: {args.min_health}")
-    logger.info(f"Follower probability: {args.follower_probability}")
+    logger.info(f"Likes people probability: {args.likes_people_probability}")
     logger.info(f"Familiarity: {args.familiarity}")
     logger.info(f"Personalities: {personalities}")
 
+    logger.info("creating simulation")
     # create simulation
     simulation = Simulation(
         args.time_to_view_images,
@@ -73,7 +74,7 @@ def main(args):
         args.min_age,
         args.max_health,
         args.min_health,
-        args.follower_probability,
+        args.likes_people_probability,
         args.verbose,
         args.choice_mode,
         args.familiarity,
@@ -81,6 +82,7 @@ def main(args):
     )
     # see statistics before evacuation
     simulation.statistics()
+    logger.info("evacuating")
     # evacuate the building
     simulation.evacuate()
     # see statistics after evacuation
@@ -91,14 +93,14 @@ def get_args():
     parser = argparse.ArgumentParser(description='Evacuation Simulation')
     # Add arguments
     parser.add_argument("--time_to_view_images", type=int, help="Time to view images", default=0)
-    parser.add_argument('--number_of_people', type=int, help='Number of people', default=500)
+    parser.add_argument('--number_of_people', type=int, help='Number of people', default=200)
     parser.add_argument('--number_of_floors', type=int, help='Number of floors. 1-3', default=3)
     parser.add_argument('--verbose', type=bool, help='Verbosity', default=False)
     parser.add_argument('--choice_mode', type=int, help='How do people make choices? 0: Random, 1: AI, 2: Logic, 3: You Choose!', default=2)
     parser.add_argument('--time_for_firefighters', type=int, help='Time for firefighters', default=100)
     parser.add_argument('--fire_spread_rate', type=int, help='Fire spread rate', default=0.05)
-    parser.add_argument('--max_visibility', type=int, help='Maximum visibility', default=10)
-    parser.add_argument('--min_visibility', type=int, help='Minimum visibility', default=5)
+    parser.add_argument('--max_visibility', type=int, help='Maximum visibility', default=20)
+    parser.add_argument('--min_visibility', type=int, help='Minimum visibility', default=15)
     parser.add_argument('--max_strength', type=int, help='Maximum strength', default=10)
     parser.add_argument('--min_strength', type=int, help='Minimum strength', default=1)
     parser.add_argument('--max_speed', type=int, help='Maximum speed', default=5)
@@ -109,7 +111,7 @@ def get_args():
     parser.add_argument('--min_age', type=int, help='Minimum age', default=18)
     parser.add_argument('--max_health', type=int, help='Maximum health', default=100)
     parser.add_argument('--min_health', type=int, help='Minimum health', default=80)
-    parser.add_argument('--follower_probability', type=float, help='Follower probability', default=0.5)
+    parser.add_argument('--likes_people_probability', type=float, help='Likes people probability', default=0.75)
     parser.add_argument('--familiarity', type=int, help='Familiarity', default=10)
     parser.add_argument('--copycat', type=float, help='Copycat', default=0.125)
     parser.add_argument('--cooperator', type=float, help='Cooperator', default=0.125)
@@ -142,7 +144,7 @@ def validate_args(args):
         raise ValueError("Max age must be greater than min age")
     if args.max_health < args.min_health:
         raise ValueError("Max health must be greater than min health")
-    if args.follower_probability < 0 or args.follower_probability > 1:
+    if args.likes_people_probability < 0 or args.likes_people_probability > 1:
         raise ValueError("Follower probability must be between 0 and 1")
     if args.familiarity < 0:
         raise ValueError("Familiarity must be greater than 0")

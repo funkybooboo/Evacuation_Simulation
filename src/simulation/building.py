@@ -19,7 +19,7 @@ class Building:
         self.matrix = []
         self.html = ''
         self.grid_image = ''
-        self.print()
+        self.refresh()
         self.floor_size = len(self.text)
         self.x_size = len(self.text[0])
         self.y_size = len(self.text[0][0])
@@ -261,7 +261,7 @@ class Building:
         grid_image += '\n'
         self.grid_image = grid_image
 
-    def print(self):
+    def refresh(self):
         self.building_logger.info("Refreshing building")
         self.__text_to_colors()
         self.__text_to_matrix()
@@ -285,7 +285,7 @@ class Building:
                     location = (floor, x, y)
                     person = self.simulation.is_person(location)
                     if person:
-                        c = 'fo' if person.is_follower else 'nf'
+                        c = 'fo' if person.likes_people else 'nf'
                     else:
                         c = self.text[floor][x][y]
                     color_code = color_codes_html[c]
