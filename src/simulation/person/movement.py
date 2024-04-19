@@ -12,18 +12,25 @@ class Movement:
         self.person = person
 
     def run(self):
+        self.person.memory.combine(self.person.vision.look_around())
+        choice = self.person.thinker.think()
+        l1 = self.person.location
         self.logger.info(f"Moving starting at {self.person.location}")
         if self.person.fear == self.person.simulation.max_fear:
             self.person.number_of_max_fear += 1
         other = None
         for _ in range(self.person.speed):
+
             if self.person.is_dead():
-                break
+                return other
+
+            other = self.person.thinker.make(choice)
+
             self.person.memory.combine(self.person.vision.look_around())
-            other = self.__step()
+
             # hit person
             if other:
-                break
+                return other
             # in a fire
             if self.person.location in self.person.simulation.fire_locations:
                 self.person.health -= 25
@@ -36,17 +43,23 @@ class Movement:
                 if self.person.location[0] > 0:
                     self.person.simulation.number_of_stairs += 1
                     self.person.location = (self.person.location[0] - 1, self.person.location[1], self.person.location[2])
+                    return other
             # at an exit
             if self.person.simulation.is_exit(self.person.location):
-                break
+                return other
             # at broken glass
             if self.person.simulation.is_broken_glass(self.person.location):
-                break
-        self.logger.info(f"{self.person.name} is at {self.person.location}")
-        return other
+                return other
+            self.logger.info(f"{self.person.name} is at {self.person.location}")
 
-    def __step(self):
-        return self.person.thinker.think()
+        l2 = self.person.location
+        if l1 == l2:
+            self.person.times_not_move += 1
+        else:
+            self.person.times_not_move = 0
+        if self.person.times_not_move == 10:
+            raise Exception("Person is stuck")
+        return other
 
     def get_time_to_get_out(self):
         long_time = -1
@@ -61,18 +74,32 @@ class Movement:
 
     def follow_evacuation_plan(self):
         closest_exit_plan = self.get_closest(self.person.location, self.person.memory.exit_plans)
-        closest_exit = self.get_closest(closest_exit_plan, self.person.simulation.building.object_locations["exits"])
-        return self.towards(closest_exit)
+        if self.person.location[0] == 0:
+            closest_exit = self.get_closest(closest_exit_plan, self.person.simulation.building.object_locations["exits"])
+            self.person.memory.exits.add(closest_exit)
+            return self.towards(closest_exit)
+        else:
+            closest_stair = self.get_closest(closest_exit_plan, self.person.simulation.building.object_locations["stairs"])
+            self.person.memory.stairs.add(closest_stair)
+            return self.towards(closest_stair)
 
     def explore(self):
         if self.person.is_in_room():
             closest_door = self.get_closest(self.person.location, self.person.memory.doors)
             if closest_door:
                 return self.towards(closest_door)
-        furthest_empty = self.get_furthest(self.person.location, self.person.memory.empties)
-        if furthest_empty:
-            return self.towards(furthest_empty)
-        return self.randomly()
+        random_location = self.get_random_location()
+        return self.towards(random_location)
+
+    def get_random_location(self):
+        floor = self.person.location[0]
+        while True:
+            x = randint(0, self.person.simulation.building.x_size - 1)
+            y = randint(0, self.person.simulation.building.y_size - 1)
+            location = (floor, x, y)
+            if self.person.simulation.is_valid_location_for_person(location):
+                break
+        return location
 
     def randomly(self):
         for i in range(8):
@@ -91,8 +118,8 @@ class Movement:
         floor2 = location[0]
         if floor1 != floor2:
             return None
-        n_x = None
-        n_y = None
+        n_x = -1
+        n_y = -1
         for i in range(4):
             grid = self.get_grid(i)
             path = self.get_path(location, grid)
@@ -101,7 +128,7 @@ class Movement:
                 n_x = node.y
                 n_y = node.x
                 break
-        if not n_x or not n_y:
+        if n_x == -1 or n_y == -1:
             return None
         new_location = (floor1, n_x, n_y)
         return self.person.place(new_location)
@@ -156,7 +183,18 @@ class Movement:
         """
         if len(lst) == 0:
             return None
-        closest = next(iter(lst))
+        check = deepcopy(lst)
+        closest = None
+        while not closest:
+            if len(check) == 0:
+                return None
+            location2 = next(iter(check))
+            if location2[0] == location1[0]:
+                closest = location2
+            else:
+                check.remove(location2)
+        if not closest:
+            return None
         for location2 in lst:
             if location1[0] != location2[0]:
                 continue

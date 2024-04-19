@@ -22,13 +22,15 @@ class Person:
                  visibility,
                  fear,
                  health,
-                 is_follower,
+                 likes_people,
                  familiarity,
                  personality,
                  personality_title
                  ):
         mkdir(f'../logs/run{simulation.simulation_count}/people/person{pk}')
-        self.logger = setup_logger("person_logger", f'../logs/run{simulation.simulation_count}/people/person{pk}/person{pk}.log', simulation.verbose)
+        self.logger = setup_logger("person_logger",
+                                   f'../logs/run{simulation.simulation_count}/people/person{pk}/person{pk}.log',
+                                   simulation.verbose)
         self.logger.info('This log is for INFO purposes from person')
 
         self.number_of_fights_won = 0
@@ -36,6 +38,7 @@ class Person:
         self.number_of_fights_tied = 0
         self.number_of_fire_touches = 0
         self.number_of_max_fear = 0
+        self.times_not_move = 0
 
         self.simulation = simulation
         self.name = name
@@ -56,10 +59,10 @@ class Person:
         # how much health the person has if the person's health reaches 0, the person dies
         self.health = health
 
-        self.is_follower = is_follower
+        self.likes_people = likes_people
         self.familiarity = familiarity
 
-        if self.is_follower:
+        if self.likes_people:
             self.color_title = "Yellow"
             self.color = colors["follower"]
         else:
@@ -89,7 +92,7 @@ class Person:
         self.logger.info(f"vision: {self.visibility}")
         self.logger.info(f"fear: {self.fear}")
         self.logger.info(f"health: {self.health}")
-        self.logger.info(f"is_follower: {self.is_follower}")
+        self.logger.info(f"is_follower: {self.likes_people}")
         self.logger.info(f"location: {self.location}")
         self.logger.info(f"color_title: {self.color_title}")
 
@@ -111,15 +114,20 @@ class Person:
         if not self.is_one_away(self.location, location):
             raise Exception(f"location is not one away: {location}")
         if not self.simulation.is_valid_location_for_person(location):
-            raise Exception(f"location is not valid: {location} {self.simulation.building.text[location[0]][location[1]][location[2]]}")
+            raise Exception(
+                f"location is not valid: {location} {self.simulation.building.text[location[0]][location[1]][location[2]]}")
         other = self.simulation.is_person(location)
-        if other is not None:
+        if other:
             return other
         self.location = location
         return None
 
     @staticmethod
     def is_one_away(location1, location2):
+        if not location1 or not location2:
+            return False
+        if not isinstance(location1, tuple) or not isinstance(location2, tuple):
+            return False
         if location1[0] != location2[0]:
             return False
         a = abs(location1[1] - location2[1])
@@ -263,12 +271,6 @@ class Person:
                 new_lst.append(location)
         return new_lst
 
-    def know_about_important_location(self):
-        if self.get_on_my_floor(self.memory.exits) or self.get_on_my_floor(
-                self.memory.exit_plans) or self.get_on_my_floor(self.memory.stairs):
-            return True
-        return False
-
     def is_in_room(self):
         return self.room_type == "room"
 
@@ -296,8 +298,8 @@ class Person:
         if path_with_blocked:
             return False
         if path_with_unblocked:
-            return True
-        return False
+            return False
+        return True
 
     def is_trapped(self):
         return self.is_trapped_by_fire() or self.is_trapped_by_people()
@@ -341,3 +343,22 @@ class Person:
         if path:
             return True
         return False
+
+    def is_near_other_person(self):
+        for other in self.memory.people:
+            if other and self.is_near(self.location, other):
+                return True
+        return False
+
+    def ask_for_help(self, other):
+        self.logger.info(f"{self.name} asked {other.name} for help.")
+        if other.likes_people and other.fear < 5:
+            self.logger.info(f"{other.name} helped {self.name}.")
+            if self.fear > 0:
+                self.fear -= 1
+            self.memory.combine(other.memory)
+        else:
+            self.logger.info(f"{other.name} did not help {self.name}.")
+            if self.fear < self.simulation.max_fear:
+                self.fear += 1
+        return None

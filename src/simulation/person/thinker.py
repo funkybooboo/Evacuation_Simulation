@@ -18,6 +18,7 @@ follow_evacuation_plan = 'K'
 move_to_exit = 'L'
 move_to_stair = 'M'
 do_nothing = 'N'
+ask_for_help = 'O'
 
 
 class Thinker:
@@ -37,7 +38,8 @@ class Thinker:
             follow_evacuation_plan: "Follow evacuation plan",
             move_to_exit: "Move to exit",
             move_to_stair: "Move to stair",
-            do_nothing: "Do nothing"
+            do_nothing: "Do nothing",
+            ask_for_help: "Ask for help"
         }
         self.valid = self.text.keys()
         self.situation = ""
@@ -59,7 +61,7 @@ class Thinker:
         else:
             raise Exception("Invalid choice mode")
         self.logger.info(f"Choice: {choice}")
-        return self.__make(choice)
+        return choice
 
     def __refresh(self):
         self.situation = self.__get_situation_string()
@@ -70,8 +72,8 @@ class Thinker:
         self.logger.info(f"Options: {self.options}")
         self.logger.info(f"Temperature: {self.temperature}")
 
-    def __make(self, choice):
-        if choice is None:
+    def make(self, choice):
+        if not choice:
             raise Exception("AI did not give a valid choice")
         if choice == explor:
             return self.person.movement.explore()
@@ -113,6 +115,11 @@ class Thinker:
             return self.person.movement.towards(closest_stair)
         elif choice == do_nothing:
             return None
+        elif choice == ask_for_help:
+            closest_person = self.person.movement.get_closest(self.person.location, self.person.memory.people)
+            if closest_person and self.person.is_next_to(closest_person):
+                return self.person.ask_for_help(closest_person)
+            return self.person.movement.towards(closest_person)
         else:
             raise Exception("Invalid choice")
 
@@ -128,7 +135,7 @@ class Thinker:
     def __get_situation_string(self):
         situation = \
             f"""
-            Do you like people: {self.person.is_follower}
+            Do you like people: {self.person.likes_people}
             Floor: {self.person.location[0]}
             Strength: {self.person.strength}
             Health: {self.person.health}
@@ -155,6 +162,7 @@ class Thinker:
             options.append(move_to_stair)
         if self.person.memory.people:
             options.append(towards_person)
+            options.append(ask_for_help)
             if self.person.is_next_to(self.person.memory.people):
                 options.append(fight)
         if self.person.memory.doors:
@@ -263,6 +271,15 @@ class Thinker:
             return self.__get_rational_untrapped_choice()
 
     def __get_rational_trapped_choice(self):
+        if self.person.location[0] > 0 and self.person.memory.stairs:
+            if self.person.movement.get_closest(self.person.location, self.person.memory.stairs):
+                return move_to_stair
+        if self.person.location[0] == 0 and self.person.memory.exits:
+            if self.person.movement.get_closest(self.person.location, self.person.memory.exits):
+                return move_to_exit
+        if self.person.memory.exit_plans:
+            if self.person.movement.get_closest(self.person.location, self.person.memory.exit_plans):
+                return follow_evacuation_plan
         if self.person.is_trapped_by_people():
             if self.person.fire_nearby():
                 if self.person.can_get_to_window() and self.person.can_break_glass():
@@ -275,22 +292,26 @@ class Thinker:
                     return fight
                 return run_through_fire
             else:
-                return do_nothing
+                return explor
         if self.person.is_trapped_by_fire():
             if self.person.can_get_to_window():
                 return towards_window
             else:
                 return run_through_fire
-        return do_nothing
+        return explor
 
     def __get_rational_untrapped_choice(self):
-        if self.person.know_about_important_location():
-            if self.person.movement.get_closest(self.person.location, self.person.memory.exits):
-                return move_to_exit
+        if self.person.location[0] > 0 and self.person.memory.stairs:
             if self.person.movement.get_closest(self.person.location, self.person.memory.stairs):
                 return move_to_stair
+        if self.person.location[0] == 0 and self.person.memory.exits:
+            if self.person.movement.get_closest(self.person.location, self.person.memory.exits):
+                return move_to_exit
+        if self.person.memory.exit_plans:
             if self.person.movement.get_closest(self.person.location, self.person.memory.exit_plans):
                 return follow_evacuation_plan
+        if self.person.is_near_other_person():
+            return ask_for_help
         if self.person.is_in_room():
             return towards_door
         return explor
@@ -308,13 +329,13 @@ class Thinker:
                     return towards_window
                 return fight
             else:
-                return do_nothing
+                return run_through_fire
         if self.person.is_trapped_by_fire():
             if self.person.can_get_to_window():
                 return towards_window
             else:
                 return run_through_fire
-        return do_nothing
+        return explor
 
     def __get_irrational_untrapped_choice(self):
         return self.__get_random_choice()
