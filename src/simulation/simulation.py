@@ -5,10 +5,12 @@ from random import randint
 from .building import Building
 from .logger import setup_logger
 import logging
+from time import sleep
 
 
 class Simulation:
     def __init__(self,
+                 time_to_view_images=3,
                  number_of_people=50,
                  number_of_floors=3,
                  simulation_count=0,
@@ -26,7 +28,7 @@ class Simulation:
                  min_age=10,
                  max_health=100,
                  min_health=80,
-                 follower_probability=0.5,
+                 likes_people_probability=0.5,
                  verbose=False,
                  choice_mode=0,
                  familiarity=15,
@@ -46,6 +48,8 @@ class Simulation:
 
         self.logger = setup_logger("simulation_logger", f'../logs/run{simulation_count}/simulation/simulation.log', verbose)
         self.logger.info('This log is for INFO purposes from simulation')
+
+        self.time_to_view_images = time_to_view_images
 
         self.personalities = personalities
         self.max_number_of_copycat = int(personalities["Copycat"] * number_of_people)
@@ -79,7 +83,7 @@ class Simulation:
         self.min_age = min_age
         self.max_health = max_health
         self.min_health = min_health
-        self.follower_probability = follower_probability
+        self.follower_probability = likes_people_probability
         self.familiarity = familiarity
 
         self.number_of_people_that_got_out = 0
@@ -90,7 +94,7 @@ class Simulation:
         self.number_of_deaths_by_fighting = 0
         self.number_of_deaths_by_moving = 0
         self.number_of_max_fear = 0
-        self.number_of_followers = 0
+        self.number_of_likes_people = 0
         self.average_fear = 0
         self.average_health = 0
         self.average_age = 0
@@ -98,6 +102,9 @@ class Simulation:
         self.average_speed = 0
         self.average_strength = 0
         self.average_visibility = 0
+        self.number_of_stairs = 0
+        self.number_of_exits = 0
+        self.number_of_windows = 0
 
         self.fire_spread_rate = fire_spread_rate
         self.number_of_people = number_of_people
@@ -133,7 +140,7 @@ class Simulation:
         self.logger.info(f"Min age: {min_age}")
         self.logger.info(f"Max health: {max_health}")
         self.logger.info(f"Min health: {min_health}")
-        self.logger.info(f"Follower probability: {follower_probability}")
+        self.logger.info(f"Likes people probability: {likes_people_probability}")
         self.logger.info(f"Familiarity: {familiarity}")
         self.logger.info(f"Number of personalities: {personalities}")
         self.logger.info(f"Number of copycat: {self.max_number_of_copycat}")
@@ -224,7 +231,7 @@ class Simulation:
         strength = randint(self.min_strength, self.max_strength)
         visibility = randint(self.min_visibility, self.max_visibility)
         fear = randint(self.min_fear, self.max_fear)
-        is_follower = randint(0, 1) < self.follower_probability
+        likes_people = randint(0, 1) < self.follower_probability
         person = Person(self,
                         f'Person{pk}',
                         pk,
@@ -236,12 +243,12 @@ class Simulation:
                         visibility,
                         fear,
                         health,
-                        is_follower,
+                        likes_people,
                         familiarity,
                         personality,
                         personality_title
                         )
-        self.number_of_followers += 1 if is_follower else 0
+        self.number_of_likes_people += 1 if likes_people else 0
         self.live_people.append(person)
         self.logger.info(f"Person{pk} has been generated at location {location}")
 
@@ -296,7 +303,7 @@ class Simulation:
         self.logger.info(f"Number of deaths by fighting: {self.number_of_deaths_by_fighting}")
         self.logger.info(f"Number of deaths by moving: {self.number_of_deaths_by_moving}")
         self.logger.info(f"Number of max fear: {self.number_of_max_fear}")
-        self.logger.info(f"Number of followers: {self.number_of_followers}")
+        self.logger.info(f"Number of followers: {self.number_of_likes_people}")
         self.logger.info(f"Average fear: {self.average_fear}")
         self.logger.info(f"Average health: {self.average_health}")
         self.logger.info(f"Average age: {self.average_age}")
@@ -304,13 +311,17 @@ class Simulation:
         self.logger.info(f"Average speed: {self.average_speed}")
         self.logger.info(f"Average strength: {self.average_strength}")
         self.logger.info(f"Average visibility: {self.average_visibility}")
+        self.logger.info(f"Number of stairs: {self.number_of_stairs}")
+        self.logger.info(f"Number of exits: {self.number_of_exits}")
+        self.logger.info(f"Number of windows: {self.number_of_windows}")
 
     def evacuate(self):
         self.logger.info("Evacuating...")
         while len(self.live_people) > 0 and self.time < self.time_for_firefighters:
             self.time += 1
             self.logger.info(f"Time: {self.time}")
-            self.building.print()
+            self.building.refresh()
+            sleep(self.time_to_view_images)
             self.__move_people()
             self.logger.info("People have moved")
             self.__spread_fire()
@@ -363,6 +374,7 @@ class Simulation:
 
             # the person is still alive and made it to an exit
             if self.is_exit(person.location):
+                self.number_of_exits += 1
                 self.number_of_people_that_got_out += 1
                 self.logger.info(f"{person.name} has escaped by exiting")
                 continue
@@ -372,6 +384,7 @@ class Simulation:
                 if self.__is_dead(person):
                     self.logger.info(f"{person.name} has died by broken glass")
                     continue
+                self.number_of_windows += 1
                 self.number_of_people_that_got_out += 1
                 self.logger.info(f"{person.name} has escaped by jumping out of window")
                 continue
