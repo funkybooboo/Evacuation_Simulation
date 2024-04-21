@@ -6,9 +6,11 @@ from .logger import setup_logger
 class Building:
     def __init__(self, simulation, number_of_floors=1):
         building_logger = setup_logger("building_logger", f'../logs/run{simulation.simulation_count}/simulation/building.log', simulation.verbose)
-        grid_image_logger = setup_logger("grid_image_logger", f'../logs/run{simulation.simulation_count}/simulation/grid_image.html', simulation.verbose)
+        grid_images_html_logger = setup_logger("grid_images_html_logger", f'../logs/run{simulation.simulation_count}/simulation/grid_image.html', simulation.verbose)
+        grid_images_logger = setup_logger("grid_images_logger", f'../logs/run{simulation.simulation_count}/simulation/grid_image.log', simulation.verbose)
         self.building_logger = building_logger
-        self.grid_image_logger = grid_image_logger
+        self.grid_images_html_logger = grid_images_html_logger
+        self.grid_images_logger = grid_images_logger
         self.simulation = simulation
         self.number_of_floors = number_of_floors
         self.text = self.__generate_text()
@@ -33,7 +35,7 @@ class Building:
         self.matrix = []
         self.html = ''
         self.grid_image = ''
-        self.print()
+        self.refresh()
         self.floor_size = len(self.text)
         self.x_size = len(self.text[0])
         self.y_size = len(self.text[0][0])
@@ -275,7 +277,7 @@ class Building:
         grid_image += '\n'
         self.grid_image = grid_image
 
-    def print(self):
+    def refresh(self):
         self.building_logger.info("Refreshing building")
         self.__text_to_colors()
         self.__text_to_matrix()
@@ -285,7 +287,8 @@ class Building:
         self.building_logger.info(self.matrix)
         self.building_logger.info(self.object_locations)
         self.building_logger.info(self.text)
-        self.grid_image_logger.info(self.html)
+        self.grid_images_html_logger.info(self.html)
+        self.grid_images_logger.info(self.grid_image)
         print(self.grid_image)
 
     def __text_to_html(self):
@@ -337,7 +340,7 @@ class Building:
                     location = (floor, x, y)
                     person = self.simulation.is_person(location)
                     if person:
-                        c = 'fo' if person.is_follower else 'nf'
+                        c = 'fo' if person.likes_people else 'nf'
                     else:
                         c = self.text[floor][x][y]
                     color_code = color_codes_html[c]
