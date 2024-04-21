@@ -88,8 +88,12 @@ class Movement:
             closest_door = self.get_closest(self.person.location, self.person.memory.doors)
             if closest_door:
                 return self.towards(closest_door)
-        random_location = self.get_random_location()
-        return self.towards(random_location)
+        while True:
+            random_location = self.get_random_location()
+            for fire_location in self.person.simulation.fire_locations:
+                if self.person.is_near(fire_location, random_location):
+                    continue
+                return self.towards(random_location)
 
     def get_random_location(self):
         floor = self.person.location[0]
