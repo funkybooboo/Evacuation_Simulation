@@ -1,6 +1,9 @@
 CS5110 Project: Fire Evacuation Simulation 
+
 Details and Information Document
+
 Authors: Nate Stott and Rylei Mindrum
+
 
 
 Objective of the Code:
