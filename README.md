@@ -2,7 +2,9 @@ CS5110 Project: Fire Evacuation Simulation
 Details and Information Document
 Authors: Nate Stott and Rylei Mindrum
 
-Objective of the Code
+
+Objective of the Code:
+
 Our project aims to facilitate simulations of evacuations in the event of a fire outbreak.
 Evacuation accidents pose a perpetual threat to society, and providing designers with the ability
 to finely adjust simulation parameters to anticipate outcomes in emergency scenarios is crucial.
@@ -25,7 +27,9 @@ recorded, and other ideas as requested by the Designer. We are confident that ou
 be expanded to be a real asset to society. Allowing Designers to see what would happen in the
 worst case scenario in their building before it's even built.
 
-Description of the Simulation
+
+Description of the Simulation:
+
 The simulation operates on a 3D grid representing a building that is populated with
 individuals. The building consists of multiple floors, each containing numerous rooms and
 hallways. Individuals vary in their familiarity with the building and adherence to evacuation
@@ -47,36 +51,45 @@ that your simulation could turn out given the same starting parameters, agents w
 decisions depending on what choice mode you have selected. This gives the operator the ability
 to select how agents make choices.
 
-How to Run
+
+How to Run:
+
 ● Fork the project and run in your IDE of choice
+
 ● Go to Main.py
+
 ● Adjust the default parameters in get_args to your liking
+
 ● Hit play!
 
-Expanding the Simulation
-● Introducing other emergency scenarios such as earthquakes, floods, or terrorist attacks.
-● Modeling familial relationships among individuals to simulate group dynamics and
-decision-making processes.
-● Incorporating disabilities among individuals to account for different mobility levels and
-evacuation challenges.
-● Allowing individuals to carry objects such as personal belongings, pets, or emergency
-supplies, affecting their mobility and decision-making.
-● Enhancing interpersonal relationships among individuals to simulate cooperation,
-leadership, or conflicts during evacuations.
-● Fine-tuning individual attributes such as strengths, weaknesses, health conditions, and
-fears to create more nuanced behaviors and responses.
-● Enriching environmental details with additional objects, diverse terrain types, and
-weather effects to simulate realistic evacuation scenarios.
-● Implementing dynamic environmental changes, such as complex fire spread patterns, and
-extinguishing efforts by individuals or emergency responders.
-● Facilitating information sharing among individuals about the environment, emergency
-procedures, and safe evacuation routes to promote collaboration and collective
-decision-making.
-● Exit knowledge based on the path of entry to a current location; people should know the
-path they took to get in and be able to use it to get out.
-● There are many more, but we don't want to bore you!
 
-Significance of the Output
+Expanding the Simulation:
+ 
+ ● Introducing other emergency scenarios such as earthquakes, floods, or terrorist attacks.
+ 
+ ● Modeling familial relationships among individuals to simulate group dynamics and decision-making processes.
+ 
+ ● Incorporating disabilities among individuals to account for different mobility levels and evacuation challenges.
+ 
+ ● Allowing individuals to carry objects such as personal belongings, pets, or emergency supplies, affecting their mobility and decision-making.
+ 
+ ● Enhancing interpersonal relationships among individuals to simulate cooperation, leadership, or conflicts during evacuations.
+ 
+ ● Fine-tuning individual attributes such as strengths, weaknesses, health conditions, and fears to create more nuanced behaviors and responses.
+ 
+ ● Enriching environmental details with additional objects, diverse terrain types, and weather effects to simulate realistic evacuation scenarios.
+ 
+ ● Implementing dynamic environmental changes, such as complex fire spread patterns, and extinguishing efforts by individuals or emergency responders.
+ 
+ ● Facilitating information sharing among individuals about the environment, emergency procedures, and safe evacuation routes to promote collaboration and collective decision-making.
+ 
+ ● Exit knowledge based on the path of entry to a current location; people should know the path they took to get in and be able to use it to get out.
+ 
+ ● There are many more, but we don't want to bore you!
+
+
+Significance of the Output:
+
 The simulation output serves as a valuable resource for understanding the impact of
 various factors on evacuation outcomes. Insights gained can inform better building designs,
 emergency training protocols, and evacuation strategies; ultimately enhancing preparedness and
