@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import { spawn } from 'child_process';
 import path from 'path';
 import bodyParser from 'body-parser';
+import fs from 'fs';
 
 const app = express();
 const port = 3000;
@@ -209,11 +210,26 @@ app.post('/run-python', (req: Request, res: Response) => {
       console.log(`Python script output: ${data}`);
     });
 
-    // Handle Python script exit
+
+
+// Handle Python script exit
     pythonProcess.on('close', (code) => {
       console.log(`Python script exited with code ${code}`);
       res.send(`Python script exited with code ${code}`);
+
+      // Read the output file with all the maps from the simulation
+      const pathToOutputFile = '/path/to/output/file.txt'; // Replace with actual path
+      fs.readFile(pathToOutputFile, 'utf8', (err, data) => {
+        if (err) {
+          console.error('Error reading output file:', err);
+          return res.status(500).send('Error reading output file');
+        }
+
+        // Send the content of the output file back to the client
+        res.send(data);
+      });
     });
+
   } catch (error: any) {
     res.status(400).send(error.message);
   }
