@@ -10,6 +10,7 @@ def main(args):
         simulation_count = int(f.read())
     with open('simulation/run', 'w') as f:
         f.write(str(simulation_count + 1))
+    mkdir('../logs')
     mkdir(f'../logs/run{simulation_count}')
     mkdir(f'../logs/run{simulation_count}/people')
     mkdir(f'../logs/run{simulation_count}/simulation')
