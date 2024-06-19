@@ -9,6 +9,7 @@ const SimulationPresentation: React.FC<Props> = ({ buffer }) => {
     const [maps, setMaps] = useState<React.ReactNode[]>([]);
 
     useEffect(() => {
+        setMaps([]); // Clear previous maps (if any
 
         const data = buffer.toString('utf-8');
 
