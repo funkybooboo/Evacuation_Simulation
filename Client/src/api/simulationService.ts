@@ -2,14 +2,12 @@ import axiosInstance from './axiosInstance';
 import SimulationParams from '../types/simulationParams';
 
 export async function simulate(params: SimulationParams): Promise<any> {
-    try {
-        const response = await axiosInstance.post('/simulate', params, {
-            responseType: 'blob', // Ensure Axios treats the response as a blob (for files)
-        });
-
+    const url = '/simulate';
+    const response = await axiosInstance.post(url, params, {
+        responseType: 'arraybuffer', // Ensure Axios treats response as a buffer
+    });
+    if (Buffer.isBuffer(response.data)) {
         return response.data;
-
-    } catch (error) {
-        throw new Error(`Failed to simulate: ${error}`);
     }
+    throw new Error('Invalid response data');
 }

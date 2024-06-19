@@ -8,7 +8,7 @@ import { useState } from 'react';
 function App() {
     const [newRequest, setNewRequest] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
-    const [fileData, setFileData] = useState<Blob | null>(null);
+    const [buffer, setBuffer] = useState<Buffer | null>(null);
     const [seeSimulation, setSeeSimulation] = useState<boolean>(false);
 
     const handleSubmit = async (formData: SimulationParams) => {
@@ -18,7 +18,7 @@ function App() {
         try {
             const response = await simulate(formData);
             // Assuming simulate returns the file data
-            setFileData(response);
+            setBuffer(response);
         } catch (error) {
             console.error('Failed to simulate:', error);
         } finally {
@@ -28,7 +28,7 @@ function App() {
 
     const handleNewRequest = () => {
         setNewRequest(true);
-        setFileData(null);
+        setBuffer(null);
         setSeeSimulation(false);
     };
 
@@ -41,10 +41,10 @@ function App() {
             )}
             {newRequest && <SimulationParamsForm onSubmit={handleSubmit} />}
             {loading && <h2>Simulation running...</h2>}
-            {fileData && (
+            {buffer && (
                 <Button onClick={() => setSeeSimulation(true)}>See Simulation</Button>
             )}
-            {seeSimulation && <SimulationPresentation fileData={fileData!} />}
+            {seeSimulation && <SimulationPresentation buffer={buffer!} />}
         </Container>
     );
 }

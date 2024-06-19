@@ -117,16 +117,16 @@ router.post('/simulate', async (req: Request<{}, {}, Dto>, res: Response) => {
         const pathToOutputFile = path.join(__dirname, `../Simulation/logs/run${run}/simulation/grid_image.html`);
 
         // Stream the file back to the client
-        res.sendFile(pathToOutputFile, (err) => {
+        fs.readFile(pathToOutputFile, (err, data) => {
             if (err) {
-                console.error('Error sending file:', err);
-                res.status(500).send('Error sending file');
+                console.error('Error reading file:', err);
+                res.status(500).send('Error reading file');
             } else {
-                console.log('File sent successfully');
+                console.log('File read successfully');
+                res.send(data);
             }
-        });
+        })
     });
-
 });
 
 function getSimulationParams(body: Dto): SimulationParams {

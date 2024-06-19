@@ -2,56 +2,48 @@ import React, { useEffect, useState } from 'react';
 import Carousel from "./Carousel.tsx";
 
 interface Props {
-    fileData: Blob;
+    buffer: Buffer;
 }
 
-const SimulationPresentation: React.FC<Props> = ({ fileData }) => {
-    const [carouselItems, setCarouselItems] = useState<React.ReactNode[]>([]);
+const SimulationPresentation: React.FC<Props> = ({ buffer }) => {
+    const [maps, setMaps] = useState<React.ReactNode[]>([]);
 
     useEffect(() => {
-        const reader = new FileReader();
 
-        reader.onload = () => {
-            if (reader.result) {
-                const fileContent = reader.result as string;
-                const lines = fileContent.split('\n');
+        const data = buffer.toString('utf-8');
 
-                // Process each line
-                lines.forEach((line, index) => {
-                    if (line.includes('INFO')) {
-                        // Create iframe element
-                        const iframeElement = (
-                            <iframe
-                                key={index} // Ensure each iframe has a unique key
-                                title={`Simulation ${index}`}
-                                srcDoc={line} // Assuming line contains HTML content for iframe
-                                width="100%"
-                                height="600px"
-                                frameBorder="0"
-                            />
-                        );
+        const items: React.ReactNode[] = [];
 
-                        // Add iframe to carousel items
-                        setCarouselItems((prevItems) => [...prevItems, iframeElement]);
-                    }
-                });
+        let map = '';
+
+        for (let line in data.split('\n')) {
+            line = line.trim();
+            if (line === '') {
+                items.push(
+                    <iframe
+                        key={items.length}
+                        title={`Simulation Frame ${items.length}`}
+                        srcDoc={map.trim()} // Embed content directly using srcDoc
+                        style={{ width: '100%', height: '500px', border: 'none' }}
+                    />
+                );
+                map = '';
+                continue;
             }
-        };
+            if (line.includes('INFO')) {
+                continue;
+            }
+            map += line + '\n';
+        }
 
-        reader.onerror = (event) => {
-            console.error('Error reading blob:', event.target?.error);
-        };
-
-        // Read Blob as text
-        reader.readAsText(fileData);
-    }, [fileData]);
+        setMaps(items);
+    }, [buffer]);
 
     return (
         <>
             <h2>Simulation Results</h2>
-            <Carousel items={carouselItems}/>
+            <Carousel items={maps}/>
         </>
-
     );
 };
 
