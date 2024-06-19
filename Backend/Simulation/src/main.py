@@ -16,7 +16,7 @@ def main(args):
 
     # set up logging
     logger = setup_logger("main_logger", f'../logs/run{simulation_count}/main.log', args.verbose)
-    logger.info('This log is for INFO purposes from main')
+    logger.info("starting simulation")
 
     personalities = {
         "Copycat": args.copycat,
