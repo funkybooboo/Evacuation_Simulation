@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Carousel from "./Carousel.tsx";
+import { Buffer } from 'buffer';
 
 interface Props {
     buffer: Buffer;

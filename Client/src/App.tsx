@@ -2,7 +2,7 @@ import { Button, Container } from '@chakra-ui/react';
 import SimulationParamsForm from './components/SimulationParamsForm';
 import SimulationPresentation from './components/SimulationPresentation';
 import SimulationParams from './types/simulationParams';
-import { simulate } from './api/simulationService';
+import { simulate } from './services/simulationService';
 import { useState } from 'react';
 
 function App() {
