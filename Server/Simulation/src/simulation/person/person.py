@@ -1,10 +1,10 @@
 from src.simulation.logger import setup_logger
 from src.simulation.colors import colors
-from .strategy import Strategy
-from .fight_entry import FightEntry
-from .thinker import Thinker
-from .vision import Vision
-from .movement import Movement
+from src.simulation.person.strategy import Strategy
+from src.simulation.person.fight_entry import FightEntry
+from src.simulation.person.thinker import Thinker
+from src.simulation.person.vision import Vision
+from src.simulation.person.movement import Movement
 from os import mkdir
 
 

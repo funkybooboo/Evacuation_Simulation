@@ -1,4 +1,4 @@
-from simulation.simulation import Simulation
+from src.simulation.simulation import Simulation
 from os import mkdir
 from src.simulation.logger import setup_logger
 import argparse
