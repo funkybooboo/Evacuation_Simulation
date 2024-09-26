@@ -18,7 +18,7 @@ RUN npm run build
 
 
 # New stage for Python dependencies and runtime
-FROM python:3.x-slim
+FROM python:3.9.20-alpine
 
 # Set working directory inside the container for backend and simulation
 WORKDIR /app/Simulation

@@ -22,9 +22,9 @@
 3. Run the Client server
     - Go to the 'Client/' directory
     - Run `npm install`
-    - Run `npm start`
+    - Run `npm build`
     - The server will start on `http://localhost:3001`
 
 ## How to run the simulation with the CLI
-1. Go to the 'Simulation/' directory
-- Run `src/python3 main.py`
+1. Go to the 'Backend/Simulation' directory
+- Run `python3 src/main.py`
